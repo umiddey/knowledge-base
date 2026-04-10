@@ -1,0 +1,1621 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Silicon Story</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a1017;
+      --bg-2: #0f1722;
+      --panel: rgba(13, 21, 31, 0.82);
+      --panel-strong: rgba(15, 24, 36, 0.95);
+      --text: #ecf5ff;
+      --muted: #9db0c3;
+      --line: rgba(167, 202, 231, 0.18);
+      --accent: #50e3c2;
+      --accent-2: #6ab8ff;
+      --accent-3: #ffb84d;
+      --danger: #ff6b7a;
+      --shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+      --section-gap: clamp(1.5rem, 4vw, 4rem);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background:
+        radial-gradient(circle at top left, rgba(80, 227, 194, 0.16), transparent 34%),
+        radial-gradient(circle at 80% 15%, rgba(106, 184, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 50% 85%, rgba(255, 184, 77, 0.1), transparent 28%),
+        linear-gradient(180deg, #081018 0%, #0a1017 100%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(255,255,255,0.02), rgba(255,255,255,0.02)),
+        linear-gradient(90deg, transparent 0, transparent 49px, rgba(255,255,255,0.02) 50px),
+        linear-gradient(transparent 0, transparent 49px, rgba(255,255,255,0.02) 50px);
+      background-size: auto, 50px 50px, 50px 50px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration-color: rgba(80, 227, 194, 0.45);
+      text-underline-offset: 0.18em;
+    }
+
+    .deck {
+      position: relative;
+      scroll-snap-type: y proximity;
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: linear-gradient(180deg, rgba(7, 12, 18, 0.92), rgba(7, 12, 18, 0.55));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .topbar-inner {
+      max-width: 1460px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem clamp(1rem, 2vw, 1.8rem);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .brand-mark {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 0.9rem;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.75), transparent 28%),
+        linear-gradient(135deg, rgba(80, 227, 194, 0.95), rgba(106, 184, 255, 0.95));
+      box-shadow: 0 0 30px rgba(80, 227, 194, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 0.35rem;
+      border-radius: 0.55rem;
+      border: 1px solid rgba(255,255,255,0.28);
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 0.98rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .brand-copy p {
+      margin: 0.1rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .progress {
+      flex: 0 0 240px;
+      display: grid;
+      gap: 0.35rem;
+      justify-items: end;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 0.34rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 20px rgba(80, 227, 194, 0.4);
+    }
+
+    .progress-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: 48rem;
+    }
+
+    .nav a {
+      font-size: 0.78rem;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      transition: 180ms ease;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      color: var(--text);
+      background: rgba(80, 227, 194, 0.12);
+      border-color: rgba(80, 227, 194, 0.28);
+    }
+
+    .hero,
+    .chapter,
+    .outro {
+      position: relative;
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: grid;
+      align-items: center;
+      padding: calc(88px + var(--section-gap)) clamp(1rem, 3vw, 2rem) var(--section-gap);
+    }
+
+    .shell {
+      width: min(1460px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: clamp(1.25rem, 3vw, 2.25rem);
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid rgba(80, 227, 194, 0.25);
+      border-radius: 999px;
+      background: rgba(80, 227, 194, 0.08);
+      color: #c9fff0;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin: 1rem 0 0;
+      font-size: clamp(2.8rem, 6vw, 6.2rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      max-width: 12ch;
+    }
+
+    .subtitle {
+      margin: 1.25rem 0 0;
+      font-size: clamp(1rem, 1.5vw, 1.2rem);
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 62ch;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-weight: 600;
+      transition: 180ms ease;
+    }
+
+    .button.primary {
+      background: linear-gradient(135deg, rgba(80, 227, 194, 0.2), rgba(106, 184, 255, 0.16));
+      border-color: rgba(80, 227, 194, 0.3);
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .hero-links a {
+      padding-bottom: 0.12rem;
+      border-bottom: 1px solid rgba(80, 227, 194, 0.25);
+    }
+
+    .stack-stage,
+    .panel,
+    .viz,
+    .graph,
+    .summary {
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(17, 25, 36, 0.88), rgba(11, 18, 28, 0.92));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .stack-stage {
+      min-height: 580px;
+      padding: 1.4rem;
+      isolation: isolate;
+    }
+
+    .stack-stage::before,
+    .panel::before,
+    .viz::before,
+    .graph::before,
+    .summary::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(80, 227, 194, 0.16), transparent 18%),
+        radial-gradient(circle at 80% 5%, rgba(106, 184, 255, 0.14), transparent 22%),
+        radial-gradient(circle at 70% 80%, rgba(255, 184, 77, 0.1), transparent 25%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .stack-stage > *,
+    .panel > *,
+    .viz > *,
+    .graph > *,
+    .summary > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .chip-stack {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 1rem;
+      align-items: center;
+      height: 100%;
+    }
+
+    .chip-scene {
+      position: relative;
+      min-height: 460px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01)),
+        radial-gradient(circle at center, rgba(80, 227, 194, 0.12), transparent 48%);
+      border: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+
+    .chip-scene .label {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.38rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(8, 16, 24, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .path-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
+      opacity: 0.35;
+      animation: drift 18s linear infinite;
+    }
+
+    .wave {
+      position: absolute;
+      inset: auto 0 14% 0;
+      height: 110px;
+      border-top: 1px solid rgba(80, 227, 194, 0.35);
+      background:
+        radial-gradient(circle at 50% 0, rgba(80, 227, 194, 0.65), transparent 8px),
+        radial-gradient(circle at 30% 35%, rgba(106, 184, 255, 0.5), transparent 8px),
+        radial-gradient(circle at 70% 35%, rgba(255, 184, 77, 0.4), transparent 8px);
+      opacity: 0.4;
+      filter: blur(1px);
+      animation: pulse 6s ease-in-out infinite;
+    }
+
+    .wafer {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 260px;
+      height: 260px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(80, 227, 194, 0.18), rgba(80, 227, 194, 0.05) 32%, transparent 34%),
+        radial-gradient(circle at 50% 50%, transparent 56%, rgba(255,255,255,0.08) 56.5%, transparent 57%),
+        radial-gradient(circle at 50% 50%, transparent 74%, rgba(255,255,255,0.08) 74.5%, transparent 75%);
+      box-shadow: inset 0 0 60px rgba(0,0,0,0.45);
+    }
+
+    .die {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 150px;
+      height: 104px;
+      transform: translate(-50%, -50%);
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, rgba(80, 227, 194, 0.95), rgba(106, 184, 255, 0.78));
+      box-shadow: 0 0 50px rgba(80, 227, 194, 0.35), inset 0 0 0 1px rgba(255,255,255,0.25);
+    }
+
+    .die::before,
+    .die::after {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 14px;
+    }
+
+    .die::after {
+      inset: 36px 28px;
+      border-color: rgba(255,255,255,0.22);
+    }
+
+    .chip-lanes {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    .lane {
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      overflow: hidden;
+    }
+
+    .lane::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 18%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(80,227,194,0.8), transparent);
+      animation: scan 4.2s linear infinite;
+    }
+
+    .lane:nth-child(2)::before { animation-delay: 0.8s; }
+    .lane:nth-child(3)::before { animation-delay: 1.6s; }
+
+    .lane span {
+      position: absolute;
+      bottom: 0.75rem;
+      left: 0.75rem;
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .story-notes {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .note {
+      padding: 1rem 1.1rem;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(8, 14, 21, 0.56);
+    }
+
+    .note h2,
+    .note h3,
+    .note h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .note p,
+    .note li {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.96rem;
+    }
+
+    .note ul {
+      margin: 0.6rem 0 0;
+      padding-left: 1.15rem;
+    }
+
+    .chapter .shell {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .chapter-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 0.4rem;
+    }
+
+    .chapter-head .kicker {
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .chapter-head h2 {
+      margin: 0.25rem 0 0;
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      letter-spacing: -0.05em;
+    }
+
+    .chapter-head p {
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+      max-width: 60ch;
+      line-height: 1.6;
+    }
+
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .chapter-grid.tight {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    .panel,
+    .viz,
+    .graph,
+    .summary {
+      padding: 1.15rem;
+    }
+
+    .panel h3,
+    .viz h3,
+    .graph h3,
+    .summary h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.05rem;
+    }
+
+    .panel .lead,
+    .viz .lead,
+    .graph .lead,
+    .summary .lead {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .unit-axis {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .axis {
+      position: relative;
+      height: 18rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,0.05) 50%, transparent),
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      overflow: hidden;
+    }
+
+    .axis::before {
+      content: "";
+      position: absolute;
+      inset: 1.3rem 1.25rem 2.2rem 1.25rem;
+      border-left: 1px solid rgba(255,255,255,0.16);
+      border-bottom: 1px solid rgba(255,255,255,0.16);
+    }
+
+    .axis-label {
+      position: absolute;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .axis-label.x { left: 1.4rem; bottom: 0.7rem; }
+    .axis-label.y { left: 0.8rem; top: 1.2rem; transform: rotate(-90deg); transform-origin: left top; }
+
+    .axis-point {
+      position: absolute;
+      display: grid;
+      gap: 0.35rem;
+      justify-items: center;
+      text-align: center;
+      width: 110px;
+      transform: translate(-50%, -50%);
+    }
+
+    .axis-dot {
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      box-shadow: 0 0 24px currentColor;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    .axis-point strong {
+      font-size: 0.9rem;
+      line-height: 1.1;
+    }
+
+    .axis-point small {
+      color: var(--muted);
+      font-size: 0.77rem;
+      line-height: 1.35;
+    }
+
+    .cpu { color: #ffb84d; left: 16%; top: 72%; }
+    .gpu { color: #6ab8ff; left: 42%; top: 42%; }
+    .tpu { color: #50e3c2; left: 73%; top: 23%; }
+    .npu { color: #8cf17a; left: 64%; top: 67%; }
+    .fpga { color: #f27aff; left: 31%; top: 61%; }
+    .asic { color: #ff6b7a; left: 86%; top: 14%; }
+
+    .bridge {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 0.8rem;
+      align-items: center;
+      padding: 0.85rem 0.95rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .step code {
+      font-size: 0.82rem;
+      color: #d7efff;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .flow-svg,
+    .package-svg,
+    .yield-svg,
+    .graph-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .flow-card,
+    .package-card,
+    .yield-card {
+      border-radius: 20px;
+      padding: 1rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.025);
+    }
+
+    .callout {
+      margin-top: 0.9rem;
+      padding: 0.9rem 1rem;
+      border-left: 3px solid var(--accent);
+      background: rgba(80, 227, 194, 0.08);
+      border-radius: 14px;
+      color: #d7fff5;
+      line-height: 1.65;
+      font-size: 0.95rem;
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .link-card {
+      padding: 0.9rem 1rem;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.025);
+      min-height: 100%;
+    }
+
+    .link-card strong {
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .link-card span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .graph {
+      padding-bottom: 0.6rem;
+    }
+
+    .graph-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .graph-list {
+      display: grid;
+      gap: 0.7rem;
+      align-content: start;
+    }
+
+    .graph-list a {
+      display: grid;
+      gap: 0.15rem;
+      padding: 0.78rem 0.9rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .graph-list a strong {
+      font-size: 0.92rem;
+    }
+
+    .graph-list a span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 1rem;
+      align-items: start;
+      padding: 0.8rem 0.9rem;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .timeline-item strong {
+      color: var(--accent-3);
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .timeline-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .final {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 0.9fr);
+      align-items: stretch;
+    }
+
+    .big-quote {
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(80, 227, 194, 0.16);
+      background: linear-gradient(135deg, rgba(80, 227, 194, 0.08), rgba(106, 184, 255, 0.06));
+      box-shadow: var(--shadow);
+    }
+
+    .big-quote p {
+      margin: 0;
+      font-size: clamp(1.2rem, 2vw, 1.7rem);
+      line-height: 1.45;
+      letter-spacing: -0.03em;
+    }
+
+    .outro {
+      padding-bottom: 4rem;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .mini-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .mini-links a {
+      padding: 0.45rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(40px, 40px, 0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translateY(0); opacity: 0.34; }
+      50% { transform: translateY(-6px); opacity: 0.58; }
+    }
+
+    @keyframes scan {
+      from { transform: translateX(-30%); }
+      to { transform: translateX(230%); }
+    }
+
+    @keyframes glow {
+      0%, 100% { transform: scale(0.95); filter: brightness(0.95); }
+      50% { transform: scale(1.08); filter: brightness(1.2); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 650ms ease, transform 650ms ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .chapter:nth-of-type(even) .chapter-grid {
+      direction: rtl;
+    }
+
+    .chapter:nth-of-type(even) .chapter-grid > * {
+      direction: ltr;
+    }
+
+    .chapter:nth-of-type(even) .chapter-head {
+      flex-direction: row-reverse;
+    }
+
+    .chapter:nth-of-type(even) .chapter-head h2,
+    .chapter:nth-of-type(even) .chapter-head p {
+      text-align: right;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-grid,
+      .chapter-grid,
+      .graph-wrap,
+      .final {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-inner {
+        flex-wrap: wrap;
+      }
+
+      .progress {
+        order: 3;
+        flex-basis: 100%;
+        justify-items: start;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .step {
+        grid-template-columns: 1fr;
+      }
+
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      .chapter,
+      .outro {
+        padding-top: 104px;
+      }
+
+      .title {
+        max-width: 10ch;
+      }
+
+      .stack-stage {
+        min-height: 520px;
+      }
+
+      .chip-stack {
+        grid-template-columns: 1fr;
+      }
+
+      .chip-scene {
+        min-height: 350px;
+      }
+
+      .nav {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-copy">
+          <h1>AI Silicon Story</h1>
+          <p>Scrollable presentation built from the concepts and connections graph.</p>
+        </div>
+      </div>
+      <div class="progress" aria-label="Presentation progress">
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-label" id="progressLabel">Chapter 1 of 7</div>
+      </div>
+      <nav class="nav" aria-label="Presentation chapters">
+        <a href="#hero" class="active">Start</a>
+        <a href="#chapter-1">1. Silicon</a>
+        <a href="#chapter-2">2. Choices</a>
+        <a href="#chapter-3">3. Dataflow</a>
+        <a href="#chapter-4">4. Compilers</a>
+        <a href="#chapter-5">5. Packaging</a>
+        <a href="#chapter-6">6. Yield</a>
+        <a href="#chapter-7">7. Map</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="deck">
+    <section class="hero" id="hero">
+      <div class="shell hero-grid">
+        <div class="reveal">
+          <div class="eyebrow">From concepts to a guided story</div>
+          <h1 class="title">AI silicon, finally visualized end to end.</h1>
+          <p class="subtitle">
+            This deck starts from zero. If words like transistor, GPU, TPU, compiler, or packaging mean nothing yet,
+            that is fine. We will define each piece as we go and build the picture from scratch.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#chapter-1">Start the story</a>
+            <a class="button" href="../../wiki/_index.md">Open the topic index</a>
+          </div>
+          <div class="hero-links">
+            <span>Core links:</span>
+            <a href="../../wiki/connections/from-code-to-silicon.md">from-code-to-silicon</a>
+            <a href="../../wiki/connections/gpu-vs-tpu-architecture-war.md">gpu-vs-tpu-architecture-war</a>
+            <a href="../../wiki/connections/compiler-stacks-and-accelerator-backends.md">compiler-stacks-and-accelerator-backends</a>
+          </div>
+        </div>
+
+        <div class="stack-stage reveal">
+          <div class="chip-stack">
+            <div class="chip-scene">
+              <div class="label">From wafer to workload</div>
+              <div class="path-grid"></div>
+              <div class="wafer" aria-hidden="true"></div>
+              <div class="die" aria-hidden="true"></div>
+              <div class="wave" aria-hidden="true"></div>
+            </div>
+            <div class="story-notes">
+              <div class="note">
+                <h3>Start here</h3>
+                <p>You do not need prior chip knowledge. The first slides will define every term in plain language before we use it in a technical way.</p>
+              </div>
+              <div class="note">
+                <h3>What this deck does</h3>
+                <ul>
+                  <li>Explains what a chip is made of.</li>
+                  <li>Shows why some chips are general and others are specialized.</li>
+                  <li>Builds the path from raw silicon to a working AI system.</li>
+                </ul>
+              </div>
+              <div class="note">
+                <h3>Rule of the presentation</h3>
+                <p>If a technical word appears, the deck should explain it before expecting you to remember it.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-1">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 1</div>
+            <h2>What is a chip, really?</h2>
+            <p>Start with the plainest idea: a chip is a tiny physical object that can turn signals on and off very quickly. Everything else in this topic grows from that one fact.</p>
+          </div>
+          <div class="eyebrow">[[semiconductor-fundamentals]]</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Four words to know first</h3>
+            <p class="lead">These are the minimum terms you need. No jargon required beyond this point.</p>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Transistor</strong>
+                <p>A tiny switch. It can let electricity pass or block it.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Chip</strong>
+                <p>A piece of silicon containing billions of those tiny switches wired together.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Wafer</strong>
+                <p>A round disk of silicon that holds many chips before they are cut apart.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Package</strong>
+                <p>The outer shell that protects the chip and connects it to the rest of the computer.</p>
+              </div>
+            </div>
+            <div class="callout">You can ignore labels like PMOS and CMOS for now. The important idea is simply that chips are built from many controlled switches, and switching them efficiently is what makes computation possible.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>The smallest possible chip idea</h3>
+            <p class="lead">This picture is just: input goes in, tiny switch does its job, output comes out. That is the basic pattern behind all digital hardware.</p>
+            <svg class="flow-svg" viewBox="0 0 720 360" role="img" aria-label="Animated inverter and signal flow">
+              <defs>
+                <linearGradient id="siliconGlow" x1="0%" x2="100%">
+                  <stop offset="0%" stop-color="#50e3c2" />
+                  <stop offset="100%" stop-color="#6ab8ff" />
+                </linearGradient>
+                <filter id="softGlow">
+                  <feGaussianBlur stdDeviation="8" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <rect x="24" y="24" width="672" height="312" rx="24" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" />
+              <line x1="88" y1="180" x2="632" y2="180" stroke="rgba(255,255,255,0.14)" stroke-dasharray="8 10" />
+              <rect x="126" y="90" width="112" height="110" rx="18" fill="rgba(80,227,194,0.12)" stroke="rgba(80,227,194,0.4)" />
+              <rect x="482" y="160" width="112" height="110" rx="18" fill="rgba(106,184,255,0.12)" stroke="rgba(106,184,255,0.4)" />
+              <text x="182" y="124" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">tiny switch</text>
+              <text x="182" y="146" fill="#9db0c3" text-anchor="middle" font-size="14">helps control flow</text>
+              <text x="538" y="194" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">second switch</text>
+              <text x="538" y="216" fill="#9db0c3" text-anchor="middle" font-size="14">works with the first</text>
+              <path d="M250 145 H360" stroke="url(#siliconGlow)" stroke-width="8" stroke-linecap="round" filter="url(#softGlow)">
+                <animate attributeName="stroke-dashoffset" values="0;-36" dur="2.4s" repeatCount="indefinite" />
+              </path>
+              <path d="M360 215 H468" stroke="url(#siliconGlow)" stroke-width="8" stroke-linecap="round" filter="url(#softGlow)">
+                <animate attributeName="stroke-dashoffset" values="0;36" dur="2.4s" repeatCount="indefinite" />
+              </path>
+              <circle cx="88" cy="180" r="16" fill="#ffb84d">
+                <animate attributeName="r" values="12;18;12" dur="2.8s" repeatCount="indefinite" />
+              </circle>
+              <circle cx="632" cy="180" r="16" fill="#50e3c2">
+                <animate attributeName="r" values="18;12;18" dur="2.8s" repeatCount="indefinite" />
+              </circle>
+              <text x="88" y="223" fill="#9db0c3" text-anchor="middle" font-size="14">input</text>
+              <text x="632" y="223" fill="#9db0c3" text-anchor="middle" font-size="14">output</text>
+              <text x="360" y="66" fill="#ecf5ff" text-anchor="middle" font-size="20" font-weight="700">one tiny switch</text>
+              <text x="360" y="296" fill="#9db0c3" text-anchor="middle" font-size="15">billions of these become the chip</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-2">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 2</div>
+            <h2>Different workloads want different machines.</h2>
+            <p>CPU, GPU, TPU, NPU, FPGA, and ASIC are not six names for the same thing. They are six answers to the same tradeoff: flexibility versus efficiency.</p>
+          </div>
+          <div class="eyebrow">[[processing-unit-types]]</div>
+        </div>
+        <div class="chapter-grid tight">
+          <div class="panel reveal">
+            <h3>The decision axis</h3>
+            <p class="lead">Move right for specialization, move up for raw flexibility. No design gets everything.</p>
+            <div class="axis" aria-label="Flexibility versus efficiency chart">
+              <div class="axis-label y">Flexibility</div>
+              <div class="axis-label x">Efficiency</div>
+              <div class="axis-point cpu">
+                <div class="axis-dot"></div>
+                <strong>CPU</strong>
+                <small>general purpose, low-latency control</small>
+              </div>
+              <div class="axis-point gpu">
+                <div class="axis-dot"></div>
+                <strong>GPU</strong>
+                <small>programmable parallelism, mature software</small>
+              </div>
+              <div class="axis-point tpu">
+                <div class="axis-dot"></div>
+                <strong>TPU</strong>
+                <small>matrix multiply first, compiler driven</small>
+              </div>
+              <div class="axis-point npu">
+                <div class="axis-dot"></div>
+                <strong>NPU</strong>
+                <small>edge inference, low power</small>
+              </div>
+              <div class="axis-point fpga">
+                <div class="axis-dot"></div>
+                <strong>FPGA</strong>
+                <small>reconfigurable bridge to hardware reality</small>
+              </div>
+              <div class="axis-point asic">
+                <div class="axis-dot"></div>
+                <strong>ASIC</strong>
+                <small>maximum specialization, minimum waste</small>
+              </div>
+            </div>
+          </div>
+          <div class="summary reveal">
+            <h3>What the story tells you</h3>
+            <p class="lead">The same model can be a CPU task, a GPU task, a TPU task, or a custom accelerator task depending on volume, stability, latency, and software support.</p>
+            <div class="links-grid">
+              <div class="link-card">
+                <strong>GPU wins when the workload changes</strong>
+                <span>CUDA, TensorRT, and the rest of the software stack make GPUs the safe choice for unstable or experimental model shapes.</span>
+              </div>
+              <div class="link-card">
+                <strong>TPU wins when the workload is regular</strong>
+                <span>A compiler-friendly graph plus a systolic array can extract far more useful work from each watt.</span>
+              </div>
+              <div class="link-card">
+                <strong>FPGA wins when you need a bridge</strong>
+                <span>It is not the fastest path to scale, but it is a crucial proving ground between code and silicon.</span>
+              </div>
+              <div class="link-card">
+                <strong>ASIC wins when the problem is fixed</strong>
+                <span>If the workload is stable enough, the cost of specializing the hardware can pay back at volume.</span>
+              </div>
+            </div>
+            <div class="callout">The important lesson is not which chip is fastest in a vacuum. It is which chip can actually be deployed for the workload you have.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-3">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 3</div>
+            <h2>AI speed comes from moving data less.</h2>
+            <p>Accelerators are not just math engines. They are memory and dataflow machines. The question is how to keep compute fed without wasting bandwidth.</p>
+          </div>
+          <div class="eyebrow">[[ai-accelerator-design]]</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="viz reveal">
+            <h3>The roofline view</h3>
+            <p class="lead">A workload is either compute-bound or memory-bound. Most optimization is really about raising operational intensity so useful math stays ahead of data movement.</p>
+            <svg class="flow-svg" viewBox="0 0 720 360" role="img" aria-label="Roofline model with several accelerator points">
+              <defs>
+                <linearGradient id="roof" x1="0%" x2="100%">
+                  <stop offset="0%" stop-color="#ffb84d" />
+                  <stop offset="100%" stop-color="#50e3c2" />
+                </linearGradient>
+              </defs>
+              <rect x="24" y="24" width="672" height="312" rx="24" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" />
+              <line x1="84" y1="270" x2="612" y2="270" stroke="rgba(255,255,255,0.16)" />
+              <line x1="84" y1="270" x2="84" y2="74" stroke="rgba(255,255,255,0.16)" />
+              <path d="M84 250 C160 170, 240 120, 300 100 L600 100" fill="none" stroke="url(#roof)" stroke-width="6" stroke-linecap="round" />
+              <circle cx="145" cy="210" r="10" fill="#ffb84d" />
+              <circle cx="290" cy="126" r="10" fill="#6ab8ff" />
+              <circle cx="450" cy="100" r="10" fill="#50e3c2" />
+              <text x="140" y="236" fill="#ecf5ff" font-size="14">memory-bound</text>
+              <text x="388" y="84" fill="#ecf5ff" font-size="14">compute-bound</text>
+              <text x="84" y="290" fill="#9db0c3" font-size="13">operational intensity</text>
+              <text x="28" y="74" fill="#9db0c3" font-size="13" transform="rotate(-90 28 74)">performance</text>
+            </svg>
+          </div>
+          <div class="panel reveal">
+            <h3>The dataflow patterns</h3>
+            <p class="lead">The hardware philosophy is baked into how weights, activations, and partial sums move through the compute fabric.</p>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Weight-stationary</strong>
+                <p>Keep weights resident, stream activations through. Great when the same parameters are reused across many inputs.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Output-stationary</strong>
+                <p>Keep partial sums local and reduce writeback pressure. Good when the output accumulation path is the expensive part.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Row-stationary</strong>
+                <p>Reuse weights, activations, and partial sums together. This is where energy efficiency starts to look like a scheduling problem.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Input-stationary</strong>
+                <p>Hold activations still and let weights flow. That makes sense when input reuse is the dominant opportunity.</p>
+              </div>
+            </div>
+            <div class="callout">The real prize is reuse. If you can keep data on-chip longer, the accelerator looks much faster even before you touch raw FLOPS.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-4">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 4</div>
+            <h2>The compiler is what makes specialization usable.</h2>
+            <p>A rigid accelerator is dead weight unless software can map models onto it. Compilers are the bridge from high-level intent to machine-specific execution.</p>
+          </div>
+          <div class="eyebrow">[[ai-compilers]]</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="bridge reveal">
+            <div class="flow-card">
+              <h3>Lowering path</h3>
+              <p class="lead">The same computation can be lowered to CUDA, TPU instructions, LLVM IR, or a custom backend. The model stays the same; the execution path changes completely.</p>
+              <svg class="flow-svg" viewBox="0 0 760 280" role="img" aria-label="Compiler pipeline from model to hardware">
+                <defs>
+                  <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 z" fill="#50e3c2" />
+                  </marker>
+                </defs>
+                <rect x="18" y="20" width="724" height="240" rx="22" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" />
+                <rect x="44" y="86" width="120" height="82" rx="18" fill="rgba(80,227,194,0.12)" stroke="rgba(80,227,194,0.35)" />
+                <rect x="214" y="86" width="120" height="82" rx="18" fill="rgba(106,184,255,0.12)" stroke="rgba(106,184,255,0.35)" />
+                <rect x="384" y="86" width="120" height="82" rx="18" fill="rgba(255,184,77,0.12)" stroke="rgba(255,184,77,0.35)" />
+                <rect x="554" y="86" width="120" height="82" rx="18" fill="rgba(255,107,122,0.12)" stroke="rgba(255,107,122,0.35)" />
+                <text x="104" y="124" fill="#ecf5ff" text-anchor="middle" font-size="17" font-weight="700">Model</text>
+                <text x="274" y="124" fill="#ecf5ff" text-anchor="middle" font-size="17" font-weight="700">IR</text>
+                <text x="444" y="124" fill="#ecf5ff" text-anchor="middle" font-size="17" font-weight="700">Backend</text>
+                <text x="614" y="124" fill="#ecf5ff" text-anchor="middle" font-size="17" font-weight="700">Silicon</text>
+                <line x1="164" y1="127" x2="206" y2="127" stroke="#50e3c2" stroke-width="4" marker-end="url(#arrow)" />
+                <line x1="334" y1="127" x2="376" y2="127" stroke="#50e3c2" stroke-width="4" marker-end="url(#arrow)" />
+                <line x1="504" y1="127" x2="546" y2="127" stroke="#50e3c2" stroke-width="4" marker-end="url(#arrow)" />
+                <text x="104" y="195" fill="#9db0c3" text-anchor="middle" font-size="13">PyTorch / JAX</text>
+                <text x="274" y="195" fill="#9db0c3" text-anchor="middle" font-size="13">HLO / TIR / StableHLO</text>
+                <text x="444" y="195" fill="#9db0c3" text-anchor="middle" font-size="13">CUDA / XLA / TVM</text>
+                <text x="614" y="195" fill="#9db0c3" text-anchor="middle" font-size="13">GPU / TPU / ASIC</text>
+              </svg>
+            </div>
+          </div>
+          <div class="summary reveal">
+            <h3>Why this matters</h3>
+            <p class="lead">Compilers are not a convenience layer. They are the mechanism that translates one mathematical graph into a machine-specific plan that can actually run well.</p>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Fusion</strong>
+                <p>Combine small ops so memory bandwidth is not wasted on intermediate writes.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Tiling</strong>
+                <p>Break tensors into chunks that fit local memory and match the machine's execution shape.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Scheduling</strong>
+                <p>Pick the loop order, memory placement, and kernel shape that best match the hardware.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Backend generation</strong>
+                <p>Emit the actual instruction stream for the target platform.</p>
+              </div>
+            </div>
+            <div class="callout">Without a compiler stack, a custom accelerator is only a lab artifact. With a compiler stack, it becomes a product.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-5">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 5</div>
+            <h2>Packaging is now part of the architecture.</h2>
+            <p>The package determines memory bandwidth, thermal headroom, yield, and how far a design can scale. In AI silicon, package design moves upstream into the main architectural choice.</p>
+          </div>
+          <div class="eyebrow">[[advanced-packaging]]</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="viz reveal">
+            <h3>Stacked system view</h3>
+            <p class="lead">Think of the module as a system of layers: compute die, interconnect, HBM, substrate, and board all constrain one another.</p>
+            <svg class="package-svg" viewBox="0 0 720 420" role="img" aria-label="Advanced packaging stack diagram">
+              <rect x="24" y="24" width="672" height="372" rx="24" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" />
+              <rect x="94" y="86" width="532" height="46" rx="14" fill="rgba(80,227,194,0.22)" stroke="rgba(80,227,194,0.45)" />
+              <text x="360" y="115" fill="#ecf5ff" text-anchor="middle" font-size="18" font-weight="700">Compute dies</text>
+              <rect x="150" y="150" width="420" height="42" rx="12" fill="rgba(106,184,255,0.22)" stroke="rgba(106,184,255,0.45)" />
+              <text x="360" y="177" fill="#ecf5ff" text-anchor="middle" font-size="17" font-weight="700">HBM stacks</text>
+              <rect x="132" y="214" width="456" height="44" rx="12" fill="rgba(255,184,77,0.22)" stroke="rgba(255,184,77,0.45)" />
+              <text x="360" y="242" fill="#ecf5ff" text-anchor="middle" font-size="17" font-weight="700">Interposer / RDL / routing medium</text>
+              <rect x="98" y="282" width="524" height="38" rx="12" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" />
+              <text x="360" y="306" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Substrate and board</text>
+              <path d="M98 258 C160 240, 220 222, 360 224 C500 226, 560 240, 622 258" fill="none" stroke="rgba(80,227,194,0.8)" stroke-width="4" stroke-dasharray="10 8">
+                <animate attributeName="stroke-dashoffset" values="0;72" dur="5s" repeatCount="indefinite" />
+              </path>
+            </svg>
+          </div>
+          <div class="panel reveal">
+            <h3>Why the package decides the winner</h3>
+            <p class="lead">More compute is pointless if the memory cannot feed it. More HBM is pointless if the package cannot place and cool it. More die area is pointless if yield breaks.</p>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Bandwidth</strong>
+                <p>Package choice sets how much memory can sit close enough to matter.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Thermals</strong>
+                <p>High-performance AI modules are thermal systems as much as they are compute systems.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Economics</strong>
+                <p>Substrate cost, assembly complexity, and capacity bottlenecks shape what ships at scale.</p>
+              </div>
+            </div>
+            <div class="callout">CoWoS, CoPoS, and CoWoP are not just packaging abbreviations. They are attempts to make the memory and compute system physically plausible at the size AI now demands.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-6">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 6</div>
+            <h2>Testability and yield decide whether the chip survives contact with reality.</h2>
+            <p>Design for Test makes the invisible visible. Yield turns a prototype into a manufacturable product. Without them, the best architecture still fails economically.</p>
+          </div>
+          <div class="eyebrow">[[design-for-test]] + [[vlsi-design-flow]]</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>The closing loop</h3>
+            <p class="lead">DFT, scan, ATPG, and physical verification convert a huge die from a speculative object into a shippable one.</p>
+            <div class="timeline">
+              <div class="timeline-item">
+                <strong>Scan</strong>
+                <p>Expose internal state so stuck-at faults and hidden logic issues can be detected cheaply.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>ATPG</strong>
+                <p>Generate test patterns that probe defects before bad silicon reaches customers.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Yield</strong>
+                <p>Every additional defect opportunity changes the economic shape of the chip.</p>
+              </div>
+              <div class="timeline-item">
+                <strong>Signoff</strong>
+                <p>DRC, LVS, STA, and physical verification decide whether the design is real.</p>
+              </div>
+            </div>
+          </div>
+          <div class="yield-card reveal">
+            <h3>Visual test loop</h3>
+            <p class="lead">The feedback loop is simple: manufacture, test, bin, learn, and iterate.</p>
+            <svg class="yield-svg" viewBox="0 0 720 360" role="img" aria-label="Test and yield feedback loop">
+              <defs>
+                <marker id="arrow2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 z" fill="#6ab8ff" />
+                </marker>
+              </defs>
+              <rect x="24" y="24" width="672" height="312" rx="24" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" />
+              <rect x="62" y="122" width="110" height="74" rx="16" fill="rgba(80,227,194,0.12)" stroke="rgba(80,227,194,0.35)" />
+              <rect x="214" y="122" width="110" height="74" rx="16" fill="rgba(106,184,255,0.12)" stroke="rgba(106,184,255,0.35)" />
+              <rect x="366" y="122" width="110" height="74" rx="16" fill="rgba(255,184,77,0.12)" stroke="rgba(255,184,77,0.35)" />
+              <rect x="518" y="122" width="110" height="74" rx="16" fill="rgba(255,107,122,0.12)" stroke="rgba(255,107,122,0.35)" />
+              <text x="117" y="156" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Fab</text>
+              <text x="269" y="156" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Test</text>
+              <text x="421" y="156" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Bin</text>
+              <text x="573" y="156" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Learn</text>
+              <line x1="172" y1="159" x2="206" y2="159" stroke="#6ab8ff" stroke-width="4" marker-end="url(#arrow2)" />
+              <line x1="324" y1="159" x2="358" y2="159" stroke="#6ab8ff" stroke-width="4" marker-end="url(#arrow2)" />
+              <line x1="476" y1="159" x2="510" y2="159" stroke="#6ab8ff" stroke-width="4" marker-end="url(#arrow2)" />
+              <path d="M573 198 C573 262, 117 262, 117 198" fill="none" stroke="rgba(80,227,194,0.75)" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#arrow2)" />
+              <text x="360" y="286" fill="#9db0c3" text-anchor="middle" font-size="14">the loop continues until the chip becomes manufacturable, not merely functional</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-7">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="kicker">Chapter 7</div>
+            <h2>The wiki graph becomes a learning path.</h2>
+            <p>By the end, the concepts are not isolated. They are a chain: silicon, architecture, dataflow, compiler, packaging, test, and then back to learning and design practice.</p>
+          </div>
+          <div class="eyebrow">[[from-code-to-silicon]]</div>
+        </div>
+        <div class="final">
+          <div class="graph reveal">
+            <h3>The concept map</h3>
+            <p class="lead">This is the story the wiki already tells. The HTML deck simply makes it visible in one sweep.</p>
+            <svg class="graph-svg" viewBox="0 0 960 560" role="img" aria-label="Concept graph for AI silicon">
+              <defs>
+                <linearGradient id="linkGrad" x1="0%" x2="100%">
+                  <stop offset="0%" stop-color="#50e3c2" />
+                  <stop offset="100%" stop-color="#6ab8ff" />
+                </linearGradient>
+              </defs>
+              <rect x="20" y="20" width="920" height="520" rx="28" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" />
+              <g stroke="url(#linkGrad)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="9 10">
+                <path d="M150 270 L280 150" />
+                <path d="M280 150 L470 120" />
+                <path d="M470 120 L650 180" />
+                <path d="M470 120 L650 320" />
+                <path d="M650 180 L800 120" />
+                <path d="M650 320 L800 420" />
+                <path d="M280 150 L280 330" />
+                <path d="M280 330 L470 400" />
+                <animate attributeName="stroke-dashoffset" values="0;76" dur="6s" repeatCount="indefinite" />
+              </g>
+              <g>
+                <g transform="translate(90 238)">
+                  <rect width="120" height="64" rx="18" fill="rgba(255,184,77,0.14)" stroke="rgba(255,184,77,0.34)" />
+                  <text x="60" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Silicon</text>
+                </g>
+                <g transform="translate(228 118)">
+                  <rect width="120" height="64" rx="18" fill="rgba(80,227,194,0.14)" stroke="rgba(80,227,194,0.34)" />
+                  <text x="60" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Units</text>
+                </g>
+                <g transform="translate(420 86)">
+                  <rect width="140" height="64" rx="18" fill="rgba(106,184,255,0.14)" stroke="rgba(106,184,255,0.34)" />
+                  <text x="70" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">GPU / TPU</text>
+                </g>
+                <g transform="translate(600 142)">
+                  <rect width="145" height="64" rx="18" fill="rgba(255,184,77,0.14)" stroke="rgba(255,184,77,0.34)" />
+                  <text x="72" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Packaging</text>
+                </g>
+                <g transform="translate(764 88)">
+                  <rect width="130" height="64" rx="18" fill="rgba(255,107,122,0.14)" stroke="rgba(255,107,122,0.34)" />
+                  <text x="65" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Yield</text>
+                </g>
+                <g transform="translate(600 292)">
+                  <rect width="145" height="64" rx="18" fill="rgba(80,227,194,0.14)" stroke="rgba(80,227,194,0.34)" />
+                  <text x="72" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Compilers</text>
+                </g>
+                <g transform="translate(764 398)">
+                  <rect width="130" height="64" rx="18" fill="rgba(106,184,255,0.14)" stroke="rgba(106,184,255,0.34)" />
+                  <text x="65" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Flow</text>
+                </g>
+                <g transform="translate(410 370)">
+                  <rect width="150" height="64" rx="18" fill="rgba(255,184,77,0.14)" stroke="rgba(255,184,77,0.34)" />
+                  <text x="75" y="38" fill="#ecf5ff" text-anchor="middle" font-size="16" font-weight="700">Dataflow</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="summary reveal">
+            <h3>Read next</h3>
+            <p class="lead">If you want the whole story in text form after the visuals, these are the best next stops.</p>
+            <div class="graph-list">
+              <a href="../../wiki/connections/from-code-to-silicon.md">
+                <strong>From Code to Silicon</strong>
+                <span>The main end-to-end learning path.</span>
+              </a>
+              <a href="../../wiki/connections/gpu-vs-tpu-architecture-war.md">
+                <strong>GPU vs TPU: The Architecture War</strong>
+                <span>The core specialization versus flexibility tradeoff.</span>
+              </a>
+              <a href="../../wiki/connections/compiler-stacks-and-accelerator-backends.md">
+                <strong>Compiler Stacks and Accelerator Backends</strong>
+                <span>Why the compiler is part of the product.</span>
+              </a>
+              <a href="../../wiki/connections/advanced-packaging-and-ai-scale.md">
+                <strong>Advanced Packaging and AI Scale</strong>
+                <span>How bandwidth and thermals move upstream.</span>
+              </a>
+            </div>
+            <div class="callout">The deck is intentionally simple: if a reader understands the sequence and the visuals, the rest of the wiki becomes much easier to absorb.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="outro" id="outro">
+      <div class="shell">
+        <div class="big-quote reveal">
+          <p>
+            AI silicon is not one topic. It is the chain from physics to product: silicon creates the device,
+            architecture chooses the shape, compiler stacks make it useful, packaging makes it feedable, and test makes it shippable.
+          </p>
+        </div>
+        <div class="footer reveal">
+          <div>
+            Built from the <a href="../../wiki/_index.md">ai-silicon-engineering wiki</a>.
+            Open this file in a browser and scroll.
+          </div>
+          <div class="mini-links">
+            <a href="../../wiki/concepts/semiconductor-fundamentals.md">Fundamentals</a>
+            <a href="../../wiki/concepts/processing-unit-types.md">Unit types</a>
+            <a href="../../wiki/concepts/ai-compilers.md">Compilers</a>
+            <a href="../../wiki/concepts/advanced-packaging.md">Packaging</a>
+            <a href="../../wiki/concepts/design-for-test.md">DFT</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const sections = [...document.querySelectorAll("section[id]")];
+    const navLinks = [...document.querySelectorAll(".nav a")];
+    const progressBar = document.getElementById("progressBar");
+    const progressLabel = document.getElementById("progressLabel");
+
+    const setActive = (id) => {
+      navLinks.forEach((link) => {
+        const active = link.getAttribute("href") === `#${id}`;
+        link.classList.toggle("active", active);
+      });
+
+      const chapterIds = ["chapter-1", "chapter-2", "chapter-3", "chapter-4", "chapter-5", "chapter-6", "chapter-7"];
+      const chapterIndex = chapterIds.indexOf(id);
+      if (progressLabel) {
+        if (id === "hero") {
+          progressLabel.textContent = "Intro";
+        } else if (id === "outro") {
+          progressLabel.textContent = "Finale";
+        } else if (chapterIndex >= 0) {
+          progressLabel.textContent = `Chapter ${chapterIndex + 1} of 7`;
+        }
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if (!visible) return;
+
+      setActive(visible.target.id);
+
+      const index = sections.findIndex((section) => section.id === visible.target.id);
+      const total = Math.max(sections.length - 1, 1);
+      const pct = Math.max(0, Math.min(100, (index / total) * 100));
+      if (progressBar) progressBar.style.width = `${pct}%`;
+    }, { threshold: [0.35, 0.55, 0.7] });
+
+    sections.forEach((section) => observer.observe(section));
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add("visible");
+      });
+    }, { threshold: 0.18 });
+
+    document.querySelectorAll(".reveal").forEach((node) => revealObserver.observe(node));
+
+    navLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const target = document.querySelector(link.getAttribute("href"));
+        if (!target) return;
+        event.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  </script>
+</body>
+</html>

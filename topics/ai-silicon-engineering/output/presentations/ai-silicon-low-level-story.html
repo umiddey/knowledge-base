@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Silicon, From Zero</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --bg:#071018;
+      --panel:rgba(12,20,30,.9);
+      --panel2:rgba(16,25,37,.96);
+      --text:#eff6ff;
+      --muted:#9eb2c5;
+      --line:rgba(255,255,255,.08);
+      --accent:#7af5c8;
+      --accent2:#7ab8ff;
+      --accent3:#ffbf5c;
+      --danger:#ff7689;
+      --radius:22px;
+      --shadow:0 18px 60px rgba(0,0,0,.45);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:
+      radial-gradient(circle at 15% 10%, rgba(122,245,200,.16), transparent 28%),
+      radial-gradient(circle at 80% 15%, rgba(122,184,255,.14), transparent 28%),
+      linear-gradient(180deg, #061018, #071018 55%, #061018);}
+    body{margin:0;color:var(--text);min-height:100vh;overflow-x:hidden;background:
+      linear-gradient(rgba(255,255,255,.02), rgba(255,255,255,.02)),
+      linear-gradient(90deg, transparent 0, transparent 49px, rgba(255,255,255,.02) 50px),
+      linear-gradient(transparent 0, transparent 49px, rgba(255,255,255,.02) 50px);
+      background-size:auto,50px 50px,50px 50px;}
+    a{color:inherit;text-decoration-color:rgba(122,245,200,.42);text-underline-offset:.16em}
+    .topbar{position:fixed;inset:0 0 auto 0;z-index:10;backdrop-filter:blur(16px);background:linear-gradient(180deg, rgba(5,10,16,.94), rgba(5,10,16,.56));border-bottom:1px solid rgba(255,255,255,.05)}
+    .topbar-inner{max-width:1440px;margin:0 auto;padding:.85rem 1rem;display:flex;align-items:center;gap:1rem}
+    .brand{display:flex;align-items:center;gap:.8rem;min-width:0;flex:1}
+    .mark{width:2.1rem;height:2.1rem;border-radius:.85rem;background:linear-gradient(135deg, rgba(122,245,200,.96), rgba(122,184,255,.96));box-shadow:0 0 28px rgba(122,245,200,.35);position:relative}
+    .mark::after{content:"";position:absolute;inset:.35rem;border-radius:.5rem;border:1px solid rgba(255,255,255,.25)}
+    .brand h1{margin:0;font-size:.98rem;letter-spacing:.05em;text-transform:uppercase}
+    .brand p{margin:.08rem 0 0;color:var(--muted);font-size:.82rem}
+    .progress{flex:0 0 240px;display:grid;gap:.35rem;justify-items:end}
+    .progress-track{width:100%;height:.34rem;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;box-shadow:0 0 18px rgba(122,245,200,.35)}
+    .progress-label{color:var(--muted);font-size:.78rem}
+    .nav{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:flex-end}
+    .nav a{font-size:.78rem;padding:.5rem .7rem;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:rgba(255,255,255,.03);color:var(--muted)}
+    .nav a.active,.nav a:hover{color:var(--text);background:rgba(122,245,200,.11);border-color:rgba(122,245,200,.28)}
+    .deck{scroll-snap-type:y proximity}
+    .hero,.chapter,.outro{min-height:100vh;scroll-snap-align:start;padding:calc(86px + 1.5rem) 1rem 2rem;display:grid;align-items:center}
+    .shell{width:min(1440px,100%);margin:0 auto}
+    .hero-grid,.chapter-grid,.final{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:1rem;align-items:stretch}
+    .eyebrow{display:inline-flex;align-items:center;gap:.45rem;padding:.38rem .7rem;border:1px solid rgba(122,245,200,.25);border-radius:999px;background:rgba(122,245,200,.08);color:#d4fff2;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
+    .title{margin:1rem 0 0;font-size:clamp(2.7rem,6vw,6rem);line-height:.94;letter-spacing:-.06em;max-width:12ch}
+    .subtitle{margin:1.2rem 0 0;font-size:clamp(1rem,1.5vw,1.16rem);line-height:1.7;color:var(--muted);max-width:68ch}
+    .actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.35rem}
+    .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.78rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-weight:600}
+    .btn.primary{background:linear-gradient(135deg, rgba(122,245,200,.2), rgba(122,184,255,.16));border-color:rgba(122,245,200,.3)}
+    .btn:hover{transform:translateY(-2px)}
+    .links{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1rem;color:var(--muted);font-size:.92rem}
+    .links a{padding-bottom:.1rem;border-bottom:1px solid rgba(122,245,200,.24)}
+    .card,.panel,.viz,.summary,.big{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--panel2));box-shadow:var(--shadow)}
+    .card::before,.panel::before,.viz::before,.summary::before,.big::before{content:"";position:absolute;inset:0;background:
+      radial-gradient(circle at 18% 10%, rgba(122,245,200,.14), transparent 18%),
+      radial-gradient(circle at 82% 0%, rgba(122,184,255,.12), transparent 22%),
+      radial-gradient(circle at 70% 80%, rgba(255,191,92,.08), transparent 22%);pointer-events:none}
+    .card > *, .panel > *, .viz > *, .summary > *, .big > *{position:relative;z-index:1}
+    .hero-stage{display:grid;grid-template-columns:1.05fr .95fr;gap:1rem;align-items:stretch}
+    .stack{min-height:560px;padding:1.2rem}
+    .story-box{display:grid;gap:.85rem}
+    .note{padding:1rem;border-radius:18px;border:1px solid rgba(255,255,255,.07);background:rgba(7,12,18,.56)}
+    .note h3{margin:0 0 .45rem;font-size:1rem}
+    .note p,.note li{margin:0;color:var(--muted);line-height:1.65;font-size:.96rem}
+    .note ul{margin:.6rem 0 0;padding-left:1.1rem}
+    .diagram{position:relative;min-height:470px;border-radius:20px;background:
+      radial-gradient(circle at center, rgba(122,245,200,.14), transparent 42%),
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.06);overflow:hidden}
+    .diagram .tag{position:absolute;top:1rem;left:1rem;padding:.38rem .6rem;border-radius:999px;background:rgba(5,10,16,.62);border:1px solid rgba(255,255,255,.08);font-size:.76rem;color:var(--muted)}
+    .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);background-size:42px 42px;mask-image:radial-gradient(circle at center, black 26%, transparent 82%);opacity:.32;animation:drift 20s linear infinite}
+    .pulse{position:absolute;inset:auto 0 12% 0;height:120px;border-top:1px solid rgba(122,245,200,.35);background:
+      radial-gradient(circle at 25% 35%, rgba(122,184,255,.55), transparent 8px),
+      radial-gradient(circle at 50% 0, rgba(122,245,200,.8), transparent 10px),
+      radial-gradient(circle at 75% 35%, rgba(255,191,92,.45), transparent 8px);opacity:.42;filter:blur(1px);animation:pulse 6.5s ease-in-out infinite}
+    .chip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:270px;height:190px;border-radius:24px;background:linear-gradient(135deg, rgba(122,245,200,.85), rgba(122,184,255,.7));box-shadow:0 0 52px rgba(122,245,200,.28), inset 0 0 0 1px rgba(255,255,255,.22)}
+    .chip::before,.chip::after{content:"";position:absolute;inset:18px;border-radius:18px;border:1px solid rgba(255,255,255,.28)}
+    .chip::after{inset:46px 34px;border-color:rgba(255,255,255,.18)}
+    .wire{position:absolute;left:50%;top:50%;width:84%;height:2px;background:linear-gradient(90deg, transparent, rgba(122,245,200,.9), transparent);transform:translate(-50%,-50%);animation:scan 3.5s linear infinite}
+    .chip-label{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);color:#fff;font-weight:700;font-size:1rem;letter-spacing:.02em}
+    .chapter-head{display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:.2rem}
+    .chapter-head h2{margin:.2rem 0 0;font-size:clamp(1.8rem,3vw,3rem);letter-spacing:-.05em}
+    .chapter-head p{margin:.45rem 0 0;color:var(--muted);line-height:1.6;max-width:66ch}
+    .chapter:nth-of-type(even) .chapter-grid,.chapter:nth-of-type(even) .final{direction:rtl}
+    .chapter:nth-of-type(even) .chapter-grid > *, .chapter:nth-of-type(even) .final > *{direction:ltr}
+    .chapter-grid{grid-template-columns:1fr 1fr;align-items:stretch}
+    .panel,.viz,.summary,.big{padding:1.1rem}
+    .panel h3,.viz h3,.summary h3,.big h3{margin:0 0 .35rem;font-size:1.05rem}
+    .lead{margin:0 0 .95rem;color:var(--muted);line-height:1.6}
+    .timeline{display:grid;gap:.7rem}
+    .item{display:grid;grid-template-columns:150px 1fr;gap:.85rem;align-items:center;padding:.8rem .9rem;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .item strong{font-size:.86rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent3)}
+    .item p{margin:0;color:var(--muted);line-height:1.6;font-size:.95rem}
+    .callout{margin-top:.9rem;padding:.9rem 1rem;border-left:3px solid var(--accent);background:rgba(122,245,200,.08);border-radius:14px;color:#ddfff4;line-height:1.6}
+    .vsplit{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .svgbox{width:100%;display:block;height:auto}
+    .mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+    .mini{padding:.9rem 1rem;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03)}
+    .mini strong{display:block;margin-bottom:.3rem}
+    .mini span{color:var(--muted);line-height:1.55;font-size:.92rem}
+    .axis{position:relative;height:18rem;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));overflow:hidden}
+    .axis::before{content:"";position:absolute;inset:1.2rem 1.2rem 2.2rem 1.2rem;border-left:1px solid rgba(255,255,255,.16);border-bottom:1px solid rgba(255,255,255,.16)}
+    .axis .x,.axis .y{position:absolute;color:var(--muted);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
+    .axis .x{left:1.3rem;bottom:.7rem}.axis .y{left:.85rem;top:1.2rem;transform:rotate(-90deg);transform-origin:left top}
+    .node{position:absolute;width:110px;transform:translate(-50%,-50%);display:grid;gap:.3rem;justify-items:center;text-align:center}
+    .dot{width:1.05rem;height:1.05rem;border-radius:50%;box-shadow:0 0 24px currentColor;animation:glow 3s ease-in-out infinite}
+    .node strong{font-size:.88rem}
+    .node small{color:var(--muted);font-size:.76rem;line-height:1.35}
+    .cpu{color:#ffbf5c;left:16%;top:72%}.gpu{color:#7ab8ff;left:42%;top:42%}.tpu{color:#7af5c8;left:73%;top:22%}.npu{color:#90f27c;left:64%;top:67%}.fpga{color:#f277ff;left:30%;top:60%}.asic{color:#ff7689;left:86%;top:15%}
+    .lbox{display:grid;gap:.6rem}
+    .truth{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem}
+    .truth div{padding:.7rem .6rem;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);text-align:center}
+    .truth code{display:block;font-size:.86rem;color:#d9f6ff;margin-bottom:.2rem}
+    .truth span{color:var(--muted);font-size:.78rem}
+    .clock{display:grid;gap:.65rem}
+    .waveform{padding:1rem;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+    .footer-links{display:flex;flex-wrap:wrap;gap:.7rem}
+    .footer-links a{padding:.45rem .7rem;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease, transform .65s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(40px,40px,0)}}
+    @keyframes pulse{0%,100%{transform:translateY(0);opacity:.34}50%{transform:translateY(-6px);opacity:.58}}
+    @keyframes scan{from{transform:translateX(-20%)}to{transform:translateX(220%)}}
+    @keyframes glow{0%,100%{transform:scale(.95);filter:brightness(.95)}50%{transform:scale(1.08);filter:brightness(1.15)}}
+    @media (max-width:1100px){
+      .topbar-inner{flex-wrap:wrap}
+      .progress{order:3;flex-basis:100%;justify-items:start}
+      .nav{justify-content:flex-start}
+      .hero-grid,.chapter-grid,.final,.hero-stage,.vsplit,.mini-grid{grid-template-columns:1fr}
+      .item{grid-template-columns:1fr}
+    }
+    @media (max-width:720px){
+      .hero,.chapter,.outro{padding-top:104px}
+      .nav{display:none}
+      .title{max-width:10ch}
+      .stack{min-height:520px}
+      .diagram{min-height:360px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+      .reveal{opacity:1;transform:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>AI Silicon, From Zero</h1>
+          <p>Low-level visual walk from bits to gates to flip-flops to chips.</p>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-label" id="progressLabel">Intro</div>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a href="#hero" class="active">Start</a>
+        <a href="#chapter-1">1 Bits</a>
+        <a href="#chapter-2">2 Switches</a>
+        <a href="#chapter-3">3 Gates</a>
+        <a href="#chapter-4">4 Memory</a>
+        <a href="#chapter-4b">4b Latch</a>
+        <a href="#chapter-5">5 Clock</a>
+        <a href="#chapter-6">6 RTL</a>
+        <a href="#chapter-7">7 Flow</a>
+        <a href="#chapter-8">8 AI</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="deck">
+    <section class="hero" id="hero">
+      <div class="shell hero-stage">
+        <div class="reveal">
+          <div class="eyebrow">No assumptions</div>
+          <h1 class="title">Start with electricity. End with AI chips.</h1>
+          <p class="subtitle">
+            This deck is for learning, not for presentation. It begins at the lowest useful level: bits, voltage, switches,
+            gates, storage, clocks, RTL, synthesis, and only then the bigger machines built on top of those primitives.
+          </p>
+          <div class="actions">
+            <a class="btn primary" href="#chapter-1">Begin at the bottom</a>
+            <a class="btn" href="../../wiki/_index.md">Open the wiki index</a>
+          </div>
+          <div class="links">
+            <span>Low-level anchors:</span>
+            <a href="../../wiki/concepts/hdl-programming.md">HDL Programming</a>
+            <a href="../../wiki/concepts/vlsi-design-flow.md">VLSI Flow</a>
+            <a href="../../wiki/concepts/design-for-test.md">Design for Test</a>
+            <a href="../../wiki/concepts/fpga-asic-development.md">FPGA vs ASIC</a>
+          </div>
+        </div>
+        <div class="stack reveal">
+          <div class="diagram">
+            <div class="tag">from a signal to a system</div>
+            <div class="grid" aria-hidden="true"></div>
+            <div class="chip" aria-hidden="true"></div>
+            <div class="wire" aria-hidden="true"></div>
+            <div class="pulse" aria-hidden="true"></div>
+            <div class="chip-label">What all of this eventually becomes</div>
+          </div>
+          <div class="story-box" style="margin-top:1rem">
+            <div class="note">
+              <h3>What you will get</h3>
+              <p>A mental model of how a physical chip turns 0s and 1s into real behavior.</p>
+            </div>
+            <div class="note">
+              <h3>What you will not get</h3>
+              <p>High-level fluff. This deck is built to explain the primitive parts before the fancy architecture.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-1">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 1</div>
+            <h2>What is a bit?</h2>
+            <p>A bit is the smallest useful piece of digital information. Physically, it usually means a signal is being interpreted as low or high, not as some mystical math symbol.</p>
+          </div>
+          <div class="eyebrow">signal level</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Digital does not mean abstract</h3>
+            <p class="lead">A chip reads voltage ranges and decides whether they count as 0 or 1. That decision is what lets physical circuits behave like logic.</p>
+            <div class="timeline">
+              <div class="item"><strong>Low</strong><p>We call the signal 0 when the voltage is below a threshold.</p></div>
+              <div class="item"><strong>High</strong><p>We call the signal 1 when the voltage is above another threshold.</p></div>
+              <div class="item"><strong>Noise margin</strong><p>The chip has some tolerance so tiny electrical noise does not change the meaning.</p></div>
+            </div>
+            <div class="callout">The important thing is that a bit is not a little number floating in space. It is an interpreted electrical state.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Binary as voltage</h3>
+            <p class="lead">The same wire can mean 0 or 1 depending on whether the signal is near ground or near the supply voltage.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Low and high voltage bars">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <line x1="96" y1="260" x2="670" y2="260" stroke="rgba(255,255,255,.18)"/>
+              <line x1="96" y1="76" x2="96" y2="280" stroke="rgba(255,255,255,.18)"/>
+              <rect x="180" y="188" width="92" height="72" rx="16" fill="rgba(255,118,137,.18)" stroke="rgba(255,118,137,.38)"/>
+              <rect x="320" y="112" width="92" height="148" rx="16" fill="rgba(122,184,255,.18)" stroke="rgba(122,184,255,.38)"/>
+              <rect x="460" y="86" width="92" height="174" rx="16" fill="rgba(122,245,200,.18)" stroke="rgba(122,245,200,.38)"/>
+              <text x="226" y="286" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">low</text>
+              <text x="366" y="286" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">uncertain</text>
+              <text x="506" y="286" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">high</text>
+              <text x="82" y="262" fill="#9eb2c5" font-size="13">0V</text>
+              <text x="74" y="92" fill="#9eb2c5" font-size="13">VDD</text>
+              <text x="360" y="58" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">one wire, two meanings</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-2">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 2</div>
+            <h2>What is a transistor?</h2>
+            <p>A transistor is a tiny electrical valve. One control signal decides whether a path is blocked or open, and that is the basic trick behind digital chips.</p>
+          </div>
+          <div class="eyebrow">switch</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Open path, closed path</h3>
+            <p class="lead">Do not memorize the terminal names yet. First learn the behavior: a control input either allows current to pass or blocks it.</p>
+            <div class="timeline">
+              <div class="item"><strong>Control pin</strong><p>The tiny input that says “open” or “closed.”</p></div>
+              <div class="item"><strong>Current path</strong><p>The left-to-right route electricity can take when the switch is open.</p></div>
+              <div class="item"><strong>Switching</strong><p>The useful work is not the still state. It is the change from one state to another.</p></div>
+            </div>
+            <div class="callout">The transistor is not a symbol on paper. It is a physical gate that turns a path for current on or off.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Closed versus open</h3>
+            <p class="lead">Same device, two states. Left panel: blocked. Right panel: flowing.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Valve style transistor metaphor">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <text x="160" y="66" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">closed</text>
+              <text x="600" y="66" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">open</text>
+
+              <rect x="78" y="112" width="164" height="120" rx="22" fill="rgba(255,118,137,.12)" stroke="rgba(255,118,137,.36)"/>
+              <rect x="518" y="112" width="164" height="120" rx="22" fill="rgba(122,245,200,.12)" stroke="rgba(122,245,200,.36)"/>
+
+              <text x="160" y="142" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">current blocked</text>
+              <text x="160" y="166" fill="#9eb2c5" text-anchor="middle" font-size="13">the path is pinched off</text>
+              <text x="600" y="142" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">current flowing</text>
+              <text x="600" y="166" fill="#9eb2c5" text-anchor="middle" font-size="13">the path is open</text>
+
+              <circle cx="124" cy="190" r="14" fill="#ffbf5c"/>
+              <circle cx="196" cy="190" r="14" fill="#7ab8ff"/>
+              <path d="M136 190 H184" stroke="rgba(255,255,255,.2)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M136 190 H184" stroke="rgba(255,118,137,.9)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M184 166 L184 214" stroke="rgba(255,118,137,.9)" stroke-width="8" stroke-linecap="round"/>
+
+              <circle cx="564" cy="190" r="14" fill="#ffbf5c"/>
+              <circle cx="636" cy="190" r="14" fill="#7ab8ff"/>
+              <path d="M576 190 H624" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M184 262 H576" stroke="rgba(255,191,92,.35)" stroke-width="4" stroke-dasharray="7 7"/>
+              <text x="380" y="276" fill="#9eb2c5" text-anchor="middle" font-size="14">one control signal changes the state of the path</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-3">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 3</div>
+            <h2>How switches become logic gates</h2>
+            <p>When transistors are wired together, they can behave like NOT, AND, OR, NAND, NOR, and the rest of digital logic.</p>
+          </div>
+          <div class="eyebrow">gates</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Logic is just rules for outputs</h3>
+            <p class="lead">A logic gate takes inputs and computes one output using a fixed rule.</p>
+            <div class="truth">
+              <div><code>NOT</code><span>flip 0 to 1 and 1 to 0</span></div>
+              <div><code>AND</code><span>1 only if both inputs are 1</span></div>
+              <div><code>OR</code><span>1 if any input is 1</span></div>
+              <div><code>NAND</code><span>the inverse of AND</span></div>
+            </div>
+            <div class="callout">The key point is that gates are not software functions. They are physical arrangements of transistors that enforce a truth table.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Truth table as picture</h3>
+            <p class="lead">The same 0/1 rules can be drawn as a tiny map.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Truth table and gate diagram">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <g fill="none" stroke="rgba(255,255,255,.18)">
+                <rect x="66" y="70" width="280" height="172" rx="18"/>
+                <line x1="66" y1="114" x2="346" y2="114"/>
+                <line x1="66" y1="158" x2="346" y2="158"/>
+                <line x1="146" y1="70" x2="146" y2="242"/>
+                <line x1="228" y1="70" x2="228" y2="242"/>
+              </g>
+              <text x="104" y="98" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">A</text>
+              <text x="186" y="98" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">B</text>
+              <text x="290" y="98" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">AND</text>
+              <text x="104" y="142" fill="#9eb2c5" text-anchor="middle" font-size="16">0</text>
+              <text x="186" y="142" fill="#9eb2c5" text-anchor="middle" font-size="16">0</text>
+              <text x="290" y="142" fill="#9eb2c5" text-anchor="middle" font-size="16">0</text>
+              <text x="104" y="186" fill="#9eb2c5" text-anchor="middle" font-size="16">0</text>
+              <text x="186" y="186" fill="#9eb2c5" text-anchor="middle" font-size="16">1</text>
+              <text x="290" y="186" fill="#9eb2c5" text-anchor="middle" font-size="16">0</text>
+              <text x="104" y="230" fill="#9eb2c5" text-anchor="middle" font-size="16">1</text>
+              <text x="186" y="230" fill="#9eb2c5" text-anchor="middle" font-size="16">1</text>
+              <text x="290" y="230" fill="#7af5c8" text-anchor="middle" font-size="16" font-weight="700">1</text>
+              <path d="M438 120 h106" stroke="rgba(122,245,200,.9)" stroke-width="10" stroke-linecap="round"/>
+              <path d="M438 120 c42 0 42 80 0 80" fill="none" stroke="rgba(122,245,200,.9)" stroke-width="10" stroke-linecap="round"/>
+              <path d="M544 120 h42" stroke="rgba(122,245,200,.9)" stroke-width="10" stroke-linecap="round"/>
+              <text x="490" y="250" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">gate symbol</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-4">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 4</div>
+            <h2>How memory starts: latch and feedback</h2>
+            <p>Logic gates compute, but they do not remember. Feedback turns a circuit into storage. That is the jump from pure combinational logic into state.</p>
+          </div>
+          <div class="eyebrow">memory</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Why memory needs feedback</h3>
+            <p class="lead">If a circuit can feed its output back into its input, it can keep a value instead of forgetting it the moment the input changes.</p>
+            <div class="timeline">
+              <div class="item"><strong>Latch</strong><p>A level-sensitive storage element. It can be open or closed depending on an enable signal.</p></div>
+              <div class="item"><strong>Feedback</strong><p>The output is routed back so the circuit can reinforce its own state.</p></div>
+              <div class="item"><strong>Stable state</strong><p>Once the circuit settles, it holds 0 or 1 until told to change.</p></div>
+            </div>
+            <div class="callout">This is the point where “logic” becomes “state.” State is what makes clocks, registers, counters, and processors possible.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Cross-coupled idea</h3>
+            <p class="lead">Two gates can watch each other and keep one remembered value alive.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Latch feedback diagram">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <rect x="150" y="96" width="120" height="96" rx="18" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.36)"/>
+              <rect x="490" y="96" width="120" height="96" rx="18" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.36)"/>
+              <path d="M270 144 C350 144 350 96 490 144" fill="none" stroke="rgba(255,191,92,.9)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M490 160 C390 160 390 208 270 160" fill="none" stroke="rgba(255,191,92,.9)" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="270" cy="144" r="12" fill="#ffbf5c"/>
+              <circle cx="490" cy="160" r="12" fill="#ffbf5c"/>
+              <text x="210" y="148" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">gate</text>
+              <text x="550" y="148" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">gate</text>
+              <text x="380" y="242" fill="#9eb2c5" text-anchor="middle" font-size="14">feedback keeps the state alive</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-4b">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 4b</div>
+            <h2>SR latch: the first real memory cell</h2>
+            <p>If you see `S` and `R` with outputs `Q` and `Q̅` and no clock, that is a latch. The feedback makes it remember a bit.</p>
+          </div>
+          <div class="eyebrow">latch</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>What S and R mean</h3>
+            <p class="lead">`S` means set the bit to 1. `R` means reset the bit to 0. The latch keeps the result after the input changes away.</p>
+            <div class="timeline">
+              <div class="item"><strong>S</strong><p>Set. Push the stored bit toward 1.</p></div>
+              <div class="item"><strong>R</strong><p>Reset. Push the stored bit toward 0.</p></div>
+              <div class="item"><strong>Q / Q̅</strong><p>One output is the stored bit, the other is its opposite.</p></div>
+            </div>
+            <div class="callout">This is memory without a clock. The circuit is stable because the outputs feed back into the inputs.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Cross-coupled latch</h3>
+            <p class="lead">Two gates watch each other. That feedback is the whole trick.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="SR latch with S R Q and Q bar outputs">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+
+              <rect x="156" y="92" width="128" height="96" rx="18" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+              <rect x="476" y="92" width="128" height="96" rx="18" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
+
+              <text x="220" y="125" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">NOR</text>
+              <text x="540" y="125" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">NOR</text>
+              <text x="220" y="149" fill="#9eb2c5" text-anchor="middle" font-size="13">makes Q̅</text>
+              <text x="540" y="149" fill="#9eb2c5" text-anchor="middle" font-size="13">makes Q</text>
+
+              <path d="M284 114 H338" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M422 186 H476" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round"/>
+
+              <path d="M476 138 C410 138 410 92 284 92" fill="none" stroke="rgba(255,191,92,.95)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M284 186 C350 186 350 232 476 232" fill="none" stroke="rgba(255,191,92,.95)" stroke-width="8" stroke-linecap="round"/>
+
+              <circle cx="146" cy="118" r="12" fill="#ffbf5c"/>
+              <circle cx="146" cy="172" r="12" fill="#ff7689"/>
+              <text x="108" y="122" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">S</text>
+              <text x="108" y="176" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">R</text>
+              <path d="M116 118 H156" stroke="rgba(255,191,92,.9)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M116 172 H156" stroke="rgba(255,118,137,.9)" stroke-width="8" stroke-linecap="round"/>
+
+              <circle cx="632" cy="114" r="12" fill="#7af5c8"/>
+              <circle cx="632" cy="186" r="12" fill="#7ab8ff"/>
+              <text x="668" y="118" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">Q</text>
+              <text x="668" y="190" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">Q̅</text>
+              <path d="M604 114 H620" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M604 186 H620" stroke="rgba(122,184,255,.9)" stroke-width="8" stroke-linecap="round"/>
+
+              <text x="380" y="274" fill="#9eb2c5" text-anchor="middle" font-size="14">set, reset, and feedback create a memory cell</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-5">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 5</div>
+            <h2>Flip-flops and the clock</h2>
+            <p>A flip-flop is memory that only changes at a clock edge. That edge is what gives digital systems their rhythm.</p>
+          </div>
+          <div class="eyebrow">clocked state</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Why the clock matters</h3>
+            <p class="lead">The clock makes state changes predictable. Instead of changing whenever the input wiggles, the circuit waits for the right moment.</p>
+            <div class="timeline">
+              <div class="item"><strong>Edge-triggered</strong><p>The flip-flop samples its input only on a rising or falling clock edge.</p></div>
+              <div class="item"><strong>Register</strong><p>A group of flip-flops storing several bits side by side.</p></div>
+              <div class="item"><strong>State machine</strong><p>Memory plus rules for how that memory changes over time.</p></div>
+            </div>
+            <div class="callout">This is the point where a circuit starts behaving like a machine that has a past and a future.</div>
+          </div>
+          <div class="clock reveal">
+            <div class="waveform">
+              <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Clock and data waveform">
+                <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+                <line x1="90" y1="92" x2="660" y2="92" stroke="rgba(255,255,255,.14)" stroke-dasharray="7 8"/>
+                <line x1="90" y1="166" x2="660" y2="166" stroke="rgba(255,255,255,.14)" stroke-dasharray="7 8"/>
+                <line x1="90" y1="240" x2="660" y2="240" stroke="rgba(255,255,255,.14)" stroke-dasharray="7 8"/>
+                <path d="M110 92 H180 V60 H250 V92 H320 V60 H390 V92 H460 V60 H530 V92 H600 V60 H660" fill="none" stroke="rgba(122,184,255,.9)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M110 166 H220 V124 H330 V166 H440 V124 H550 V166 H660" fill="none" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M110 240 H280 V208 H440 V240 H660" fill="none" stroke="rgba(255,191,92,.9)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <text x="42" y="97" fill="#eff6ff" font-size="16" font-weight="700">clk</text>
+                <text x="42" y="171" fill="#eff6ff" font-size="16" font-weight="700">data</text>
+                <text x="42" y="245" fill="#eff6ff" font-size="16" font-weight="700">q</text>
+                <text x="380" y="286" fill="#9eb2c5" text-anchor="middle" font-size="14">the output changes only on clock edges</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-6">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 6</div>
+            <h2>RTL: describing hardware in code</h2>
+            <p>RTL is not software. It is a structured description of wires, gates, and state that synthesis tools can turn into real circuits.</p>
+          </div>
+          <div class="eyebrow">HDL</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>What Verilog is actually doing</h3>
+            <p class="lead">`assign` describes combinational logic. `always_ff` describes clocked state. Those two ideas are enough to build a lot.</p>
+            <div class="timeline">
+              <div class="item"><strong>Combinational</strong><p>Output depends only on the current inputs.</p></div>
+              <div class="item"><strong>Sequential</strong><p>Output depends on current inputs plus stored state.</p></div>
+              <div class="item"><strong>Synthesis</strong><p>The tool reads the description and builds gates and flip-flops from it.</p></div>
+            </div>
+            <div class="callout">The big mindset shift is that you are describing a circuit, not writing an ordered list of steps for a CPU to execute.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Code becomes structure</h3>
+            <p class="lead">The same idea can be drawn as text and as a circuit.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="RTL and structural logic diagram">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <rect x="60" y="74" width="236" height="186" rx="18" fill="rgba(122,184,255,.12)" stroke="rgba(122,184,255,.34)"/>
+              <text x="178" y="110" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">RTL</text>
+              <text x="178" y="142" fill="#9eb2c5" text-anchor="middle" font-size="13">assign y = a &amp; b;</text>
+              <text x="178" y="168" fill="#9eb2c5" text-anchor="middle" font-size="13">always_ff @(posedge clk)</text>
+              <text x="178" y="194" fill="#9eb2c5" text-anchor="middle" font-size="13">count &lt;= count + 1;</text>
+              <rect x="444" y="84" width="110" height="92" rx="18" fill="rgba(122,245,200,.12)" stroke="rgba(122,245,200,.34)"/>
+              <rect x="586" y="84" width="110" height="92" rx="18" fill="rgba(255,191,92,.12)" stroke="rgba(255,191,92,.34)"/>
+              <path d="M554 130 H586" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round"/>
+              <text x="499" y="125" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">gate</text>
+              <text x="641" y="125" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">flop</text>
+              <text x="556" y="248" fill="#9eb2c5" text-anchor="middle" font-size="14">a synthesizer turns the text into structure</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-7">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 7</div>
+            <h2>FPGA versus ASIC</h2>
+            <p>An FPGA is reconfigurable hardware built from programmable logic blocks. An ASIC is custom silicon built from fixed transistors and gates.</p>
+          </div>
+          <div class="eyebrow">implementation</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Same logic, different physical form</h3>
+            <p class="lead">An FPGA uses lookup tables and flip-flops to imitate logic. An ASIC builds the logic directly in silicon.</p>
+            <div class="timeline">
+              <div class="item"><strong>FPGA</strong><p>Fast to change, slower and less efficient, great for learning and prototyping.</p></div>
+              <div class="item"><strong>ASIC</strong><p>Slow and expensive to make, but fast, compact, and power efficient once built.</p></div>
+            </div>
+            <div class="callout">If you understand LUTs, flip-flops, and gates, you understand why FPGA is a bridge and ASIC is the final physical product.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>LUT versus gate</h3>
+            <p class="lead">An FPGA can implement logic by looking up outputs in tiny programmable memory. An ASIC wires the answer in directly.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="FPGA LUT versus ASIC gate">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <rect x="70" y="82" width="236" height="150" rx="20" fill="rgba(122,184,255,.12)" stroke="rgba(122,184,255,.34)"/>
+              <text x="188" y="116" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">FPGA LUT</text>
+              <text x="188" y="146" fill="#9eb2c5" text-anchor="middle" font-size="13">input bits select a memory entry</text>
+              <text x="188" y="176" fill="#9eb2c5" text-anchor="middle" font-size="13">the memory stores the truth table</text>
+              <rect x="454" y="82" width="236" height="150" rx="20" fill="rgba(122,245,200,.12)" stroke="rgba(122,245,200,.34)"/>
+              <path d="M502 154 h110" stroke="rgba(122,245,200,.9)" stroke-width="10" stroke-linecap="round"/>
+              <path d="M502 154 c34 0 34 58 0 58" fill="none" stroke="rgba(122,245,200,.9)" stroke-width="10" stroke-linecap="round"/>
+              <text x="572" y="116" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">ASIC gate</text>
+              <text x="572" y="250" fill="#9eb2c5" text-anchor="middle" font-size="13">the logic is hard-wired in silicon</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-8">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 8</div>
+            <h2>The physical design flow</h2>
+            <p>Once RTL exists, synthesis maps it to gates, then place and route turns the gates into a physical layout the foundry can fabricate.</p>
+          </div>
+          <div class="eyebrow">RTL to GDSII</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>From idea to layout</h3>
+            <p class="lead">This is the chain: write behavior, verify it, synthesize it, place it, route it, sign it off, and then export GDSII.</p>
+            <div class="timeline">
+              <div class="item"><strong>RTL</strong><p>Describe the circuit behavior.</p></div>
+              <div class="item"><strong>Synthesis</strong><p>Turn it into gates and flip-flops.</p></div>
+              <div class="item"><strong>Place & route</strong><p>Give every cell a physical location and wire it up.</p></div>
+              <div class="item"><strong>Signoff</strong><p>Check timing, layout rules, and correctness.</p></div>
+            </div>
+          </div>
+          <div class="viz reveal">
+            <h3>The AND gate story</h3>
+            <p class="lead">A tiny logic gate is the whole flow in miniature.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="AND gate through the flow">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <rect x="56" y="82" width="124" height="112" rx="18" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+              <text x="118" y="122" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">RTL</text>
+              <text x="118" y="154" fill="#9eb2c5" text-anchor="middle" font-size="12">assign y = a &amp; b;</text>
+              <rect x="225" y="82" width="124" height="112" rx="18" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
+              <text x="287" y="122" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">Gate</text>
+              <text x="287" y="154" fill="#9eb2c5" text-anchor="middle" font-size="12">AND cell</text>
+              <rect x="394" y="82" width="124" height="112" rx="18" fill="rgba(255,191,92,.14)" stroke="rgba(255,191,92,.34)"/>
+              <text x="456" y="122" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">Placement</text>
+              <text x="456" y="154" fill="#9eb2c5" text-anchor="middle" font-size="12">cell gets a site</text>
+              <rect x="563" y="82" width="124" height="112" rx="18" fill="rgba(255,118,137,.14)" stroke="rgba(255,118,137,.34)"/>
+              <text x="625" y="122" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">GDSII</text>
+              <text x="625" y="154" fill="#9eb2c5" text-anchor="middle" font-size="12">mask data</text>
+              <path d="M180 138 H225 M349 138 H394 M518 138 H563" stroke="rgba(122,245,200,.9)" stroke-width="6" stroke-linecap="round"/>
+              <text x="380" y="254" fill="#9eb2c5" text-anchor="middle" font-size="14">same logic, more physical detail at every step</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-9">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 9</div>
+            <h2>Why DFT exists</h2>
+            <p>Once chips are manufactured, they need to be tested. DFT makes the circuit controllable and observable enough to find defects economically.</p>
+          </div>
+          <div class="eyebrow">scan chains</div>
+        </div>
+        <div class="chapter-grid">
+          <div class="panel reveal">
+            <h3>Scan chains turn state into a testable shift register</h3>
+            <p class="lead">If you can shift values into flip-flops and shift them back out, you can inspect what is otherwise hidden inside the chip.</p>
+            <div class="timeline">
+              <div class="item"><strong>Controllability</strong><p>Force internal nodes into a known state.</p></div>
+              <div class="item"><strong>Observability</strong><p>Read the state back out after a test cycle.</p></div>
+              <div class="item"><strong>ATPG</strong><p>Software generates the patterns that expose faults.</p></div>
+            </div>
+          </div>
+          <div class="viz reveal">
+            <h3>Flip-flops in a chain</h3>
+            <p class="lead">This is what “scan” means in plain language.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Scan chain diagram">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <path d="M76 168 H156 M220 168 H300 M364 168 H444 M508 168 H588" stroke="rgba(122,245,200,.9)" stroke-width="8" stroke-linecap="round"/>
+              <rect x="156" y="122" width="64" height="92" rx="12" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+              <rect x="300" y="122" width="64" height="92" rx="12" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+              <rect x="444" y="122" width="64" height="92" rx="12" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+              <rect x="588" y="122" width="64" height="92" rx="12" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+              <text x="188" y="150" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">FF</text>
+              <text x="332" y="150" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">FF</text>
+              <text x="476" y="150" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">FF</text>
+              <text x="620" y="150" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">FF</text>
+              <text x="100" y="170" fill="#eff6ff" font-size="15" font-weight="700">SI</text>
+              <text x="652" y="170" fill="#eff6ff" font-size="15" font-weight="700">SO</text>
+              <text x="380" y="262" fill="#9eb2c5" text-anchor="middle" font-size="14">shift in test state, capture one cycle, shift out results</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-10">
+      <div class="shell">
+        <div class="chapter-head reveal">
+          <div>
+            <div class="eyebrow">Chapter 10</div>
+            <h2>Only now: big AI hardware</h2>
+            <p>Once the low-level parts are clear, the larger machines become easier to understand. GPUs, TPUs, and accelerators are just different ways of arranging the same primitives.</p>
+          </div>
+          <div class="eyebrow">AI hardware</div>
+        </div>
+        <div class="final">
+          <div class="panel reveal">
+            <h3>Same building blocks, different emphasis</h3>
+            <p class="lead">The point is not that GPUs and TPUs are magic. The point is that they optimize different layers of the same stack: gates, registers, data movement, and compiler mapping.</p>
+            <div class="timeline">
+              <div class="item"><strong>GPU</strong><p>Flexible parallel machine with lots of control and a strong software stack.</p></div>
+              <div class="item"><strong>TPU</strong><p>Specialized matrix machine that relies heavily on compiler control.</p></div>
+              <div class="item"><strong>Compiler</strong><p>Turns the model into a schedule that the hardware can actually run.</p></div>
+            </div>
+            <div class="callout">If the low-level primitives are clear, the big picture stops being mystical. It becomes a design choice.</div>
+          </div>
+          <div class="viz reveal">
+            <h3>Bottom to top map</h3>
+            <p class="lead">The chain is simple: signal, switch, gate, memory, RTL, synthesis, flow, accelerator.</p>
+            <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Bottom to top AI silicon map">
+              <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
+              <g stroke="rgba(122,245,200,.85)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="8 8">
+                <path d="M120 266 L220 220"/>
+                <path d="M220 220 L320 178"/>
+                <path d="M320 178 L420 138"/>
+                <path d="M420 138 L520 104"/>
+                <path d="M520 104 L620 72"/>
+              </g>
+              <g>
+                <rect x="70" y="244" width="110" height="48" rx="14" fill="rgba(255,118,137,.14)" stroke="rgba(255,118,137,.34)"/>
+                <text x="125" y="274" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">bit</text>
+                <rect x="178" y="200" width="120" height="48" rx="14" fill="rgba(255,191,92,.14)" stroke="rgba(255,191,92,.34)"/>
+                <text x="238" y="230" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">switch</text>
+                <rect x="298" y="158" width="110" height="48" rx="14" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+                <text x="353" y="188" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">gate</text>
+                <rect x="404" y="120" width="120" height="48" rx="14" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
+                <text x="464" y="150" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">flip-flop</text>
+                <rect x="526" y="86" width="110" height="48" rx="14" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+                <text x="581" y="116" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">RTL</text>
+                <rect x="628" y="54" width="86" height="48" rx="14" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
+                <text x="671" y="84" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">AI chip</text>
+              </g>
+              <text x="380" y="314" fill="#9eb2c5" text-anchor="middle" font-size="14">the large machine is just the small machine, repeated and organized</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="outro" id="outro">
+      <div class="shell">
+        <div class="big reveal">
+          <h3>What this deck is trying to teach</h3>
+          <p class="lead">
+            AI silicon is not mysterious once the primitives are clear. It is just a chain of physical ideas:
+            voltage becomes bits, bits become switches, switches become gates, gates become memory, memory becomes state,
+            and state becomes chips.
+          </p>
+          <div class="callout">If you want, the next step is to expand this even further into a much longer version with dedicated slides for AND, OR, NOT, latches, flip-flops, counters, UART, and the full RTL-to-GDSII path.</div>
+        </div>
+        <div class="mini-grid reveal" style="margin-top:1rem">
+          <div class="mini"><strong>Start here</strong><span><a href="../../wiki/concepts/hdl-programming.md">HDL Programming</a> and <a href="../../wiki/concepts/vlsi-design-flow.md">VLSI Flow</a> explain the formal language and the manufacturing path.</span></div>
+          <div class="mini"><strong>Keep going</strong><span><a href="../../wiki/concepts/design-for-test.md">Design for Test</a> and <a href="../../wiki/concepts/fpga-asic-development.md">FPGA vs ASIC</a> connect the low-level building blocks to real hardware.</span></div>
+        </div>
+        <div class="footer-links reveal" style="margin-top:1rem">
+          <a href="../../wiki/_index.md">Wiki index</a>
+          <a href="../../wiki/connections/from-code-to-silicon.md">From code to silicon</a>
+          <a href="../../wiki/concepts/open-source-asic-flow.md">Open-source ASIC flow</a>
+          <a href="../exercises/verilog/ex01-logic-gates.md">Logic gates exercise</a>
+          <a href="../exercises/verilog/ex04-counter.md">Counter exercise</a>
+          <a href="../exercises/verilog/ex07-openlane-flow.md">OpenLANE flow exercise</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const sections = [...document.querySelectorAll("section[id]")];
+    const links = [...document.querySelectorAll(".nav a")];
+    const bar = document.getElementById("progressBar");
+    const label = document.getElementById("progressLabel");
+    const ids = ["chapter-1","chapter-2","chapter-3","chapter-4","chapter-4b","chapter-5","chapter-6","chapter-7","chapter-8","chapter-9","chapter-10"];
+    const setActive = (id) => {
+      links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === `#${id}`));
+        if (label) {
+          if (id === "hero") label.textContent = "Intro";
+          else if (id === "outro") label.textContent = "Finale";
+          else {
+            const idx = ids.indexOf(id);
+            if (idx >= 0) label.textContent = `Chapter ${idx + 1} of 11`;
+          }
+        }
+      };
+    const obs = new IntersectionObserver((entries) => {
+      const visible = entries.filter((e) => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      setActive(visible.target.id);
+      const idx = sections.findIndex((s) => s.id === visible.target.id);
+      const total = Math.max(sections.length - 1, 1);
+      if (bar) bar.style.width = `${Math.max(0, Math.min(100, (idx / total) * 100))}%`;
+    }, { threshold:[0.3, 0.5, 0.7] });
+    sections.forEach((s) => obs.observe(s));
+    const rev = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }), { threshold:0.15 });
+    document.querySelectorAll(".reveal").forEach((n) => rev.observe(n));
+    links.forEach((a) => a.addEventListener("click", (e) => { const t = document.querySelector(a.getAttribute("href")); if (!t) return; e.preventDefault(); t.scrollIntoView({behavior:"smooth", block:"start"}); }));
+  </script>
+</body>
+</html>
