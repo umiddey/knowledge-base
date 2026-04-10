@@ -52,12 +52,27 @@ When the user adds new files to `raw/` or asks you to compile:
 ## Key Points
 - ...
 
+## Example
+<Concrete walkthrough showing the concept in action with real numbers, code, chips, systems, or scenarios>
+
 ## Related Concepts
 - [[concept-name]] - brief relationship description
 
 ## Sources
 - [[raw/articles/source-file]] - what this source contributed
 ```
+
+For technical topics, the opening summary must not stop at a definition. It should explain:
+- what the concept is
+- what mechanism makes it work
+- what constraints or tradeoffs matter
+- what this concept unlocks in the rest of the stack
+
+If the topic is low-level or systems-heavy, prefer adding the following when useful:
+- implementation details
+- timing or performance constraints
+- failure modes or edge cases
+- a short ASCII diagram or table
 
 #### Connection Article Format
 
@@ -109,6 +124,11 @@ When asked to enhance:
 - Expand thin articles with more detail from raw sources
 - Write new connection articles for related but unlinked concepts
 - Improve summaries in `_index.md`
+- Do not use article length as the primary quality measure; longer summaries can still be shallow
+- Upgrade non-thin but mechanism-light articles too
+- For technical topics, add mechanism, constraints, failure modes, and dependency sequencing
+- Prefer improving chains of dependent concepts together when depth in one depends on another
+- Replace vague examples with concrete walkthroughs using real systems, numbers, or code
 
 ### 5. OUTPUT FORMATS
 
@@ -129,6 +149,19 @@ content
 ```
 
 Save to `output/slides/<name>.md`
+
+#### Interactive HTML Learning Tool
+- Preferred location: `output/presentations/<name>.html`
+- Use when the user wants a topic to become interactive, trainable, or checkpoint-driven
+- The HTML should combine:
+  - explanation
+  - interaction
+  - quiz/checkpoint
+  - local progress tracking
+  - project/build gates
+- Prefer embedded JavaScript and localStorage for browser-only progress unless the user explicitly asks for a backend
+- Keep interactions next to the sections they teach; do not collect all quizzes at the end
+- Wrong answers must explain the misconception, not just say "incorrect"
 
 #### Visualizations
 - Mermaid diagrams inline in markdown (Obsidian renders natively)
@@ -158,3 +191,7 @@ Then start adding raw sources and ask to compile.
 - Keep concept filenames lowercase-kebab-case
 - When in doubt about a fact, note uncertainty explicitly
 - Backlinks are critical - every concept should link to related concepts AND sources
+- Do not confuse definitional completeness with deep understanding
+- For technical subjects, write to explain how and why, not just what
+- When asked for interactive learning, do not default to markdown-only outputs
+- Interactive training tools should force prediction, manipulation, feedback, and progression

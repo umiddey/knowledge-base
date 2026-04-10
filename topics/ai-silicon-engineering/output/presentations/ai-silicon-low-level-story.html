@@ -124,6 +124,34 @@
     .waveform{padding:1rem;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
     .footer-links{display:flex;flex-wrap:wrap;gap:.7rem}
     .footer-links a{padding:.45rem .7rem;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+    .lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}
+    .lab{padding:1.05rem;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(10,18,28,.9), rgba(10,18,28,.74));box-shadow:var(--shadow)}
+    .lab h3{margin:0 0 .3rem;font-size:1.02rem}
+    .lab p{margin:.1rem 0 .8rem;color:var(--muted);line-height:1.6}
+    .control-row{display:flex;flex-wrap:wrap;gap:.55rem;margin:.75rem 0}
+    .chip-btn,.quiz-option{appearance:none;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--text);padding:.62rem .82rem;border-radius:999px;cursor:pointer;font:inherit}
+    .chip-btn.active,.quiz-option.selected{background:rgba(122,245,200,.16);border-color:rgba(122,245,200,.4)}
+    .chip-btn.locked{opacity:.42;pointer-events:none}
+    .readout{display:grid;gap:.55rem;margin-top:.75rem}
+    .readout-row{display:flex;justify-content:space-between;gap:1rem;padding:.7rem .8rem;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .readout-row strong{font-size:.84rem;letter-spacing:.05em;text-transform:uppercase}
+    .readout-row span{color:var(--muted);text-align:right}
+    .lab-feedback{margin-top:.75rem;padding:.8rem .9rem;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);line-height:1.6;min-height:4.8rem}
+    .lab-feedback.good{border-color:rgba(122,245,200,.36);background:rgba(122,245,200,.08);color:#d8fff2}
+    .lab-feedback.bad{border-color:rgba(255,118,137,.36);background:rgba(255,118,137,.09);color:#ffd9df}
+    .quiz-group{display:grid;gap:.55rem}
+    .quiz-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem}
+    .checkpoint-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.34rem .62rem;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:.78rem;color:var(--muted)}
+    .checkpoint-badge.done{border-color:rgba(122,245,200,.36);background:rgba(122,245,200,.08);color:#d8fff2}
+    .mastery{display:grid;gap:.55rem}
+    .mastery-list{display:grid;gap:.45rem}
+    .mastery-item{display:flex;justify-content:space-between;gap:1rem;padding:.62rem .72rem;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:var(--muted)}
+    .mastery-item.done{border-color:rgba(122,245,200,.34);background:rgba(122,245,200,.08);color:#d8fff2}
+    .mastery-item span:last-child{font-size:.82rem}
+    .hint{font-size:.85rem;color:var(--muted)}
+    .range-wrap{display:grid;gap:.6rem}
+    .range-wrap input[type="range"]{width:100%}
+    .next-step{margin-top:.8rem;font-size:.9rem;color:var(--muted)}
     .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease, transform .65s ease}
     .reveal.visible{opacity:1;transform:translateY(0)}
     @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(40px,40px,0)}}
@@ -134,7 +162,7 @@
       .topbar-inner{flex-wrap:wrap}
       .progress{order:3;flex-basis:100%;justify-items:start}
       .nav{justify-content:flex-start}
-      .hero-grid,.chapter-grid,.final,.hero-stage,.vsplit,.mini-grid{grid-template-columns:1fr}
+      .hero-grid,.chapter-grid,.final,.hero-stage,.vsplit,.mini-grid,.lab-grid{grid-template-columns:1fr}
       .item{grid-template-columns:1fr}
     }
     @media (max-width:720px){
@@ -169,13 +197,15 @@
         <a href="#hero" class="active">Start</a>
         <a href="#chapter-1">1 Bits</a>
         <a href="#chapter-2">2 Switches</a>
-        <a href="#chapter-3">3 Gates</a>
+        <a href="#chapter-3">3 CMOS</a>
         <a href="#chapter-4">4 Memory</a>
         <a href="#chapter-4b">4b Latch</a>
         <a href="#chapter-5">5 Clock</a>
         <a href="#chapter-6">6 RTL</a>
-        <a href="#chapter-7">7 Flow</a>
-        <a href="#chapter-8">8 AI</a>
+        <a href="#chapter-7">7 FPGA/ASIC</a>
+        <a href="#chapter-8">8 Flow</a>
+        <a href="#chapter-9">9 DFT</a>
+        <a href="#chapter-10">10 AI</a>
       </nav>
     </div>
   </div>
@@ -219,6 +249,11 @@
             <div class="note">
               <h3>What you will not get</h3>
               <p>High-level fluff. This deck is built to explain the primitive parts before the fancy architecture.</p>
+            </div>
+            <div class="note mastery">
+              <h3>Interactive Mastery</h3>
+              <p id="masterySummary">0 of 5 checkpoints complete.</p>
+              <div class="mastery-list" id="masteryList"></div>
             </div>
           </div>
         </div>
@@ -265,6 +300,39 @@
             </svg>
           </div>
         </div>
+        <div class="lab-grid">
+          <div class="lab reveal" id="transistorLab">
+            <div class="checkpoint-badge" id="badge-transistor">Checkpoint: transistor behavior</div>
+            <h3>Lab: NMOS vs PMOS</h3>
+            <p>Flip device type and gate level. Watch how the transistor changes the path and what it is good at pulling.</p>
+            <div class="control-row">
+              <button class="chip-btn active" data-device="nmos">NMOS</button>
+              <button class="chip-btn" data-device="pmos">PMOS</button>
+            </div>
+            <div class="control-row">
+              <button class="chip-btn active" data-gate="low">Gate low</button>
+              <button class="chip-btn" data-gate="high">Gate high</button>
+            </div>
+            <div class="readout">
+              <div class="readout-row"><strong>Channel</strong><span id="transistorChannel">OFF</span></div>
+              <div class="readout-row"><strong>Best at</strong><span id="transistorPull">Pulling down to ground</span></div>
+              <div class="readout-row"><strong>Why</strong><span id="transistorWhy">NMOS turns on with a high gate and makes a strong low.</span></div>
+            </div>
+          </div>
+          <div class="lab reveal">
+            <div class="checkpoint-badge" id="badge-transistor-quiz">Quiz required to strengthen the model</div>
+            <h3>Checkpoint: transistor intuition</h3>
+            <p>Answer this before you trust yourself on CMOS gates.</p>
+            <div class="quiz-group" data-quiz="transistor" data-answer="pmos">
+              <button class="quiz-option" data-value="nmos">Which device is normally used to pull a node up to VDD? NMOS</button>
+              <button class="quiz-option" data-value="pmos">Which device is normally used to pull a node up to VDD? PMOS</button>
+            </div>
+            <div class="quiz-actions">
+              <button class="btn primary" data-action="check-quiz" data-quiz="transistor">Check answer</button>
+            </div>
+            <div class="lab-feedback" id="feedback-transistor">The winning mental model is not “magic switch.” It is “control voltage chooses whether a node gets a real path to VDD or to ground.”</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -274,24 +342,28 @@
           <div>
             <div class="eyebrow">Chapter 2</div>
             <h2>What is a transistor?</h2>
-            <p>A transistor is a tiny electrical valve. One control signal decides whether a path is blocked or open, and that is the basic trick behind digital chips.</p>
+            <p>A MOS transistor is a three-terminal device: gate, source, and drain. Voltage on the gate creates or removes a conductive channel between source and drain, which is why digital logic can treat it like a controllable switch.</p>
           </div>
           <div class="eyebrow">switch</div>
         </div>
         <div class="chapter-grid">
           <div class="panel reveal">
-            <h3>Open path, closed path</h3>
-            <p class="lead">Do not memorize the terminal names yet. First learn the behavior: a control input either allows current to pass or blocks it.</p>
+            <h3>MOSFET behavior, not just metaphor</h3>
+            <p class="lead">The gate is insulated from the channel. It does not carry the main current. Instead, gate voltage changes the electric field in the silicon and decides whether current can flow between source and drain.</p>
             <div class="timeline">
-              <div class="item"><strong>Control pin</strong><p>The tiny input that says “open” or “closed.”</p></div>
-              <div class="item"><strong>Current path</strong><p>The left-to-right route electricity can take when the switch is open.</p></div>
-              <div class="item"><strong>Switching</strong><p>The useful work is not the still state. It is the change from one state to another.</p></div>
+              <div class="item"><strong>Gate</strong><p>The control terminal. If gate voltage crosses threshold, the device turns on strongly enough to be useful.</p></div>
+              <div class="item"><strong>Source and drain</strong><p>The path where current flows when the channel exists. In digital CMOS, we mostly care whether that path looks like a connection or an open circuit.</p></div>
+              <div class="item"><strong>NMOS vs PMOS</strong><p>NMOS is good at pulling a node down toward ground. PMOS is good at pulling a node up toward VDD. CMOS uses both.</p></div>
             </div>
-            <div class="callout">The transistor is not a symbol on paper. It is a physical gate that turns a path for current on or off.</div>
+            <div class="mini-grid" style="margin-top:.9rem">
+              <div class="mini"><strong>Threshold voltage</strong><span>A transistor does not turn from perfect off to perfect on instantly. Around threshold, it is in the analog transition region, which is why delay and power matter.</span></div>
+              <div class="mini"><strong>Why switching costs power</strong><span>Charging and discharging capacitance on wires and gates burns dynamic energy. Static CMOS is efficient mainly because one side is usually off in steady state.</span></div>
+            </div>
+            <div class="callout">The crucial low-level picture is this: logic values come from transistor networks steering a node either to VDD or to ground.</div>
           </div>
           <div class="viz reveal">
             <h3>Closed versus open</h3>
-            <p class="lead">Same device, two states. Left panel: blocked. Right panel: flowing.</p>
+            <p class="lead">This picture is a simplification, but the simplification is useful: gate voltage determines whether source and drain are effectively disconnected or conducting.</p>
             <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Valve style transistor metaphor">
               <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
               <text x="160" y="66" fill="#eff6ff" text-anchor="middle" font-size="18" font-weight="700">closed</text>
@@ -319,6 +391,37 @@
             </svg>
           </div>
         </div>
+        <div class="lab-grid">
+          <div class="lab reveal" id="cmosLab">
+            <div class="checkpoint-badge" id="badge-cmos">Checkpoint: CMOS inverter</div>
+            <h3>Lab: inverter state</h3>
+            <p>Toggle the inverter input. The deck should stop feeling symbolic and start feeling physical.</p>
+            <div class="control-row">
+              <button class="chip-btn active" data-inverter="low">Input low</button>
+              <button class="chip-btn" data-inverter="high">Input high</button>
+            </div>
+            <div class="readout">
+              <div class="readout-row"><strong>PMOS</strong><span id="inverterPmos">ON</span></div>
+              <div class="readout-row"><strong>NMOS</strong><span id="inverterNmos">OFF</span></div>
+              <div class="readout-row"><strong>Output</strong><span id="inverterOut">HIGH</span></div>
+              <div class="readout-row"><strong>Node story</strong><span id="inverterStory">The pull-up network wins, so the output charges toward VDD.</span></div>
+            </div>
+          </div>
+          <div class="lab reveal">
+            <div class="checkpoint-badge" id="badge-cmos-quiz">Quiz required to unlock confidence</div>
+            <h3>Checkpoint: gate construction</h3>
+            <p>Pick the transistor arrangement that implements a CMOS NAND pull-down network.</p>
+            <div class="quiz-group" data-quiz="cmos" data-answer="series-nmos">
+              <button class="quiz-option" data-value="parallel-nmos">Parallel NMOS</button>
+              <button class="quiz-option" data-value="series-nmos">Series NMOS</button>
+              <button class="quiz-option" data-value="series-pmos">Series PMOS</button>
+            </div>
+            <div class="quiz-actions">
+              <button class="btn primary" data-action="check-quiz" data-quiz="cmos">Check answer</button>
+            </div>
+            <div class="lab-feedback" id="feedback-cmos">Remember the pattern: NAND wants the output to fall only when both inputs are 1, so the NMOS path to ground must require both transistors to conduct.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -327,26 +430,30 @@
         <div class="chapter-head reveal">
           <div>
             <div class="eyebrow">Chapter 3</div>
-            <h2>How switches become logic gates</h2>
-            <p>When transistors are wired together, they can behave like NOT, AND, OR, NAND, NOR, and the rest of digital logic.</p>
+            <h2>How CMOS makes real logic gates</h2>
+            <p>Digital gates are built from a pull-up network made of PMOS transistors and a pull-down network made of NMOS transistors. One network should pull high while the other stays off.</p>
           </div>
-          <div class="eyebrow">gates</div>
+          <div class="eyebrow">CMOS</div>
         </div>
         <div class="chapter-grid">
           <div class="panel reveal">
-            <h3>Logic is just rules for outputs</h3>
-            <p class="lead">A logic gate takes inputs and computes one output using a fixed rule.</p>
+            <h3>Truth tables come from transistor networks</h3>
+            <p class="lead">The lowest useful CMOS gate to memorize is the inverter. Input low turns PMOS on and NMOS off, so output rises to VDD. Input high does the opposite, so output falls to ground.</p>
             <div class="truth">
-              <div><code>NOT</code><span>flip 0 to 1 and 1 to 0</span></div>
-              <div><code>AND</code><span>1 only if both inputs are 1</span></div>
-              <div><code>OR</code><span>1 if any input is 1</span></div>
-              <div><code>NAND</code><span>the inverse of AND</span></div>
+              <div><code>INV</code><span>PMOS pull-up, NMOS pull-down</span></div>
+              <div><code>NAND</code><span>series NMOS, parallel PMOS</span></div>
+              <div><code>NOR</code><span>parallel NMOS, series PMOS</span></div>
+              <div><code>AND/OR</code><span>usually built from NAND/NOR plus inversion</span></div>
             </div>
-            <div class="callout">The key point is that gates are not software functions. They are physical arrangements of transistors that enforce a truth table.</div>
+            <div class="mini-grid" style="margin-top:.9rem">
+              <div class="mini"><strong>NAND matters most</strong><span>Real standard-cell libraries lean heavily on NAND, NOR, and inverter cells because they are compact and map well to CMOS transistor stacks.</span></div>
+              <div class="mini"><strong>Why delay happens</strong><span>The output node has capacitance. A transistor network must charge or discharge that capacitance through finite resistance, so every gate has propagation delay.</span></div>
+            </div>
+            <div class="callout">If you only memorize one deep idea here, make it this: a logic gate is a controlled path to VDD or GND, not an abstract black box.</div>
           </div>
           <div class="viz reveal">
             <h3>Truth table as picture</h3>
-            <p class="lead">The same 0/1 rules can be drawn as a tiny map.</p>
+            <p class="lead">The table is the behavior. The inverter and NAND structures are the mechanism that forces that behavior in silicon.</p>
             <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Truth table and gate diagram">
               <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
               <g fill="none" stroke="rgba(255,255,255,.18)">
@@ -375,6 +482,40 @@
             </svg>
           </div>
         </div>
+        <div class="lab-grid">
+          <div class="lab reveal" id="latchLab">
+            <div class="checkpoint-badge" id="badge-latch">Checkpoint: latch state</div>
+            <h3>Playground: NOR SR latch</h3>
+            <p>Drive the latch and watch what the outputs do. This is where abstract “state” becomes a thing you can disturb.</p>
+            <div class="control-row">
+              <button class="chip-btn" data-latch="set">Apply S=1, R=0</button>
+              <button class="chip-btn" data-latch="reset">Apply S=0, R=1</button>
+              <button class="chip-btn" data-latch="hold">Apply S=0, R=0</button>
+              <button class="chip-btn" data-latch="invalid">Apply S=1, R=1</button>
+            </div>
+            <div class="readout">
+              <div class="readout-row"><strong>Q</strong><span id="latchQ">0</span></div>
+              <div class="readout-row"><strong>Q̅</strong><span id="latchQbar">1</span></div>
+              <div class="readout-row"><strong>Status</strong><span id="latchStatus">Stable reset state</span></div>
+            </div>
+            <div class="lab-feedback" id="feedback-latch-live">Use set and reset first, then try the invalid case. The problem is not just “wrong output.” It is that release from invalid can be ambiguous.</div>
+          </div>
+          <div class="lab reveal">
+            <div class="checkpoint-badge" id="badge-latch-quiz">Quiz required to strengthen memory intuition</div>
+            <h3>Checkpoint: forbidden state</h3>
+            <p>For a NOR SR latch, which input combination is forbidden?</p>
+            <div class="quiz-group" data-quiz="latch" data-answer="11">
+              <button class="quiz-option" data-value="00">S=0, R=0</button>
+              <button class="quiz-option" data-value="10">S=1, R=0</button>
+              <button class="quiz-option" data-value="01">S=0, R=1</button>
+              <button class="quiz-option" data-value="11">S=1, R=1</button>
+            </div>
+            <div class="quiz-actions">
+              <button class="btn primary" data-action="check-quiz" data-quiz="latch">Check answer</button>
+            </div>
+            <div class="lab-feedback" id="feedback-latch">The dangerous part is not the truth table alone. The dangerous part is what happens when both sides fight and then you release them.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -395,9 +536,9 @@
             <div class="timeline">
               <div class="item"><strong>Latch</strong><p>A level-sensitive storage element. It can be open or closed depending on an enable signal.</p></div>
               <div class="item"><strong>Feedback</strong><p>The output is routed back so the circuit can reinforce its own state.</p></div>
-              <div class="item"><strong>Stable state</strong><p>Once the circuit settles, it holds 0 or 1 until told to change.</p></div>
+              <div class="item"><strong>Bistability</strong><p>The whole trick is that the circuit has two stable resting points. It settles into one of them and stays there until a strong enough input kicks it out.</p></div>
             </div>
-            <div class="callout">This is the point where “logic” becomes “state.” State is what makes clocks, registers, counters, and processors possible.</div>
+            <div class="callout">This is the point where “logic” becomes “state.” Once you have bistable storage, you can build registers, counters, pipelines, and eventually whole processors.</div>
           </div>
           <div class="viz reveal">
             <h3>Cross-coupled idea</h3>
@@ -414,6 +555,36 @@
               <text x="550" y="148" fill="#eff6ff" text-anchor="middle" font-size="16" font-weight="700">gate</text>
               <text x="380" y="242" fill="#9eb2c5" text-anchor="middle" font-size="14">feedback keeps the state alive</text>
             </svg>
+          </div>
+        </div>
+        <div class="lab-grid">
+          <div class="lab reveal" id="timingLab">
+            <div class="checkpoint-badge" id="badge-timing">Checkpoint: timing discipline</div>
+            <h3>Playground: move data near the clock edge</h3>
+            <p>Drag the data transition relative to the active clock edge. You are looking at setup/hold risk in plain language.</p>
+            <div class="range-wrap">
+              <label for="timingOffset">Data transition offset from clock edge: <strong id="timingOffsetValue">-80 ps</strong></label>
+              <input id="timingOffset" type="range" min="-100" max="100" step="5" value="-80" />
+            </div>
+            <div class="readout">
+              <div class="readout-row"><strong>Capture quality</strong><span id="timingQuality">Safe capture</span></div>
+              <div class="readout-row"><strong>Risk zone</strong><span id="timingRisk">Outside setup/hold window</span></div>
+              <div class="readout-row"><strong>Design response</strong><span id="timingResponse">Normal synchronous design is fine here.</span></div>
+            </div>
+          </div>
+          <div class="lab reveal">
+            <div class="checkpoint-badge" id="badge-timing-quiz">Quiz required to reinforce clocking</div>
+            <h3>Checkpoint: metastability</h3>
+            <p>Why do designers use a two-flop synchronizer for asynchronous inputs?</p>
+            <div class="quiz-group" data-quiz="timing" data-answer="metastability">
+              <button class="quiz-option" data-value="speed">To make the signal travel faster</button>
+              <button class="quiz-option" data-value="metastability">To reduce the chance that metastability escapes into the rest of the design</button>
+              <button class="quiz-option" data-value="power">To lower dynamic power automatically</button>
+            </div>
+            <div class="quiz-actions">
+              <button class="btn primary" data-action="check-quiz" data-quiz="timing">Check answer</button>
+            </div>
+            <div class="lab-feedback" id="feedback-timing">A synchronizer does not abolish metastability. It buys time for resolution before the rest of the logic sees the signal.</div>
           </div>
         </div>
       </div>
@@ -438,7 +609,11 @@
               <div class="item"><strong>R</strong><p>Reset. Push the stored bit toward 0.</p></div>
               <div class="item"><strong>Q / Q̅</strong><p>One output is the stored bit, the other is its opposite.</p></div>
             </div>
-            <div class="callout">This is memory without a clock. The circuit is stable because the outputs feed back into the inputs.</div>
+            <div class="mini-grid" style="margin-top:.9rem">
+              <div class="mini"><strong>Forbidden condition</strong><span>For a NOR-based SR latch, asserting both S and R at the same time breaks the intended complement relationship between Q and Q̅. The release can be unpredictable.</span></div>
+              <div class="mini"><strong>Why this matters later</strong><span>Setup/hold problems in modern synchronous logic are dangerous for the same reason: storage elements can be pushed into ambiguous or metastable behavior.</span></div>
+            </div>
+            <div class="callout">This is memory without a clock. The dangerous part is not just storing a bit. It is what happens when competing inputs try to change state at nearly the same time.</div>
           </div>
           <div class="viz reveal">
             <h3>Cross-coupled latch</h3>
@@ -478,6 +653,33 @@
             </svg>
           </div>
         </div>
+        <div class="lab-grid">
+          <div class="lab reveal">
+            <div class="checkpoint-badge" id="badge-rtl">Checkpoint: RTL semantics</div>
+            <h3>Checkpoint: infer the hardware</h3>
+            <p>Select the best answer for what the synthesizer is likely to build.</p>
+            <div class="quiz-group" data-quiz="rtl" data-answer="mux">
+              <button class="quiz-option" data-value="adder">`if (sel) y = a; else y = b;` usually infers an adder</button>
+              <button class="quiz-option" data-value="mux">`if (sel) y = a; else y = b;` usually infers a mux</button>
+              <button class="quiz-option" data-value="ram">`if (sel) y = a; else y = b;` usually infers a RAM block</button>
+            </div>
+            <div class="quiz-actions">
+              <button class="btn primary" data-action="check-quiz" data-quiz="rtl">Check answer</button>
+            </div>
+            <div class="lab-feedback" id="feedback-rtl">This is the habit you want: read HDL and immediately picture structure, not software control flow.</div>
+          </div>
+          <div class="lab reveal">
+            <div class="checkpoint-badge" id="badge-final">Progress gate</div>
+            <h3>What to do after this page</h3>
+            <p>The page is now interactive, but real strengthening still comes from building. Use these as your first required implementation gates.</p>
+            <div class="mastery-list">
+              <div class="mastery-item"><span>Build an inverter, NAND, and 4-bit register in Verilog</span><span>Then inspect waveforms</span></div>
+              <div class="mastery-item"><span>Trigger and explain a latch inference bug</span><span>Then fix it</span></div>
+              <div class="mastery-item"><span>Take a tiny design through OpenLANE</span><span>Then read timing and DRC output</span></div>
+            </div>
+            <p class="next-step">Once you can pass the checkpoints here and complete one real build artifact, the concepts start sticking for real.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -500,7 +702,11 @@
               <div class="item"><strong>Register</strong><p>A group of flip-flops storing several bits side by side.</p></div>
               <div class="item"><strong>State machine</strong><p>Memory plus rules for how that memory changes over time.</p></div>
             </div>
-            <div class="callout">This is the point where a circuit starts behaving like a machine that has a past and a future.</div>
+            <div class="mini-grid" style="margin-top:.9rem">
+              <div class="mini"><strong>Setup and hold</strong><span>The input must be stable for a small window before and after the active edge. Violate that window and the flop may not capture a clean 0 or 1.</span></div>
+              <div class="mini"><strong>Metastability</strong><span>If the input changes too close to the clock edge, the storage node can hover in an analog in-between state before eventually resolving. Synchronizers exist because of this.</span></div>
+            </div>
+            <div class="callout">This is the point where a circuit starts behaving like a machine that has a past and a future, but only if timing is respected.</div>
           </div>
           <div class="clock reveal">
             <div class="waveform">
@@ -515,7 +721,10 @@
                 <text x="42" y="97" fill="#eff6ff" font-size="16" font-weight="700">clk</text>
                 <text x="42" y="171" fill="#eff6ff" font-size="16" font-weight="700">data</text>
                 <text x="42" y="245" fill="#eff6ff" font-size="16" font-weight="700">q</text>
-                <text x="380" y="286" fill="#9eb2c5" text-anchor="middle" font-size="14">the output changes only on clock edges</text>
+                <path d="M250 42 V286 M460 42 V286" stroke="rgba(255,118,137,.35)" stroke-dasharray="6 8"/>
+                <text x="250" y="34" fill="#ffbf5c" text-anchor="middle" font-size="12">sample edge</text>
+                <text x="460" y="34" fill="#ffbf5c" text-anchor="middle" font-size="12">sample edge</text>
+                <text x="380" y="286" fill="#9eb2c5" text-anchor="middle" font-size="14">the output changes only on clock edges, but only if data is stable around the edge</text>
               </svg>
             </div>
           </div>
@@ -536,11 +745,15 @@
         <div class="chapter-grid">
           <div class="panel reveal">
             <h3>What Verilog is actually doing</h3>
-            <p class="lead">`assign` describes combinational logic. `always_ff` describes clocked state. Those two ideas are enough to build a lot.</p>
+            <p class="lead">`assign` and `always_comb` describe combinational logic. `always_ff` describes state sampled on a clock edge. Synthesis infers muxes, adders, comparators, and flip-flops from those descriptions.</p>
             <div class="timeline">
-              <div class="item"><strong>Combinational</strong><p>Output depends only on the current inputs.</p></div>
-              <div class="item"><strong>Sequential</strong><p>Output depends on current inputs plus stored state.</p></div>
-              <div class="item"><strong>Synthesis</strong><p>The tool reads the description and builds gates and flip-flops from it.</p></div>
+              <div class="item"><strong>Combinational</strong><p>Output depends only on the current inputs. Missing cases in a combinational block can accidentally infer latches.</p></div>
+              <div class="item"><strong>Sequential</strong><p>Output depends on current inputs plus stored state. Non-blocking assignment is used so all registers update together at the edge.</p></div>
+              <div class="item"><strong>Synthesis</strong><p>The tool reads intent and builds structures: an `if` may become a mux, `+` may become an adder, and an edge-triggered block becomes flip-flops.</p></div>
+            </div>
+            <div class="mini-grid" style="margin-top:.9rem">
+              <div class="mini"><strong>Blocking vs non-blocking</strong><span>`=` acts immediately in simulation order. `<=` schedules the update for the end of the time step, which matches how banked registers behave at a clock edge.</span></div>
+              <div class="mini"><strong>Timing still exists</strong><span>RTL can look correct functionally and still fail later because a combinational path is too long to fit inside one clock period.</span></div>
             </div>
             <div class="callout">The big mindset shift is that you are describing a circuit, not writing an ordered list of steps for a CPU to execute.</div>
           </div>
@@ -619,17 +832,17 @@
         <div class="chapter-grid">
           <div class="panel reveal">
             <h3>From idea to layout</h3>
-            <p class="lead">This is the chain: write behavior, verify it, synthesize it, place it, route it, sign it off, and then export GDSII.</p>
+            <p class="lead">The real chain is longer than the cartoon: write RTL, verify it, synthesize it, insert DFT, floorplan the die, build the power network, place cells, build the clock tree, route wires, run timing, then run physical verification and export GDSII.</p>
             <div class="timeline">
-              <div class="item"><strong>RTL</strong><p>Describe the circuit behavior.</p></div>
-              <div class="item"><strong>Synthesis</strong><p>Turn it into gates and flip-flops.</p></div>
-              <div class="item"><strong>Place & route</strong><p>Give every cell a physical location and wire it up.</p></div>
-              <div class="item"><strong>Signoff</strong><p>Check timing, layout rules, and correctness.</p></div>
+              <div class="item"><strong>Verification first</strong><p>Simulation, assertions, and formal checks happen before physical work because a beautiful wrong chip is still wrong.</p></div>
+              <div class="item"><strong>Synthesis and DFT</strong><p>RTL maps into technology cells, then scan and other test structures are inserted so the finished die is manufacturable.</p></div>
+              <div class="item"><strong>Floorplan, power, CTS</strong><p>Macro placement, power grid quality, and clock skew shape whether the design can ever close timing.</p></div>
+              <div class="item"><strong>STA and signoff</strong><p>Static timing, DRC, LVS, ERC, IR-drop, and antenna checks decide whether the layout is safe to tape out.</p></div>
             </div>
           </div>
           <div class="viz reveal">
             <h3>The AND gate story</h3>
-            <p class="lead">A tiny logic gate is the whole flow in miniature.</p>
+            <p class="lead">A tiny logic gate is the whole flow in miniature, but each stage adds constraints, not just files.</p>
             <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="AND gate through the flow">
               <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
               <rect x="56" y="82" width="124" height="112" rx="18" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
@@ -645,7 +858,8 @@
               <text x="625" y="122" fill="#eff6ff" text-anchor="middle" font-size="17" font-weight="700">GDSII</text>
               <text x="625" y="154" fill="#9eb2c5" text-anchor="middle" font-size="12">mask data</text>
               <path d="M180 138 H225 M349 138 H394 M518 138 H563" stroke="rgba(122,245,200,.9)" stroke-width="6" stroke-linecap="round"/>
-              <text x="380" y="254" fill="#9eb2c5" text-anchor="middle" font-size="14">same logic, more physical detail at every step</text>
+              <text x="380" y="230" fill="#9eb2c5" text-anchor="middle" font-size="13">timing, power, congestion, and design-rule constraints tighten at every step</text>
+              <text x="380" y="254" fill="#9eb2c5" text-anchor="middle" font-size="14">same logic, more physical detail and fewer degrees of freedom at every step</text>
             </svg>
           </div>
         </div>
@@ -708,25 +922,30 @@
         <div class="final">
           <div class="panel reveal">
             <h3>Same building blocks, different emphasis</h3>
-            <p class="lead">The point is not that GPUs and TPUs are magic. The point is that they optimize different layers of the same stack: gates, registers, data movement, and compiler mapping.</p>
+            <p class="lead">The point is not that GPUs and TPUs are magic. The point is that they optimize different layers of the same stack: MAC arrays, register files, SRAM slices, on-chip interconnect, HBM bandwidth, and compiler-controlled dataflow.</p>
             <div class="timeline">
-              <div class="item"><strong>GPU</strong><p>Flexible parallel machine with lots of control and a strong software stack.</p></div>
-              <div class="item"><strong>TPU</strong><p>Specialized matrix machine that relies heavily on compiler control.</p></div>
-              <div class="item"><strong>Compiler</strong><p>Turns the model into a schedule that the hardware can actually run.</p></div>
+              <div class="item"><strong>GPU</strong><p>Many programmable cores, large register files, shared memory, caches, and tensor cores. Excellent when workloads are varied and software flexibility matters.</p></div>
+              <div class="item"><strong>TPU</strong><p>A systolic matrix engine with simpler control and a more rigid dataflow. Great when the compiler can feed the array efficiently.</p></div>
+              <div class="item"><strong>Compiler</strong><p>Turns a graph into a legal schedule: which tensors live in SRAM, which tiles stream through MACs, and when data moves to and from HBM.</p></div>
             </div>
-            <div class="callout">If the low-level primitives are clear, the big picture stops being mystical. It becomes a design choice.</div>
+            <div class="mini-grid" style="margin-top:.9rem">
+              <div class="mini"><strong>Real compute primitive</strong><span>A modern AI chip is full of multiply-accumulate units. Everything above the transistor level is organized around keeping those MACs busy.</span></div>
+              <div class="mini"><strong>Real bottleneck</strong><span>Moving operands often costs more energy than multiplying them, so memory hierarchy and dataflow are often more important than raw arithmetic count.</span></div>
+            </div>
+            <div class="callout">If the low-level primitives are clear, the big picture stops being mystical. It becomes a design choice about arithmetic density, memory movement, and compiler control.</div>
           </div>
           <div class="viz reveal">
             <h3>Bottom to top map</h3>
-            <p class="lead">The chain is simple: signal, switch, gate, memory, RTL, synthesis, flow, accelerator.</p>
+            <p class="lead">The chain is simple, but one extra bridge matters: gates become MACs and SRAM blocks before they become useful AI hardware.</p>
             <svg class="svgbox" viewBox="0 0 760 340" role="img" aria-label="Bottom to top AI silicon map">
               <rect x="24" y="24" width="712" height="292" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.08)"/>
               <g stroke="rgba(122,245,200,.85)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="8 8">
                 <path d="M120 266 L220 220"/>
                 <path d="M220 220 L320 178"/>
                 <path d="M320 178 L420 138"/>
-                <path d="M420 138 L520 104"/>
-                <path d="M520 104 L620 72"/>
+                <path d="M420 138 L510 112"/>
+                <path d="M510 112 L600 86"/>
+                <path d="M600 86 L670 62"/>
               </g>
               <g>
                 <rect x="70" y="244" width="110" height="48" rx="14" fill="rgba(255,118,137,.14)" stroke="rgba(255,118,137,.34)"/>
@@ -737,12 +956,14 @@
                 <text x="353" y="188" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">gate</text>
                 <rect x="404" y="120" width="120" height="48" rx="14" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
                 <text x="464" y="150" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">flip-flop</text>
-                <rect x="526" y="86" width="110" height="48" rx="14" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
-                <text x="581" y="116" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">RTL</text>
-                <rect x="628" y="54" width="86" height="48" rx="14" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
-                <text x="671" y="84" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">AI chip</text>
+                <rect x="500" y="92" width="92" height="48" rx="14" fill="rgba(122,184,255,.14)" stroke="rgba(122,184,255,.34)"/>
+                <text x="546" y="122" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">MAC</text>
+                <rect x="592" y="66" width="92" height="48" rx="14" fill="rgba(122,245,200,.14)" stroke="rgba(122,245,200,.34)"/>
+                <text x="638" y="96" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">SRAM</text>
+                <rect x="646" y="34" width="86" height="48" rx="14" fill="rgba(255,191,92,.14)" stroke="rgba(255,191,92,.34)"/>
+                <text x="689" y="64" fill="#eff6ff" text-anchor="middle" font-size="15" font-weight="700">AI chip</text>
               </g>
-              <text x="380" y="314" fill="#9eb2c5" text-anchor="middle" font-size="14">the large machine is just the small machine, repeated and organized</text>
+              <text x="380" y="314" fill="#9eb2c5" text-anchor="middle" font-size="14">the large machine is the small machine repeated, tiled, synchronized, and fed by memory</text>
             </svg>
           </div>
         </div>
@@ -755,10 +976,10 @@
           <h3>What this deck is trying to teach</h3>
           <p class="lead">
             AI silicon is not mysterious once the primitives are clear. It is just a chain of physical ideas:
-            voltage becomes bits, bits become switches, switches become gates, gates become memory, memory becomes state,
-            and state becomes chips.
+            voltage becomes bits, bits become transistor networks, those networks become gates, gates become state, state becomes datapaths,
+            and datapaths become chips.
           </p>
-          <div class="callout">If you want, the next step is to expand this even further into a much longer version with dedicated slides for AND, OR, NOT, latches, flip-flops, counters, UART, and the full RTL-to-GDSII path.</div>
+          <div class="callout">The durable mental model is this: every glamorous AI accelerator is still constrained by transistor physics, clocking discipline, memory movement, and verification reality.</div>
         </div>
         <div class="mini-grid reveal" style="margin-top:1rem">
           <div class="mini"><strong>Start here</strong><span><a href="../../wiki/concepts/hdl-programming.md">HDL Programming</a> and <a href="../../wiki/concepts/vlsi-design-flow.md">VLSI Flow</a> explain the formal language and the manufacturing path.</span></div>
@@ -781,7 +1002,115 @@
     const links = [...document.querySelectorAll(".nav a")];
     const bar = document.getElementById("progressBar");
     const label = document.getElementById("progressLabel");
+    const masterySummary = document.getElementById("masterySummary");
+    const masteryList = document.getElementById("masteryList");
     const ids = ["chapter-1","chapter-2","chapter-3","chapter-4","chapter-4b","chapter-5","chapter-6","chapter-7","chapter-8","chapter-9","chapter-10"];
+    const checkpointMeta = [
+      { id: "transistor", label: "Transistor behavior" },
+      { id: "cmos", label: "CMOS gate construction" },
+      { id: "latch", label: "Latch state and forbidden inputs" },
+      { id: "timing", label: "Setup/hold and metastability" },
+      { id: "rtl", label: "RTL-to-structure thinking" }
+    ];
+    const storageKey = "aiSiliconInteractiveProgress";
+    const progressState = (() => {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || "{}");
+      } catch {
+        return {};
+      }
+    })();
+    progressState.checkpoints = progressState.checkpoints || {};
+    let latchState = { q: 0, qbar: 1, status: "Stable reset state" };
+    const saveProgress = () => localStorage.setItem(storageKey, JSON.stringify(progressState));
+    const renderMastery = () => {
+      const doneCount = checkpointMeta.filter((item) => progressState.checkpoints[item.id]).length;
+      if (masterySummary) masterySummary.textContent = `${doneCount} of ${checkpointMeta.length} checkpoints complete.`;
+      if (masteryList) {
+        masteryList.innerHTML = checkpointMeta.map((item) => `
+          <div class="mastery-item ${progressState.checkpoints[item.id] ? "done" : ""}">
+            <span>${item.label}</span>
+            <span>${progressState.checkpoints[item.id] ? "mastered" : "not yet"}</span>
+          </div>
+        `).join("");
+      }
+      checkpointMeta.forEach((item) => {
+        document.querySelectorAll(`[id^="badge-${item.id}"]`).forEach((badge) => {
+          badge.classList.toggle("done", !!progressState.checkpoints[item.id]);
+          badge.textContent = progressState.checkpoints[item.id]
+            ? `Checkpoint passed: ${item.label}`
+            : `Checkpoint: ${item.label}`;
+        });
+      });
+    };
+    const markCheckpoint = (id) => {
+      progressState.checkpoints[id] = true;
+      saveProgress();
+      renderMastery();
+    };
+    const setFeedback = (id, type, text) => {
+      const el = document.getElementById(`feedback-${id}`);
+      if (!el) return;
+      el.textContent = text;
+      el.classList.remove("good", "bad");
+      if (type) el.classList.add(type);
+    };
+    const activateChipGroup = (buttons, activeButton) => {
+      buttons.forEach((btn) => btn.classList.toggle("active", btn === activeButton));
+    };
+    const updateTransistorLab = () => {
+      const activeDevice = document.querySelector("[data-device].active")?.dataset.device || "nmos";
+      const activeGate = document.querySelector("[data-gate].active")?.dataset.gate || "low";
+      const conducting = (activeDevice === "nmos" && activeGate === "high") || (activeDevice === "pmos" && activeGate === "low");
+      const channel = conducting ? "ON" : "OFF";
+      const pull = activeDevice === "nmos" ? "Pulling down to ground" : "Pulling up to VDD";
+      const why = activeDevice === "nmos"
+        ? (activeGate === "high" ? "High gate voltage creates a channel, so NMOS can discharge the node strongly toward ground." : "Low gate voltage removes the channel, so NMOS stops conducting.")
+        : (activeGate === "low" ? "Low gate voltage turns PMOS on, so it can source current and charge the node toward VDD." : "High gate voltage turns PMOS off, so the pull-up path disappears.");
+      document.getElementById("transistorChannel").textContent = channel;
+      document.getElementById("transistorPull").textContent = pull;
+      document.getElementById("transistorWhy").textContent = why;
+    };
+    const updateInverterLab = () => {
+      const input = document.querySelector("[data-inverter].active")?.dataset.inverter || "low";
+      const pmos = input === "low" ? "ON" : "OFF";
+      const nmos = input === "low" ? "OFF" : "ON";
+      const out = input === "low" ? "HIGH" : "LOW";
+      const story = input === "low"
+        ? "The pull-up network wins, so the output charges toward VDD."
+        : "The pull-down network wins, so the output discharges toward ground.";
+      document.getElementById("inverterPmos").textContent = pmos;
+      document.getElementById("inverterNmos").textContent = nmos;
+      document.getElementById("inverterOut").textContent = out;
+      document.getElementById("inverterStory").textContent = story;
+    };
+    const updateLatchLab = () => {
+      document.getElementById("latchQ").textContent = latchState.q;
+      document.getElementById("latchQbar").textContent = latchState.qbar;
+      document.getElementById("latchStatus").textContent = latchState.status;
+    };
+    const updateTimingLab = () => {
+      const offset = Number(document.getElementById("timingOffset")?.value || -80);
+      const abs = Math.abs(offset);
+      const valueEl = document.getElementById("timingOffsetValue");
+      const qualityEl = document.getElementById("timingQuality");
+      const riskEl = document.getElementById("timingRisk");
+      const responseEl = document.getElementById("timingResponse");
+      if (valueEl) valueEl.textContent = `${offset} ps`;
+      if (abs >= 40) {
+        qualityEl.textContent = "Safe capture";
+        riskEl.textContent = "Outside setup/hold window";
+        responseEl.textContent = "The flop sees stable data long enough before and after the edge.";
+      } else if (abs >= 15) {
+        qualityEl.textContent = "Marginal";
+        riskEl.textContent = "Near the setup/hold boundary";
+        responseEl.textContent = "This is where timing closure pressure starts to matter. Small extra delay can flip you into failure.";
+      } else {
+        qualityEl.textContent = "Metastability risk";
+        riskEl.textContent = "Inside the setup/hold danger zone";
+        responseEl.textContent = "The internal storage node may enter an analog in-between state before resolving. Synchronizers and slack are how designers reduce the risk.";
+      }
+    };
     const setActive = (id) => {
       links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === `#${id}`));
         if (label) {
@@ -805,6 +1134,70 @@
     const rev = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }), { threshold:0.15 });
     document.querySelectorAll(".reveal").forEach((n) => rev.observe(n));
     links.forEach((a) => a.addEventListener("click", (e) => { const t = document.querySelector(a.getAttribute("href")); if (!t) return; e.preventDefault(); t.scrollIntoView({behavior:"smooth", block:"start"}); }));
+    document.querySelectorAll("[data-device]").forEach((btn) => btn.addEventListener("click", () => {
+      activateChipGroup([...document.querySelectorAll("[data-device]")], btn);
+      updateTransistorLab();
+    }));
+    document.querySelectorAll("[data-gate]").forEach((btn) => btn.addEventListener("click", () => {
+      activateChipGroup([...document.querySelectorAll("[data-gate]")], btn);
+      updateTransistorLab();
+    }));
+    document.querySelectorAll("[data-inverter]").forEach((btn) => btn.addEventListener("click", () => {
+      activateChipGroup([...document.querySelectorAll("[data-inverter]")], btn);
+      updateInverterLab();
+    }));
+    document.querySelectorAll("[data-latch]").forEach((btn) => btn.addEventListener("click", () => {
+      const mode = btn.dataset.latch;
+      if (mode === "set") latchState = { q: 1, qbar: 0, status: "Set state captured and held by feedback" };
+      if (mode === "reset") latchState = { q: 0, qbar: 1, status: "Reset state captured and held by feedback" };
+      if (mode === "hold") latchState = { ...latchState, status: `Hold: feedback keeps Q=${latchState.q} and Q̅=${latchState.qbar}` };
+      if (mode === "invalid") latchState = { q: 0, qbar: 0, status: "Invalid for NOR latch: both outputs forced low; release can resolve unpredictably" };
+      updateLatchLab();
+    }));
+    document.getElementById("timingOffset")?.addEventListener("input", updateTimingLab);
+    document.querySelectorAll(".quiz-group").forEach((group) => {
+      const options = [...group.querySelectorAll(".quiz-option")];
+      options.forEach((option) => option.addEventListener("click", () => {
+        options.forEach((other) => other.classList.toggle("selected", other === option));
+        group.dataset.selected = option.dataset.value;
+      }));
+    });
+    document.querySelectorAll("[data-action='check-quiz']").forEach((button) => button.addEventListener("click", () => {
+      const quizId = button.dataset.quiz;
+      const group = document.querySelector(`.quiz-group[data-quiz='${quizId}']`);
+      if (!group) return;
+      const selected = group.dataset.selected;
+      const answer = group.dataset.answer;
+      if (!selected) {
+        setFeedback(quizId, "bad", "Pick an answer first. Engineering confidence without committing to an answer is fake confidence.");
+        return;
+      }
+      if (selected === answer) {
+        const successCopy = {
+          transistor: "Correct. PMOS is the standard pull-up device in CMOS logic because it turns on with a low gate and sources the output toward VDD.",
+          cmos: "Correct. A CMOS NAND needs series NMOS in the pull-down network so the path to ground exists only when both inputs are high.",
+          latch: "Correct. S=1 and R=1 is forbidden for a NOR SR latch because it breaks the intended complementary state and makes release ambiguous.",
+          timing: "Correct. Synchronizers reduce the probability that metastability propagates into the rest of the chip by giving the first flop time to resolve.",
+          rtl: "Correct. That pattern infers a mux. This is the habit you want: read code and immediately picture structure."
+        };
+        setFeedback(quizId, "good", successCopy[quizId] || "Correct.");
+        markCheckpoint(quizId);
+      } else {
+        const errorCopy = {
+          transistor: "Wrong. NMOS is the strong pull-down device. PMOS is the normal pull-up device in static CMOS.",
+          cmos: "Wrong. Parallel NMOS would let either input alone pull the node down, which matches NOR-style behavior, not NAND.",
+          latch: "Wrong. Hold, set, and reset are all intentional states. The forbidden NOR-latch input is S=1, R=1.",
+          timing: "Wrong. Synchronizers are about metastability containment, not speed or automatic power savings.",
+          rtl: "Wrong. That conditional usually synthesizes into a mux choosing between `a` and `b`."
+        };
+        setFeedback(quizId, "bad", errorCopy[quizId] || "Wrong.");
+      }
+    }));
+    updateTransistorLab();
+    updateInverterLab();
+    updateLatchLab();
+    updateTimingLab();
+    renderMastery();
   </script>
 </body>
 </html>
