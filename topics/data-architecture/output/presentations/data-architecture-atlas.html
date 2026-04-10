@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Architecture Atlas</title>
+  <style>
+    :root {
+      --bg: #08111d;
+      --bg-2: #101d31;
+      --panel: rgba(17, 27, 43, 0.88);
+      --panel-2: rgba(22, 34, 54, 0.92);
+      --panel-3: rgba(244, 238, 228, 0.96);
+      --ink: #edf4ff;
+      --ink-soft: #a9b9cf;
+      --ink-dark: #172132;
+      --line: rgba(139, 165, 201, 0.18);
+      --line-strong: rgba(255, 199, 111, 0.32);
+      --orange: #ff8b3d;
+      --teal: #47d3c4;
+      --gold: #f6c76f;
+      --rose: #ff6e84;
+      --lime: #78dd9e;
+      --blue: #6db7ff;
+      --purple: #c190ff;
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      --display: "Avenir Next Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+      --sans: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 139, 61, 0.17), transparent 20%),
+        radial-gradient(circle at 88% 16%, rgba(71, 211, 196, 0.16), transparent 20%),
+        radial-gradient(circle at 50% 100%, rgba(193, 144, 255, 0.15), transparent 26%),
+        linear-gradient(180deg, #08111d 0%, #0d1728 45%, #132238 100%);
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(20px);
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb-a {
+      width: 360px;
+      height: 360px;
+      top: -120px;
+      left: -80px;
+      background: rgba(255, 139, 61, 0.2);
+    }
+
+    .orb-b {
+      width: 320px;
+      height: 320px;
+      right: -80px;
+      bottom: -80px;
+      background: rgba(71, 211, 196, 0.18);
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1520px, calc(100vw - 24px));
+      margin: 12px auto 24px;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .sidebar,
+    .shell {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .sidebar {
+      padding: 20px;
+      position: sticky;
+      top: 12px;
+      height: calc(100vh - 24px);
+      overflow: auto;
+    }
+
+    .shell {
+      padding: 18px;
+      min-height: calc(100vh - 24px);
+    }
+
+    h1, h2, h3, h4 {
+      margin: 0 0 10px;
+      line-height: 1;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(3.6rem, 4vw, 5.3rem);
+      letter-spacing: -0.05em;
+      max-width: 8ch;
+    }
+
+    h2 {
+      font-family: var(--display);
+      font-size: clamp(2rem, 2.8vw, 2.8rem);
+      letter-spacing: -0.03em;
+    }
+
+    h3 {
+      font-size: 1.08rem;
+      line-height: 1.18;
+    }
+
+    h4 {
+      font-size: 0.95rem;
+      color: var(--ink);
+      line-height: 1.22;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--ink-soft);
+      line-height: 1.62;
+    }
+
+    .eyebrow,
+    .micro,
+    .tag,
+    .metric-label,
+    .nav-index {
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-head {
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sidebar-box,
+    .surface,
+    .card,
+    .hero-card,
+    .spotlight,
+    .matrix-box,
+    .glass-box {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .sidebar-box {
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .nav-list,
+    .metrics,
+    .hero-grid,
+    .hero-metrics,
+    .overview-grid,
+    .network-grid,
+    .library-grid,
+    .bridges-grid,
+    .sources-grid,
+    .deep-grid,
+    .board-grid,
+    .chip-grid,
+    .cards,
+    .source-cards,
+    .deep-stack,
+    .example-grid,
+    .tension-grid,
+    .matrix-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .nav-list {
+      margin-top: 16px;
+    }
+
+    .nav-button {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.02);
+      color: var(--ink);
+      padding: 14px;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+
+    .nav-button:hover,
+    .nav-button.active {
+      transform: translateX(2px);
+      border-color: var(--line-strong);
+      background: linear-gradient(90deg, rgba(255, 139, 61, 0.14), rgba(71, 211, 196, 0.1));
+    }
+
+    .nav-index {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.08);
+      color: var(--gold);
+    }
+
+    .nav-copy strong {
+      display: block;
+      font-size: 0.96rem;
+      margin-bottom: 4px;
+    }
+
+    .nav-copy span {
+      color: var(--ink-soft);
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 4px 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ghost,
+    .chip,
+    .pin-button,
+    .cluster-button,
+    .deep-toggle {
+      font: inherit;
+      color: var(--ink);
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .ghost:hover,
+    .chip:hover,
+    .pin-button:hover,
+    .cluster-button:hover,
+    .chip.active,
+    .cluster-button.active {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+      background: rgba(255, 139, 61, 0.12);
+    }
+
+    .pin-button.active {
+      color: var(--lime);
+      border-color: rgba(120, 221, 158, 0.4);
+      background: rgba(120, 221, 158, 0.12);
+    }
+
+    .view {
+      display: none;
+      animation: fadeUp 0.24s ease;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .surface,
+    .glass-box {
+      padding: 18px;
+    }
+
+    .hero-card {
+      min-height: 390px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 80% 18%, rgba(71, 211, 196, 0.16), transparent 24%),
+        radial-gradient(circle at 20% 100%, rgba(255, 139, 61, 0.14), transparent 26%),
+        linear-gradient(180deg, rgba(25, 37, 59, 0.98), rgba(16, 24, 38, 0.98));
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      right: -60px;
+      bottom: -90px;
+      background: radial-gradient(circle, rgba(193, 144, 255, 0.22), transparent 60%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-metrics {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .metric-card,
+    .mini-card {
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      padding: 15px;
+    }
+
+    .metric-card strong,
+    .mini-card strong {
+      display: block;
+      font-size: 1.8rem;
+      margin-top: 6px;
+    }
+
+    .overview-grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      margin-top: 18px;
+    }
+
+    .layer-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .layer {
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .layer strong {
+      color: var(--ink);
+    }
+
+    .layer small {
+      display: block;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    .example-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .example-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      padding: 14px;
+    }
+
+    .example-code {
+      margin-top: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(4, 9, 16, 0.7);
+      color: #dce8f7;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 0.77rem;
+      white-space: pre-wrap;
+      line-height: 1.55;
+    }
+
+    .tension-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .tension-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      padding: 14px;
+    }
+
+    .tension-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .tension-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--orange), var(--teal), var(--gold));
+    }
+
+    .network-grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);
+      align-items: start;
+    }
+
+    .network-panel {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 139, 61, 0.14), transparent 22%),
+        radial-gradient(circle at 80% 18%, rgba(71, 211, 196, 0.13), transparent 22%),
+        linear-gradient(180deg, rgba(11, 18, 29, 0.96), rgba(17, 26, 42, 0.95));
+      min-height: 660px;
+    }
+
+    .network {
+      position: relative;
+      height: 580px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background: rgba(3, 8, 16, 0.62);
+      margin-top: 14px;
+    }
+
+    .network svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .node-layer {
+      position: absolute;
+      inset: 0;
+    }
+
+    .node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      min-width: 120px;
+      max-width: 158px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(17, 26, 43, 0.92);
+      color: var(--ink);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.28);
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+
+    .node:hover,
+    .node.active {
+      transform: translate(-50%, -52%);
+      border-color: var(--line-strong);
+      background: rgba(29, 40, 61, 0.95);
+    }
+
+    .node.center {
+      background: linear-gradient(135deg, rgba(255, 139, 61, 0.2), rgba(71, 211, 196, 0.15));
+      border-color: rgba(255, 139, 61, 0.35);
+    }
+
+    .node small {
+      display: block;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+
+    .spotlight {
+      padding: 18px;
+      position: sticky;
+      top: 12px;
+    }
+
+    .spotlight-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--orange), var(--teal));
+    }
+
+    .detail-row,
+    .related-row,
+    .source-row,
+    .cluster-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      color: var(--ink);
+    }
+
+    .detail-diagram {
+      margin-top: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      padding: 14px;
+    }
+
+    .flow {
+      display: grid;
+      gap: 8px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .flow-bullet {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      color: var(--gold);
+      font-family: var(--mono);
+    }
+
+    .library-grid,
+    .sources-grid,
+    .deep-grid,
+    .board-grid {
+      grid-template-columns: minmax(0, 1fr) 380px;
+      align-items: start;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      margin-bottom: 14px;
+    }
+
+    input[type="search"],
+    select {
+      font: inherit;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      padding: 12px 14px;
+      min-width: 0;
+    }
+
+    input[type="search"] {
+      flex: 1 1 280px;
+    }
+
+    input::placeholder {
+      color: #7f90a6;
+    }
+
+    .chip-grid {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .cards {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .card {
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .card-top,
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card-top {
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      min-height: 74px;
+    }
+
+    .concept-example {
+      margin-top: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(4, 9, 16, 0.62);
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      color: #dbe8f7;
+      white-space: pre-wrap;
+      line-height: 1.52;
+    }
+
+    .library-side,
+    .source-side,
+    .deep-side,
+    .board-side {
+      position: sticky;
+      top: 12px;
+    }
+
+    .bridges-grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: start;
+    }
+
+    .bridge-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .bridge-card {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .matrix-box {
+      padding: 18px;
+      position: sticky;
+      top: 12px;
+    }
+
+    .matrix-grid {
+      grid-template-columns: 140px repeat(6, minmax(0, 1fr));
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .matrix-cell,
+    .matrix-head {
+      min-height: 52px;
+      padding: 10px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+    }
+
+    .matrix-head {
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.66rem;
+    }
+
+    .matrix-cell.hot-0 { background: rgba(255,255,255,0.01); }
+    .matrix-cell.hot-1 { background: rgba(71, 211, 196, 0.12); color: var(--ink); }
+    .matrix-cell.hot-2 { background: rgba(109, 183, 255, 0.16); color: var(--ink); }
+    .matrix-cell.hot-3 { background: rgba(255, 139, 61, 0.18); color: var(--ink); }
+    .matrix-cell.hot-4 { background: rgba(246, 199, 111, 0.24); color: var(--ink-dark); }
+
+    .source-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .source-card {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .source-file {
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      color: var(--ink-soft);
+      word-break: break-word;
+      margin-bottom: 10px;
+    }
+
+    .heatmap {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .heat-row {
+      display: grid;
+      grid-template-columns: 160px repeat(7, 1fr);
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .heat-label,
+    .heat-box {
+      border-radius: 10px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.72rem;
+      padding: 6px;
+      border: 1px solid var(--line);
+    }
+
+    .heat-label {
+      justify-content: flex-start;
+      text-align: left;
+      padding-left: 10px;
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+    }
+
+    .heat-box.level-0 { background: rgba(255,255,255,0.02); color: #70839d; }
+    .heat-box.level-1 { background: rgba(71, 211, 196, 0.12); color: var(--ink); }
+    .heat-box.level-2 { background: rgba(109, 183, 255, 0.16); color: var(--ink); }
+    .heat-box.level-3 { background: rgba(255, 139, 61, 0.2); color: var(--ink); }
+    .heat-box.level-4 { background: rgba(246, 199, 111, 0.26); color: var(--ink-dark); }
+
+    .deep-stack {
+      gap: 16px;
+    }
+
+    .deep-card {
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      overflow: hidden;
+    }
+
+    .deep-toggle {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid transparent;
+      border-radius: 0;
+      padding: 18px;
+      background: linear-gradient(90deg, rgba(255, 139, 61, 0.12), rgba(71, 211, 196, 0.08));
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .deep-card.open .deep-toggle {
+      border-bottom-color: var(--line);
+    }
+
+    .deep-chevron {
+      color: var(--gold);
+      transition: transform 0.18s ease;
+      font-family: var(--mono);
+    }
+
+    .deep-card.open .deep-chevron {
+      transform: rotate(90deg);
+    }
+
+    .deep-body {
+      display: none;
+      padding: 18px;
+    }
+
+    .deep-card.open .deep-body {
+      display: block;
+    }
+
+    .deep-sections {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .deep-section {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      padding: 14px;
+    }
+
+    .deep-section ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink-soft);
+      line-height: 1.56;
+    }
+
+    .deep-section li + li {
+      margin-top: 6px;
+    }
+
+    .deep-diagram {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .deep-bar {
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .deep-bar span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--orange), var(--teal), var(--gold));
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      color: var(--ink-soft);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--ink-soft);
+      font-size: 0.92rem;
+    }
+
+    .accent {
+      color: var(--gold);
+    }
+
+    .count {
+      color: var(--orange);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1240px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        top: 0;
+        height: auto;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .overview-grid,
+      .network-grid,
+      .library-grid,
+      .bridges-grid,
+      .sources-grid,
+      .deep-grid,
+      .board-grid,
+      .hero-metrics,
+      .example-grid,
+      .tension-grid,
+      .deep-sections {
+        grid-template-columns: 1fr;
+      }
+
+      .spotlight,
+      .library-side,
+      .source-side,
+      .deep-side,
+      .board-side,
+      .matrix-box {
+        position: relative;
+        top: 0;
+      }
+
+      .network {
+        height: 640px;
+      }
+
+      .matrix-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .matrix-head {
+        min-height: 44px;
+      }
+
+      .heat-row {
+        grid-template-columns: 120px repeat(7, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="eyebrow">Deep Topic Atlas</div>
+        <h2>Data Architecture</h2>
+        <p>This is the aggressive version: multiple visual views, examples everywhere, heatmaps, diagrams, network structure, and mechanism-level modules instead of fancy prose containers.</p>
+      </div>
+
+      <div class="sidebar-box">
+        <div class="eyebrow">Design Intent</div>
+        <p>Make the topic explorable at speed, but also concrete enough that the HTML itself teaches the mechanics and tradeoffs without sending you back to markdown.</p>
+      </div>
+
+      <div class="nav-list" id="tab-buttons"></div>
+
+      <div class="sidebar-box">
+        <div class="eyebrow">Atlas Metrics</div>
+        <div class="metrics">
+          <div class="mini-card">
+            <div class="metric-label">Concepts</div>
+            <strong id="side-concepts"></strong>
+          </div>
+          <div class="mini-card">
+            <div class="metric-label">Connections</div>
+            <strong id="side-connections"></strong>
+          </div>
+          <div class="mini-card">
+            <div class="metric-label">Sources</div>
+            <strong id="side-sources"></strong>
+          </div>
+          <div class="mini-card">
+            <div class="metric-label">Pinned</div>
+            <strong id="side-pins"></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-box">
+        <div class="eyebrow">Storage Key</div>
+        <p id="storage-key"></p>
+      </div>
+    </aside>
+
+    <section class="shell">
+      <div class="header">
+        <div>
+          <div class="eyebrow" id="view-eyebrow">Overview</div>
+          <h2 id="view-title">Visual Control Room</h2>
+        </div>
+        <div class="header-actions">
+          <button class="ghost" id="open-network" type="button">Open Network</button>
+          <button class="ghost" id="clear-pins" type="button">Clear Pins</button>
+        </div>
+      </div>
+
+      <div class="view active" data-view="overview">
+        <div class="hero-grid">
+          <section class="hero-card">
+            <div class="eyebrow">Overview</div>
+            <h1>Architecture as a Visual System</h1>
+            <p>The topic is now rendered as a control room instead of a decorated report. The platform spine is shown as a layered stack, the tensions are charted, the examples are concrete, and the rest of the atlas branches into network, library, bridge, source, and deep-dive modes.</p>
+            <div class="hero-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Concept Pages</div>
+                <strong id="hero-concepts"></strong>
+                <span>searchable and example-backed</span>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Connections</div>
+                <strong id="hero-connections"></strong>
+                <span>rendered as tensions and bridge maps</span>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Processed Sources</div>
+                <strong id="hero-sources"></strong>
+                <span>shown in a coverage cockpit and heatmap</span>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Pinned Concepts</div>
+                <strong id="hero-pins"></strong>
+                <span>browser-saved shortlist</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="surface">
+            <div class="eyebrow">Platform Spine</div>
+            <h3>Layered Architecture Diagram</h3>
+            <p>The topic’s core is not a list of terms. It is a flow: raw truth becomes standardized, modeled, governed, and served.</p>
+            <div class="layer-stack">
+              <div class="layer">
+                <div>
+                  <strong>Raw</strong>
+                  <small>fidelity / replay / audit</small>
+                </div>
+                <div>Webhook payloads, source files, transaction logs. Never business-ready.</div>
+              </div>
+              <div class="layer">
+                <div>
+                  <strong>Standardized</strong>
+                  <small>types / dedup / canonical IDs</small>
+                </div>
+                <div>Where data gets cleaned enough to be stable, but not yet reshaped around business questions.</div>
+              </div>
+              <div class="layer">
+                <div>
+                  <strong>Curated</strong>
+                  <small>grain / facts / dimensions</small>
+                </div>
+                <div>Business meaning, dimensional models, conformed entities, and metric-safe facts.</div>
+              </div>
+              <div class="layer">
+                <div>
+                  <strong>Serving</strong>
+                  <small>semantic logic / access control</small>
+                </div>
+                <div>Consumer-facing metrics, marts, dashboards, APIs, and role-shaped views.</div>
+              </div>
+              <div class="layer">
+                <div>
+                  <strong>Operations</strong>
+                  <small>quality / lineage / reliability / cost</small>
+                </div>
+                <div>Cross-cutting controls that determine whether the platform is trustworthy and affordable.</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="overview-grid">
+          <section class="glass-box">
+            <div class="eyebrow">High-Value Tensions</div>
+            <h3>What Actually Makes This Topic Hard</h3>
+            <div class="tension-grid">
+              <div class="tension-card">
+                <div class="metric-label">Speed vs Trust</div>
+                <strong>Metric Drift</strong>
+                <p>Teams move faster than shared meaning unless governance and semantics are deliberate.</p>
+                <div class="tension-bar"><div class="tension-fill" style="width:88%"></div></div>
+              </div>
+              <div class="tension-card">
+                <div class="metric-label">Freshness vs Complexity</div>
+                <strong>Operational Load</strong>
+                <p>Lower latency means more retries, more state, more contracts, and more observability burden.</p>
+                <div class="tension-bar"><div class="tension-fill" style="width:92%"></div></div>
+              </div>
+              <div class="tension-card">
+                <div class="metric-label">Reuse vs Autonomy</div>
+                <strong>Org Design</strong>
+                <p>Conformance, mesh, MDM, and semantic layers all negotiate how much domains can diverge.</p>
+                <div class="tension-bar"><div class="tension-fill" style="width:81%"></div></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass-box">
+            <div class="eyebrow">Instant Examples</div>
+            <h3>Concrete Snippets, Not Just Labels</h3>
+            <div class="example-grid">
+              <div class="example-card">
+                <div class="metric-label">Grain Error</div>
+                <div class="example-code">fact_sales_bad(order_id, line_id, order_total)\nSUM(order_total)\n= inflated by line count</div>
+              </div>
+              <div class="example-card">
+                <div class="metric-label">CDC Replay</div>
+                <div class="example-code">connector crashes after write\nbefore offset commit\nreplay + append target\n= duplicate history</div>
+              </div>
+              <div class="example-card">
+                <div class="metric-label">Semantic Drift</div>
+                <div class="example-code">finance: net = amount-refund-tax\nmarketing: net = amount-refund\nsame KPI label, different logic</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="view" data-view="network">
+        <div class="network-grid">
+          <section class="network-panel">
+            <div class="eyebrow">Structure Map</div>
+            <h3>Cluster Constellation</h3>
+            <p>Click nodes. Filter by cluster. Use the spotlight to inspect the current concept family. This is the structure view of the topic.</p>
+            <div class="cluster-row" id="cluster-buttons"></div>
+            <div class="network" id="network"></div>
+          </section>
+
+          <aside class="spotlight">
+            <div class="spotlight-swatch" id="spotlight-swatch"></div>
+            <div class="eyebrow">Spotlight</div>
+            <h3 id="spotlight-title">Platform Spine</h3>
+            <p id="spotlight-summary">The center of the atlas is the layered platform structure.</p>
+            <div class="detail-row" id="spotlight-tags"></div>
+            <div class="related-row" id="spotlight-related"></div>
+            <div class="source-row" id="spotlight-sources"></div>
+            <div class="detail-diagram">
+              <div class="eyebrow">Flow</div>
+              <div class="flow" id="spotlight-flow"></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="view" data-view="library">
+        <div class="library-grid">
+          <section class="surface">
+            <div class="eyebrow">Concept Library</div>
+            <h3>Every Concept Comes with an Example</h3>
+            <div class="control-bar">
+              <input id="concept-search" type="search" placeholder="Search concepts, examples, summaries, related ideas, or source names">
+            </div>
+            <div class="chip-grid" id="category-filters"></div>
+            <div class="cards" id="concept-cards"></div>
+            <div class="footer-note" id="concept-note"></div>
+          </section>
+
+          <aside class="surface library-side">
+            <div class="eyebrow">Current Slice</div>
+            <h3 id="library-title">All Clusters</h3>
+            <p id="library-copy">Use the filters to isolate one part of the topic. Every concept card includes an example payload, not just a summary.</p>
+            <div class="example-code" id="library-feature-preview">Examples shown in the cards below are intentionally concrete: schema patterns, metric logic, failure sequences, and policy snippets.</div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="view" data-view="bridges">
+        <div class="bridges-grid">
+          <section class="surface">
+            <div class="eyebrow">Bridge Map</div>
+            <h3>Connection Articles as Architecture Tensions</h3>
+            <div class="bridge-cards" id="bridge-cards"></div>
+          </section>
+
+          <aside class="matrix-box">
+            <div class="eyebrow">Bridge Matrix</div>
+            <h3>Which Cluster Meets Which Tension</h3>
+            <p>Rows are the connection articles. Columns are the major clusters they activate. This is the visual answer to “what belongs together?”</p>
+            <div class="matrix-grid" id="bridge-matrix"></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="view" data-view="sources">
+        <div class="sources-grid">
+          <section class="surface">
+            <div class="eyebrow">Source Cockpit</div>
+            <h3>Coverage, Reuse, and Gaps</h3>
+            <div class="control-bar">
+              <input id="source-search" type="search" placeholder="Search source files, titles, types, or cited-by pages">
+              <select id="source-filter">
+                <option value="all">All sources</option>
+                <option value="article">Articles only</option>
+                <option value="paper">Papers only</option>
+                <option value="used">Used in compiled pages</option>
+                <option value="unused">Processed but not directly cited</option>
+              </select>
+            </div>
+            <div class="source-cards" id="source-cards"></div>
+            <div class="footer-note" id="source-note"></div>
+          </section>
+
+          <aside class="surface source-side">
+            <div class="eyebrow">Coverage Heatmap</div>
+            <h3>Top Sources by Cluster</h3>
+            <p>Rows are strong anchor sources. Columns are major concept clusters. Brighter cells mean the source is used more heavily for that cluster.</p>
+            <div class="heatmap" id="source-heatmap"></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="view" data-view="deep">
+        <div class="deep-grid">
+          <section class="surface">
+            <div class="eyebrow">Deep Dives</div>
+            <h3>Mechanics, Failure Modes, and Worked Examples</h3>
+            <p>These modules carry the actual weight of the page. Expand them for mechanism detail, anti-patterns, source digest, and visual payloads.</p>
+            <div class="deep-stack" id="deep-stack"></div>
+          </section>
+
+          <aside class="surface deep-side">
+            <div class="eyebrow">What Counts As Deep</div>
+            <h3>No More Summary Theater</h3>
+            <p>Each deep-dive module includes mechanism bullets, failure bullets, a worked example, and a simple visual indicator showing how much of the module is mechanism vs risk vs evidence.</p>
+            <div class="example-code">Expected payload pattern:\n- mechanism details\n- anti-patterns\n- concrete example\n- source-derived insight\n- linked concepts</div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="view" data-view="board">
+        <div class="board-grid">
+          <section class="surface">
+            <div class="eyebrow">Pinned Board</div>
+            <h3>Your Shortlist</h3>
+            <p>These are browser-local. Use them to guide the next skill run, architecture review, or teaching flow.</p>
+            <div class="cards" id="pin-board"></div>
+          </section>
+
+          <aside class="surface board-side">
+            <div class="eyebrow">Use This Board For</div>
+            <h3>Future Automation</h3>
+            <p>If you want the next topic pass to focus tightly, pin the concepts that should drive the deep-dive extraction and visualization layers.</p>
+            <div class="example-code">Suggested starter pack:\n- data-platform-layers\n- grain\n- idempotency\n- semantic-layer\n- platform-reliability\n- data-mesh</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const storageKey = "kb.dataArchitectureAtlas.v3";
+    const tabs = [
+      { id: "overview", label: "Overview", note: "platform story and tensions" },
+      { id: "network", label: "Network", note: "constellation and spotlight" },
+      { id: "library", label: "Library", note: "every concept with example" },
+      { id: "bridges", label: "Bridges", note: "tension cards and bridge matrix" },
+      { id: "sources", label: "Sources", note: "source cards and heatmap" },
+      { id: "deep", label: "Deep Dives", note: "mechanics, failures, examples" },
+      { id: "board", label: "Board", note: "pinned shortlist" }
+    ];
+
+    const categories = [
+      { id: "all", label: "All Clusters", color: "#f6c76f" },
+      { id: "platform", label: "Platform", color: "#ff8b3d" },
+      { id: "modeling", label: "Modeling", color: "#47d3c4" },
+      { id: "ingestion", label: "Ingestion", color: "#ff9e74" },
+      { id: "distributed", label: "Distributed", color: "#d8be74" },
+      { id: "governance", label: "Governance", color: "#6db7ff" },
+      { id: "security", label: "Security", color: "#ff6e84" },
+      { id: "serving", label: "Serving", color: "#78dd9e" },
+      { id: "operations", label: "Operations", color: "#c190ff" }
+    ];
+
+    const categoryCopy = {
+      all: "Everything at once: all concept families, all examples, all source anchors.",
+      platform: "The architectural backbone: layers, storage/compute patterns, transformation placement, and activation.",
+      modeling: "Semantic correctness: grain, history, conformance, and business truth in analytical models.",
+      ingestion: "Source boundaries, freshness patterns, contracts, CDC, and transport choices.",
+      distributed: "Retries, lag, replay, idempotency, and state discipline under failure.",
+      governance: "Ownership, glossary, quality, lineage, cataloging, and trust systems.",
+      security: "Access shape, masking, row filters, and safe consumer-facing exposure.",
+      serving: "Marts, semantic layers, and governed consumption interfaces.",
+      operations: "Reliability, observability, cost, ADRs, and operating model choices."
+    };
+
+    const concepts = [
+      { slug: "data-platform-layers", title: "Data Platform Layers", category: "platform", summary: "Layered architecture separates raw source fidelity from business-ready use and gives each stage explicit entry and exit criteria.", example: "Bronze/raw holds webhook JSON exactly as received. Silver standardizes currency and deduplicates retries. Gold exposes fact_payments at one-row-per-payment grain.", related: ["data-warehouse", "data-lake", "data-lakehouse", "etl-vs-elt", "data-observability", "data-governance"], sources: ["what-is-medallion-architecture", "data-engineering-was-hard-until-i-learned-these-15"] },
+      { slug: "data-warehouse", title: "Data Warehouse", category: "platform", summary: "Analytical system optimized for structured reporting, modeled history, and governed query access.", example: "A revenue mart in Snowflake exposes invoice-line facts and conformed date/customer dimensions for finance dashboards.", related: ["data-platform-layers", "data-lake", "data-lakehouse", "dimensional-modeling", "semantic-layer", "cost-optimization"], sources: ["data-lakes-vs-data-warehouses-what-your-organizati", "s0306437924001182", "intro-key-concepts"] },
+      { slug: "data-lake", title: "Data Lake", category: "platform", summary: "Cheap object-storage foundation for raw or lightly processed data, replay, wide format support, and ML-friendly retention.", example: "Store Stripe events, app logs, clickstream, and source snapshots in S3/Parquet so teams can replay or reprocess from source truth.", related: ["data-warehouse", "data-lakehouse", "data-platform-layers", "data-governance", "change-data-capture"], sources: ["data-lakes-vs-data-warehouses-what-your-organizati", "2107-11152"] },
+      { slug: "data-lakehouse", title: "Data Lakehouse", category: "platform", summary: "Lake flexibility plus warehouse-like ACID and schema features on open table formats.", example: "Delta/Iceberg table on object storage supports BI queries and batch ML features without splitting data into separate lake and warehouse copies.", related: ["data-warehouse", "data-lake", "data-platform-layers", "etl-vs-elt", "cost-optimization"], sources: ["apache-hudi-vs-delta-lake-vs-apache-iceberg-lakeho", "s0306437924001182", "delta-lake-explained-boost-data-reliability-cloud"] },
+      { slug: "etl-vs-elt", title: "ETL vs ELT", category: "platform", summary: "Transformation placement changes replayability, lineage clarity, cost shape, and how much raw truth you retain.", example: "ETL transforms before loading into the warehouse. ELT lands raw first, then dbt models inside the warehouse.", related: ["data-platform-layers", "data-warehouse", "data-lineage", "data-quality", "dimensional-modeling"], sources: ["etl-vs-elt", "understanding-dbt", "analytics-engineering-six-best-practices"] },
+      { slug: "reverse-etl", title: "Reverse ETL", category: "platform", summary: "Pushes analytical outputs from the warehouse back into operational systems where teams actually act.", example: "Send ‘high-churn-risk’ customers from the warehouse into Salesforce or Braze so sales and lifecycle teams can take action.", related: ["data-ingestion-patterns", "data-platform-layers", "data-contracts", "semantic-layer"], sources: ["the-state-of-reverse-etl"] },
+      { slug: "dimensional-modeling", title: "Dimensional Modeling", category: "modeling", summary: "The dominant analytical structuring method: facts for measurable events and dimensions for descriptive context.", example: "A fact_sales table joins to dim_customer, dim_product, and dim_date so analysts can aggregate sales by any business slice safely.", related: ["grain", "slowly-changing-dimensions", "conformed-dimensions", "surrogate-keys", "normalization-vs-denormalization", "semantic-layer"], sources: ["dimensional-modeling-techniques", "kimball-dimensional-model"] },
+      { slug: "grain", title: "Grain", category: "modeling", summary: "The precise statement of what one fact row represents. If grain is unclear, measures become dangerous immediately.", example: "‘One row per product line per completed order’ is valid grain. ‘Order data with some product stuff’ is not.", related: ["dimensional-modeling", "slowly-changing-dimensions", "data-quality", "conformed-dimensions"], sources: ["dimensional-modeling-techniques", "kimball-dimensional-model"] },
+      { slug: "slowly-changing-dimensions", title: "Slowly Changing Dimensions (SCD)", category: "modeling", summary: "Strategies for handling attribute history so analytical queries do not rewrite the past with current values.", example: "A customer who moved from Bronze to Gold loyalty in June should still appear as Bronze on March purchases if Type 2 history matters.", related: ["dimensional-modeling", "surrogate-keys", "data-vault", "grain"], sources: ["slowly-changing-dimensions-in-data-warehouse", "dimensional-modeling-techniques"] },
+      { slug: "data-vault", title: "Data Vault", category: "modeling", summary: "Auditable integration pattern built on hubs, links, and satellites for historical enterprise-scale source integration.", example: "Hub Customer stores business keys, Link Customer-Order stores relationships, Satellite CustomerStatus stores historical attributes over time.", related: ["dimensional-modeling", "slowly-changing-dimensions", "surrogate-keys", "data-ingestion-patterns"], sources: ["what-is-data-vault"] },
+      { slug: "normalization-vs-denormalization", title: "Normalization vs Denormalization", category: "modeling", summary: "Operational systems optimize for update consistency; analytical systems duplicate selectively for query usability.", example: "Order-entry system normalizes customers, addresses, and orders separately; analytics mart denormalizes channel/category labels for faster slicing.", related: ["dimensional-modeling", "data-warehouse", "data-vault", "grain"], sources: ["dimensional-modeling-techniques"] },
+      { slug: "conformed-dimensions", title: "Conformed Dimensions", category: "modeling", summary: "Shared dimensions give multiple marts a common customer, product, or date truth so enterprise comparison is stable.", example: "Finance revenue mart and support ticket mart both point at the same dim_customer, enabling reliable cross-domain analysis.", related: ["dimensional-modeling", "data-governance", "data-marts", "semantic-layer"], sources: ["dimensional-modeling-techniques", "kimball-dimensional-model"] },
+      { slug: "surrogate-keys", title: "Surrogate Keys", category: "modeling", summary: "Warehouse-generated identifiers unify business entities across conflicting source-system keys and enable controlled history.", example: "CRM customer_id and ecommerce user_id both map to warehouse customer_key=101928 so facts can join to one customer truth.", related: ["slowly-changing-dimensions", "dimensional-modeling", "data-vault"], sources: ["dimensional-modeling-techniques"] },
+      { slug: "change-data-capture", title: "Change Data Capture (CDC)", category: "ingestion", summary: "Captures inserts, updates, and deletes from source logs with high fidelity and full operation sequence awareness.", example: "Debezium reads PostgreSQL WAL so deletes and corrections arrive in order, rather than relying on a best-effort updated_at timestamp.", related: ["data-ingestion-patterns", "idempotency", "data-platform-layers", "batch-vs-streaming"], sources: ["the-complete-guide-to-kafka-change-data-capture-cd"] },
+      { slug: "data-ingestion-patterns", title: "Data Ingestion Patterns", category: "ingestion", summary: "Full extract, incremental, CDC, event-driven, and file-based loads each change reliability, freshness, and replay design.", example: "A nightly full extract is simple but expensive. CDC is efficient but operationally stricter. File-based loads need atomic landing and validation.", related: ["change-data-capture", "batch-vs-streaming", "data-contracts", "idempotency", "data-platform-layers"], sources: ["choosing-the-right-data-ingestion-method-batch-str", "enterprise-integration-patterns"] },
+      { slug: "data-contracts", title: "Data Contracts", category: "ingestion", summary: "Explicit producer-consumer agreements for schema, semantics, quality, freshness, and safe change process.", example: "A producer promises order_status enum values and a 15-minute freshness window; breaking either triggers validation failures and alerts.", related: ["data-ingestion-patterns", "data-mesh", "data-quality", "data-governance"], sources: ["the-what-why-and-how-of-data-contracts"] },
+      { slug: "batch-vs-streaming", title: "Batch vs Streaming", category: "ingestion", summary: "One of the biggest architecture choices: lower-latency systems cost more and require more operational discipline.", example: "Fraud scoring may require sub-minute events; daily finance close absolutely does not.", related: ["data-ingestion-patterns", "idempotency", "eventual-consistency", "cost-optimization"], sources: ["batch-processing-vs-stream-processing-architecture", "exactly-once-semantics-are-possible-heres-how-apac"] },
+      { slug: "idempotency", title: "Idempotency", category: "distributed", summary: "Running the same operation multiple times should converge to the same result, because retries and duplicate runs are normal.", example: "Use MERGE on event_id instead of INSERT so replaying a failed batch does not duplicate business rows.", related: ["checkpointing-and-replay", "change-data-capture", "batch-vs-streaming", "data-platform-layers"], sources: ["data-engineering-was-hard-until-i-learned-these-15"] },
+      { slug: "eventual-consistency", title: "Eventual Consistency", category: "distributed", summary: "Distributed systems do not make all consumers see the same truth at the same moment; lag must be designed for.", example: "An app order appears instantly in OLTP but reaches a dashboard 7 minutes later; that can be acceptable or catastrophic depending on the use case.", related: ["batch-vs-streaming", "idempotency", "platform-reliability", "data-observability"], sources: [] },
+      { slug: "checkpointing-and-replay", title: "Checkpointing and Replay", category: "distributed", summary: "Saves progress and enables safe restart or reprocessing when jobs fail or corruption is discovered later.", example: "A streaming job restarts from the last committed offset after a crash, then replays safely because downstream writes are idempotent.", related: ["idempotency", "data-platform-layers", "platform-reliability", "data-observability"], sources: [] },
+      { slug: "data-governance", title: "Data Governance", category: "governance", summary: "Rules, roles, ownership, glossary, quality, metadata, and access processes that make data trustworthy and reusable.", example: "‘Active customer’ is owned by Revenue Ops, versioned in a glossary, quality-checked, and exposed consistently across dashboards.", related: ["data-quality", "data-catalog", "data-lineage", "access-control", "semantic-layer", "data-mesh"], sources: ["the-6-dimensions-of-data-quality", "data-quality-dimensions"] },
+      { slug: "data-quality", title: "Data Quality", category: "governance", summary: "Fitness-for-use expressed through dimensions such as accuracy, completeness, timeliness, consistency, validity, and uniqueness.", example: "A certified mart may require uniqueness on order_id, freshness within 2 hours, and validity checks on revenue currency.", related: ["data-governance", "data-observability", "data-platform-layers", "data-contracts"], sources: ["the-6-dimensions-of-data-quality", "data-quality-dimensions", "dbt-best-practices-7-essential-patterns-for-analyt"] },
+      { slug: "data-lineage", title: "Data Lineage", category: "governance", summary: "Shows how data moved and transformed from source systems to outputs; essential for trust, troubleshooting, and impact analysis.", example: "A broken stg_payments model shows downstream blast radius into fct_revenue and two executive dashboards before business users complain.", related: ["data-governance", "data-catalog", "data-observability", "platform-reliability"], sources: ["openlineage-io"] },
+      { slug: "data-catalog", title: "Data Catalog", category: "governance", summary: "Searchable metadata inventory that makes data assets discoverable, understandable, and safer to reuse.", example: "Catalog entry includes owner, description, lineage, sensitivity, freshness SLA, and certification status before analysts adopt a table.", related: ["data-governance", "data-lineage", "data-quality", "data-observability"], sources: ["data-catalog-tools"] },
+      { slug: "master-data-management", title: "Master Data Management (MDM)", category: "governance", summary: "Ensures shared business entities such as customers and products mean one thing across systems.", example: "ERP product codes and ecommerce SKUs get reconciled into one mastered product entity so revenue and inventory reporting align.", related: ["data-governance", "conformed-dimensions", "data-quality"], sources: ["4-architecture-patterns-for-master-data-management", "mdm-integration-architecture-html"] },
+      { slug: "access-control", title: "Access Control", category: "security", summary: "Who can see what, under which roles or attributes, must be designed into the platform rather than added after exposure.", example: "Marketing can see region and segment but not email or payment details; finance can see aggregate revenue but not raw PII.", related: ["data-masking", "data-governance", "semantic-layer", "data-platform-layers"], sources: ["access-controls-in-data-engineering-2086aa215ad3", "filters-and-masks"] },
+      { slug: "data-masking", title: "Data Masking", category: "security", summary: "Implements column-level protection by hiding or transforming sensitive values for unauthorized audiences.", example: "Email is masked as j***@example.com for analysts while remaining visible to approved support roles.", related: ["access-control", "data-governance", "data-platform-layers"], sources: ["filters-and-masks"] },
+      { slug: "semantic-layer", title: "Semantic Layer", category: "serving", summary: "Governed abstraction for metrics, dimensions, joins, filters, and access logic so teams stop redefining the same KPI.", example: "A single Net Revenue definition feeds BI, notebooks, and API consumers so Finance and Marketing stop fighting over the number.", related: ["data-marts", "data-governance", "access-control", "conformed-dimensions"], sources: ["how-the-dbt-semantic-layer-works", "semantic-layer"] },
+      { slug: "data-marts", title: "Data Marts", category: "serving", summary: "Domain-focused analytical interfaces that translate platform data into business-ready shapes for one area of the company.", example: "Finance mart exposes recognized revenue and cost metrics while marketing mart focuses on CAC, attribution, and cohort behavior.", related: ["dimensional-modeling", "semantic-layer", "conformed-dimensions", "data-governance"], sources: ["dimensional-modeling-techniques"] },
+      { slug: "data-observability", title: "Data Observability", category: "operations", summary: "Automated monitoring of freshness, volume, schema, distribution, and lineage so failures are detected before users complain.", example: "Freshness anomaly on stg_payments triggers a lineage-aware alert that identifies every downstream dashboard already at risk.", related: ["data-quality", "data-lineage", "platform-reliability", "data-catalog"], sources: ["the-6-dimensions-of-data-quality"] },
+      { slug: "platform-reliability", title: "Platform Reliability", category: "operations", summary: "Operational practice of meeting data SLIs, SLOs, and recovery expectations predictably and communicating health clearly.", example: "Sales data must be fresh by 06:00 on 95% of business days and the on-call runbook must explain the recovery path if breached.", related: ["data-observability", "checkpointing-and-replay", "cost-optimization", "data-quality"], sources: ["blog-how-to-make-your-data-pipelines-more-reliable"] },
+      { slug: "cost-optimization", title: "Cost Optimization", category: "operations", summary: "Architecture should make cost proportional to business value rather than accidentally expensive through always-on overdesign.", example: "A 24/7 stream for a once-daily finance report is waste; auto-suspend and batch windows may cut cost with zero business loss.", related: ["batch-vs-streaming", "data-platform-layers", "platform-reliability", "data-lakehouse"], sources: ["intro-key-concepts", "state-of-workflow-orchestration-ecosystem-2025"] },
+      { slug: "architecture-decision-records", title: "Architecture Decision Records (ADRs)", category: "operations", summary: "Versioned decision log that captures context, choice, and consequence so architecture reasoning is not lost.", example: "ADR-014 records why the company chose batch + warehouse over streaming + lakehouse for finance reporting in 2026.", related: ["data-mesh", "platform-reliability", "cost-optimization"], sources: ["adr-github-io"] },
+      { slug: "data-mesh", title: "Data Mesh", category: "operations", summary: "Sociotechnical operating model that pushes data ownership to domains while relying on a shared platform and federated governance.", example: "Finance owns revenue products, marketing owns lifecycle products, and a platform team provides shared lineage, contracts, and standards.", related: ["data-governance", "data-contracts", "semantic-layer", "data-platform-layers", "architecture-decision-records"], sources: ["data-mesh-principles-html", "www-datamesh-architecture-com", "s12599-024-00876-5"] }
+    ];
+
+    const connections = [
+      { slug: "modeling-and-governance", title: "Modeling and Governance", tension: "Meaning quality is a governance problem expressed through model design.", summary: "Grain, conformed dimensions, metric definitions, and quality gates are governance commitments disguised as modeling choices.", clusters: ["modeling", "governance", "serving"] },
+      { slug: "ingestion-and-distributed-systems", title: "Ingestion and Distributed Systems", tension: "Every ingestion boundary is also a distributed-systems failure boundary.", summary: "Retries, ordering, watermark movement, and partial transfers force architects to design ingestion for failure rather than ideal success.", clusters: ["ingestion", "distributed", "platform"] },
+      { slug: "security-and-serving", title: "Security and Serving", tension: "Consumer-facing data products are where exposure risk becomes real.", summary: "Classification, masking, row filters, and semantic serving all meet where humans and applications actually consume data.", clusters: ["security", "serving", "governance"] },
+      { slug: "reliability-and-observability", title: "Reliability and Observability", tension: "Reliability defines the promise; observability proves whether the promise still holds.", summary: "Freshness, incident response, and blast-radius awareness form one operating system rather than two tool buckets.", clusters: ["operations", "governance", "distributed"] },
+      { slug: "cost-and-architecture-choices", title: "Cost and Architecture Choices", tension: "Architecture creates a cost structure whether or not anyone writes that down.", summary: "Batch vs streaming, materialization, warehouse sizing, and operating overhead all shape spend over time.", clusters: ["operations", "platform", "ingestion"] },
+      { slug: "data-mesh-and-operating-model", title: "Data Mesh and Operating Model", tension: "Mesh fails when treated like a tooling choice instead of an organizational choice.", summary: "Domain ownership only works when platform support and federated standards exist at the same time.", clusters: ["operations", "governance", "serving"] }
+    ];
+
+    const sources = [
+      { file: "dimensional-modeling-techniques.md", title: "Dimensional Modeling Techniques", type: "article", usedBy: ["Dimensional Modeling", "Grain", "Conformed Dimensions", "Data Marts", "Normalization vs Denormalization", "Slowly Changing Dimensions (SCD)", "Surrogate Keys", "Modeling and Governance"] },
+      { file: "the-6-dimensions-of-data-quality.md", title: "The 6 Dimensions of Data Quality", type: "article", usedBy: ["Data Governance", "Data Observability", "Data Quality", "Modeling and Governance"] },
+      { file: "data-engineering-was-hard-until-i-learned-these-15.md", title: "Data Engineering Was Hard Until I Learned These 15", type: "article", usedBy: ["Data Platform Layers", "Idempotency", "Ingestion and Distributed Systems"] },
+      { file: "filters-and-masks.md", title: "Filters and Masks", type: "article", usedBy: ["Access Control", "Data Masking", "Security and Serving"] },
+      { file: "intro-key-concepts.md", title: "Intro Key Concepts", type: "article", usedBy: ["Cost Optimization", "Data Warehouse", "Cost and Architecture Choices"] },
+      { file: "kimball-dimensional-model.md", title: "Kimball Dimensional Model", type: "article", usedBy: ["Conformed Dimensions", "Dimensional Modeling", "Grain"] },
+      { file: "access-controls-in-data-engineering-2086aa215ad3.md", title: "Access Controls in Data Engineering", type: "article", usedBy: ["Access Control", "Security and Serving"] },
+      { file: "blog-how-to-make-your-data-pipelines-more-reliable.md", title: "How to Make Your Data Pipelines More Reliable", type: "article", usedBy: ["Platform Reliability", "Reliability and Observability"] },
+      { file: "data-lakes-vs-data-warehouses-what-your-organizati.md", title: "Data Lakes vs Data Warehouses", type: "article", usedBy: ["Data Lake", "Data Warehouse"] },
+      { file: "data-mesh-principles-html.md", title: "Data Mesh Principles", type: "article", usedBy: ["Data Mesh", "Data Mesh and Operating Model"] },
+      { file: "data-quality-dimensions.md", title: "Data Quality Dimensions", type: "article", usedBy: ["Data Governance", "Data Quality"] },
+      { file: "enterprise-integration-patterns.md", title: "Enterprise Integration Patterns", type: "article", usedBy: ["Data Ingestion Patterns", "Ingestion and Distributed Systems"] },
+      { file: "state-of-workflow-orchestration-ecosystem-2025.md", title: "State of Workflow Orchestration 2025", type: "article", usedBy: ["Cost Optimization", "Cost and Architecture Choices"] },
+      { file: "www-datamesh-architecture-com.md", title: "Data Mesh Architecture", type: "article", usedBy: ["Data Mesh", "Data Mesh and Operating Model"] },
+      { file: "s0306437924001182.md", title: "Data Lakehouse Survey", type: "paper", usedBy: ["Data Lakehouse", "Data Warehouse"] },
+      { file: "s12599-024-00876-5.md", title: "Data Products, Mesh, and Fabric", type: "paper", usedBy: ["Data Mesh", "Data Mesh and Operating Model"] },
+      { file: "the-complete-guide-to-kafka-change-data-capture-cd.md", title: "Kafka CDC Guide", type: "article", usedBy: ["Change Data Capture (CDC)"] },
+      { file: "choosing-the-right-data-ingestion-method-batch-str.md", title: "Choosing the Right Data Ingestion Method", type: "article", usedBy: ["Data Ingestion Patterns"] },
+      { file: "the-what-why-and-how-of-data-contracts.md", title: "The What, Why, and How of Data Contracts", type: "article", usedBy: ["Data Contracts"] },
+      { file: "batch-processing-vs-stream-processing-architecture.md", title: "Batch vs Stream Processing Architecture", type: "article", usedBy: ["Batch vs Streaming"] },
+      { file: "what-is-medallion-architecture.md", title: "What is Medallion Architecture", type: "article", usedBy: ["Data Platform Layers"] },
+      { file: "how-the-dbt-semantic-layer-works.md", title: "How the dbt Semantic Layer Works", type: "article", usedBy: ["Semantic Layer"] },
+      { file: "semantic-layer.md", title: "Semantic Layer", type: "article", usedBy: ["Semantic Layer"] },
+      { file: "openlineage-io.md", title: "OpenLineage", type: "article", usedBy: ["Data Lineage"] },
+      { file: "4-architecture-patterns-for-master-data-management.md", title: "4 Architecture Patterns for MDM", type: "article", usedBy: ["Master Data Management (MDM)"] },
+      { file: "mdm-integration-architecture-html.md", title: "MDM Integration Architecture", type: "article", usedBy: ["Master Data Management (MDM)"] },
+      { file: "etl-vs-elt.md", title: "ETL vs ELT", type: "article", usedBy: ["ETL vs ELT"] },
+      { file: "understanding-dbt.md", title: "Understanding dbt", type: "article", usedBy: ["ETL vs ELT"] },
+      { file: "analytics-engineering-six-best-practices.md", title: "Analytics Engineering Best Practices", type: "article", usedBy: ["ETL vs ELT"] },
+      { file: "slowly-changing-dimensions-in-data-warehouse.md", title: "Slowly Changing Dimensions", type: "article", usedBy: ["Slowly Changing Dimensions (SCD)"] },
+      { file: "what-is-data-vault.md", title: "What is Data Vault", type: "article", usedBy: ["Data Vault"] },
+      { file: "the-state-of-reverse-etl.md", title: "The State of Reverse ETL", type: "article", usedBy: ["Reverse ETL"] },
+      { file: "adr-github-io.md", title: "ADR GitHub IO", type: "article", usedBy: ["Architecture Decision Records (ADRs)"] },
+      { file: "exactly-once-semantics-are-possible-heres-how-apac.md", title: "Exactly Once Semantics", type: "article", usedBy: ["Batch vs Streaming"] },
+      { file: "delta-lake-explained-boost-data-reliability-cloud.md", title: "Delta Lake Explained", type: "article", usedBy: ["Data Lakehouse"] },
+      { file: "apache-hudi-vs-delta-lake-vs-apache-iceberg-lakeho.md", title: "Hudi vs Delta vs Iceberg", type: "article", usedBy: ["Data Lakehouse"] },
+      { file: "2107-11152.md", title: "Data Lake Architectures and Metadata Management", type: "paper", usedBy: ["Data Lake"] },
+      { file: "event-driven-architecture.md", title: "Event Driven Architecture", type: "article", usedBy: [] },
+      { file: "cloud-data-platform-showdown-aws-vs-gcp-vs-azure-v.md", title: "Cloud Data Platform Showdown", type: "article", usedBy: [] },
+      { file: "data-architect-interview-questions.md", title: "Data Architect Interview Questions", type: "article", usedBy: [] },
+      { file: "patterns-legacy-displacement.md", title: "Patterns Legacy Displacement", type: "article", usedBy: [] },
+      { file: "dbt-best-practices-7-essential-patterns-for-analyt.md", title: "dbt Best Practices", type: "article", usedBy: ["Data Quality"] }
+    ];
+
+    const deepDives = [
+      {
+        id: "platform",
+        title: "Platform Layers and Transformation Placement",
+        why: "Layer boundaries decide replayability, auditability, and whether consumers inherit source chaos or modeled truth.",
+        mechanism: [
+          "Raw preserves source fidelity. Never cast, dedup, or reinterpret here if replay matters.",
+          "Standardized handles types, deduplication, canonical IDs, and stable normalized status values.",
+          "Curated owns business grain, conformed entities, and fact/dimension semantics.",
+          "Serving shapes governed metrics and consumer-specific access patterns."
+        ],
+        failure: [
+          "Revenue is overstated because bronze/raw webhook retries were queried directly.",
+          "Different teams redefine cleaning rules downstream because standardization was never centralized.",
+          "BI tools become the semantic layer by accident because curated models were too weak."
+        ],
+        example: `Raw:\n  stripe_events_raw(payload_json, event_id, received_at)\n\nStandardized:\n  stripe_events_clean(event_id, customer_id, amount_usd, status)\n\nCurated:\n  fact_payments(payment_event_id, customer_key, net_amount_usd)\n  grain = one row per payment event\n\nServing:\n  metric net_revenue = SUM(net_amount_usd)\n  filter status IN ('captured','settled')`,
+        sourceDigest: [
+          "The medallion source is the clearest warning that bronze/raw is never business-ready.",
+          "ELT sources justify keeping raw truth longer, not skipping model discipline.",
+          "Warehouse and lakehouse sources explain why one platform can still need clean logical layers."
+        ],
+        links: ["data-platform-layers", "etl-vs-elt", "data-warehouse", "data-lakehouse", "semantic-layer"],
+        bars: [88, 76, 69]
+      },
+      {
+        id: "ingestion",
+        title: "Ingestion, CDC, Idempotency, and Replay",
+        why: "Ingestion is a distributed-systems boundary whether teams admit it or not.",
+        mechanism: [
+          "Incremental loads depend on safe watermark movement: durable write first, watermark second.",
+          "CDC relies on ordered log capture and restart position management.",
+          "Idempotent merges turn duplicate delivery into no-op convergence.",
+          "Checkpointing only works if restart position and durable state match."
+        ],
+        failure: [
+          "Connector restarts after write but before offset commit and duplicates append-only targets.",
+          "Half-uploaded files are consumed because there is no atomic landing rule.",
+          "Schema drift becomes silent corruption because validation never blocked the change."
+        ],
+        example: `Bad watermark flow:\n1. read watermark\n2. extract rows > watermark\n3. update watermark\n4. write fails halfway\n=> rows are lost\n\nSafer flow:\n1. read watermark\n2. load to staging\n3. merge to target\n4. persist new watermark only after success`,
+        sourceDigest: [
+          "CDC material makes deletes and exact change sequence the killer advantage over timestamp incrementals.",
+          "Integration-pattern sources reinforce that every ingestion boundary needs a recovery contract.",
+          "The distributed crossover makes one brutal point: design every pipeline as if it will run twice."
+        ],
+        links: ["change-data-capture", "data-ingestion-patterns", "idempotency", "checkpointing-and-replay", "data-contracts"],
+        bars: [91, 84, 73]
+      },
+      {
+        id: "modeling",
+        title: "Modeling Semantics: Grain, History, and Conformance",
+        why: "Most analytical failures are semantic failures disguised as data problems.",
+        mechanism: [
+          "Grain must be declared before measures are chosen.",
+          "SCD strategy decides whether current attributes rewrite history or preserve it.",
+          "Conformed dimensions keep marts interoperable across domains.",
+          "Surrogate keys make controlled history and unified joins possible."
+        ],
+        failure: [
+          "Order totals repeated on line rows inflate revenue by line count.",
+          "Current loyalty tier is joined onto historical sales because no Type 2 strategy exists.",
+          "Finance and marketing build incompatible customer entities because dimensions are not conformed."
+        ],
+        example: `Bad:\n  fact_sales_bad(order_id, line_id, quantity, order_total)\n\nIf order_total=300 repeats on 3 lines,\nSUM(order_total)=900 for one order.\n\nSafer split:\n  fact_sales_line(order_id, line_id, line_amount)\n  fact_order_total(order_id, order_total)`,
+        sourceDigest: [
+          "Kimball-oriented material is the densest modeling backbone in the topic.",
+          "SCD sources turn history handling into a business-truth decision instead of a technical afterthought.",
+          "The governance bridge makes grain a meaning commitment, not just a schema choice."
+        ],
+        links: ["grain", "dimensional-modeling", "slowly-changing-dimensions", "conformed-dimensions", "surrogate-keys"],
+        bars: [95, 82, 77]
+      },
+      {
+        id: "governance",
+        title: "Governance, Quality, Lineage, and Semantic Consistency",
+        why: "Governance is what lets multiple teams reuse data without descending into KPI civil war.",
+        mechanism: [
+          "Ownership, glossary definitions, quality expectations, and sensitivity classes are the minimum trust system.",
+          "Quality dimensions matter only when attached to executable checks.",
+          "Lineage is what turns incidents and change reviews into impact analysis.",
+          "The semantic layer centralizes metric logic, joins, filters, and access behavior."
+        ],
+        failure: [
+          "Finance and marketing both claim to publish net revenue but encode different logic.",
+          "A staging failure poisons dashboards for hours because no lineage reveals blast radius.",
+          "The catalog becomes a stale museum because owner and certification status are missing."
+        ],
+        example: `Finance metric:\n  net_revenue = SUM(amount)-SUM(refunds)-SUM(taxes)\n  filter status IN ('completed','shipped')\n\nMarketing metric:\n  net_revenue = SUM(amount)-SUM(refunds)\n  filter status='completed'\n\nSemantic fix:\n  one governed metric definition reused everywhere`,
+        sourceDigest: [
+          "Quality-dimension sources supply the language for measurable trust.",
+          "Semantic-layer sources are explicit: stop KPI mutation by centralizing logic.",
+          "Lineage material is what makes observability explain impact instead of just screaming."
+        ],
+        links: ["data-governance", "data-quality", "data-lineage", "data-catalog", "semantic-layer"],
+        bars: [89, 79, 86]
+      },
+      {
+        id: "security",
+        title: "Security and Consumer-Facing Data",
+        why: "Serving is where access risk becomes real, because that is where actual people and tools touch data.",
+        mechanism: [
+          "RBAC grants by role; ABAC adds contextual conditions like region or sensitivity class.",
+          "Column masking hides sensitive values while still supporting broad table access.",
+          "Row-level filters let one semantic object serve multiple audiences safely."
+        ],
+        failure: [
+          "Self-serve marts leak raw PII because serving policies were deferred.",
+          "One shared dataset serves every role, forcing either overexposure or extreme restriction.",
+          "Masking exists in one BI tool but not in direct warehouse access paths."
+        ],
+        example: `Same customer table:\nMarketing sees: segment, region, masked contact fields\nSales Ops sees: contact fields for owned region only\nFinance sees: aggregate revenue and region, no PII\n\nOne model, policy-shaped views.`,
+        sourceDigest: [
+          "Security-and-serving material grounds policy in actual consumption surfaces.",
+          "Masks-and-filters material translates abstract restrictions into enforceable row and column controls.",
+          "The semantic layer is naturally positioned to enforce policy as well as metric logic."
+        ],
+        links: ["access-control", "data-masking", "semantic-layer", "data-marts"],
+        bars: [81, 74, 68]
+      },
+      {
+        id: "operations",
+        title: "Reliability, Cost, ADRs, and Operating Model",
+        why: "Architecture only becomes real when it survives incidents, fits budget, and matches how teams actually work.",
+        mechanism: [
+          "Reliability needs SLIs and SLOs attached to freshness, latency, or quality outcomes.",
+          "Observability without targets creates noise; targets without observability create blind promises.",
+          "Cost should be judged against business value and workload pattern, not marketing copy.",
+          "ADRs and operating-model choices preserve why the architecture was chosen."
+        ],
+        failure: [
+          "A revenue model breaches freshness expectations and nobody knows blast radius because lineage is absent.",
+          "A low-value streaming pipeline burns money and staff attention that batch would not.",
+          "A mesh rollout fails because domains were told to own data without platform support."
+        ],
+        example: `Freshness SLO:\n"fact_sales fresh by 06:00 on 95% of business days"\n\nNeeds:\n- freshness monitor\n- pre-breach alert\n- lineage of downstream assets\n- replay/runbook when upstream misses target`,
+        sourceDigest: [
+          "Reliability and observability really are one operating system in this topic.",
+          "Cost sources show team fit and workload shape matter more than tiny three-year price deltas.",
+          "Mesh operating-model material is fundamentally about organizational capability, not software procurement."
+        ],
+        links: ["platform-reliability", "data-observability", "cost-optimization", "architecture-decision-records", "data-mesh"],
+        bars: [86, 83, 80]
+      }
+    ];
+
+    const clusterNodes = [
+      { id: "platform", title: "Platform Spine", summary: "layers, warehouse, lake, lakehouse, ETL/ELT, reverse ETL", x: 50, y: 44, type: "cluster", category: "platform", related: ["Modeling", "Ingestion", "Serving", "Operations"], sources: ["what-is-medallion-architecture", "intro-key-concepts"], flow: ["Raw truth lands", "Data is standardized", "Curated business models form", "Serving exposes governed definitions"] },
+      { id: "modeling", title: "Modeling", summary: "grain, dimensions, history, conformance", x: 22, y: 18, type: "cluster", category: "modeling", related: ["Grain", "Conformed Dimensions", "Semantic Layer"], sources: ["dimensional-modeling-techniques", "kimball-dimensional-model"], flow: ["Declare grain", "Choose dimension history strategy", "Conform shared entities"] },
+      { id: "ingestion", title: "Ingestion", summary: "pattern choice, CDC, contracts, freshness", x: 78, y: 19, type: "cluster", category: "ingestion", related: ["CDC", "Data Contracts", "Idempotency"], sources: ["the-complete-guide-to-kafka-change-data-capture-cd", "enterprise-integration-patterns"], flow: ["Select transport pattern", "Protect schema and freshness", "Handle retries and restart"] },
+      { id: "distributed", title: "Distributed Systems", summary: "retries, lag, replay, idempotency", x: 14, y: 53, type: "cluster", category: "distributed", related: ["Idempotency", "Checkpointing and Replay"], sources: ["data-engineering-was-hard-until-i-learned-these-15"], flow: ["Accept retries", "Track state safely", "Replay without corruption"] },
+      { id: "governance", title: "Governance", summary: "quality, lineage, catalog, ownership", x: 85, y: 49, type: "cluster", category: "governance", related: ["Data Governance", "Data Quality", "Data Lineage"], sources: ["the-6-dimensions-of-data-quality", "data-catalog-tools"], flow: ["Assign ownership", "Measure quality", "Trace lineage", "Expose trust signals"] },
+      { id: "security", title: "Security", summary: "access, masking, safe serving", x: 24, y: 84, type: "cluster", category: "security", related: ["Access Control", "Data Masking"], sources: ["filters-and-masks"], flow: ["Classify sensitivity", "Apply row/column policy", "Shape consumer views safely"] },
+      { id: "serving", title: "Serving", summary: "semantic layer, marts, consumer interfaces", x: 74, y: 82, type: "cluster", category: "serving", related: ["Semantic Layer", "Data Marts"], sources: ["how-the-dbt-semantic-layer-works", "semantic-layer"], flow: ["Model domain marts", "Define metric logic once", "Deliver to apps and dashboards"] },
+      { id: "operations", title: "Operations", summary: "reliability, cost, ADRs, mesh", x: 49, y: 89, type: "cluster", category: "operations", related: ["Platform Reliability", "Cost Optimization", "Data Mesh"], sources: ["blog-how-to-make-your-data-pipelines-more-reliable", "adr-github-io"], flow: ["Set SLOs", "Observe blast radius", "Tune cost", "Document decisions"] },
+      { id: "grain", title: "Grain", summary: "what one row means", x: 33, y: 29, type: "concept", category: "modeling", related: ["Dimensional Modeling", "Data Quality"], sources: ["dimensional-modeling-techniques"], flow: ["Define row meaning", "Validate additive measures", "Split mixed-grain facts"] },
+      { id: "semantic-layer", title: "Semantic Layer", summary: "one KPI definition, many consumers", x: 66, y: 72, type: "concept", category: "serving", related: ["Data Governance", "Access Control"], sources: ["how-the-dbt-semantic-layer-works"], flow: ["Define metrics", "Attach filters/joins", "Serve every consumer consistently"] },
+      { id: "idempotency", title: "Idempotency", summary: "safe retries, safe reruns", x: 33, y: 58, type: "concept", category: "distributed", related: ["CDC", "Checkpointing and Replay"], sources: ["data-engineering-was-hard-until-i-learned-these-15"], flow: ["Receive duplicate input", "Apply stable merge logic", "Converge to same result"] },
+      { id: "data-governance", title: "Data Governance", summary: "ownership and trust system", x: 67, y: 34, type: "concept", category: "governance", related: ["Data Quality", "Semantic Layer"], sources: ["the-6-dimensions-of-data-quality"], flow: ["Define ownership", "Set quality rules", "Expose trusted semantics"] }
+    ];
+
+    const edges = [
+      ["platform", "modeling"], ["platform", "ingestion"], ["platform", "distributed"], ["platform", "governance"],
+      ["platform", "security"], ["platform", "serving"], ["platform", "operations"],
+      ["modeling", "grain"], ["serving", "semantic-layer"], ["distributed", "idempotency"], ["governance", "data-governance"],
+      ["ingestion", "idempotency"], ["governance", "semantic-layer"], ["security", "semantic-layer"], ["operations", "governance"]
+    ];
+
+    const state = loadState();
+    let activeView = state.activeView || "overview";
+    let activeCategory = state.activeCategory || "all";
+    let conceptQuery = state.conceptQuery || "";
+    let sourceQuery = state.sourceQuery || "";
+    let sourceMode = state.sourceMode || "all";
+    let spotlightId = state.spotlightId || "platform";
+
+    function loadState() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey)) || { pinned: [] };
+      } catch (error) {
+        return { pinned: [] };
+      }
+    }
+
+    function saveState() {
+      state.activeView = activeView;
+      state.activeCategory = activeCategory;
+      state.conceptQuery = conceptQuery;
+      state.sourceQuery = sourceQuery;
+      state.sourceMode = sourceMode;
+      state.spotlightId = spotlightId;
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function categoryMeta(id) {
+      return categories.find((item) => item.id === id) || categories[0];
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function isPinned(slug) {
+      return (state.pinned || []).includes(slug);
+    }
+
+    function togglePin(slug) {
+      state.pinned = state.pinned || [];
+      if (isPinned(slug)) {
+        state.pinned = state.pinned.filter((item) => item !== slug);
+      } else {
+        state.pinned.push(slug);
+      }
+      saveState();
+      renderMetrics();
+      renderConcepts();
+      renderPins();
+    }
+
+    function setView(id) {
+      activeView = id;
+      saveState();
+      document.querySelectorAll(".view").forEach((view) => {
+        view.classList.toggle("active", view.dataset.view === id);
+      });
+      document.querySelectorAll(".nav-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === id);
+      });
+      const labels = {
+        overview: "Visual Control Room",
+        network: "Constellation View",
+        library: "Concept Library",
+        bridges: "Bridge Matrix",
+        sources: "Source Cockpit",
+        deep: "Deep Visual Modules",
+        board: "Pinned Board"
+      };
+      document.getElementById("view-eyebrow").textContent = tabs.find((tab) => tab.id === id).label;
+      document.getElementById("view-title").textContent = labels[id];
+    }
+
+    function renderTabs() {
+      const host = document.getElementById("tab-buttons");
+      host.innerHTML = "";
+      tabs.forEach((tab, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "nav-button" + (activeView === tab.id ? " active" : "");
+        button.dataset.tab = tab.id;
+        button.innerHTML = `
+          <span class="nav-index">${index + 1}</span>
+          <span class="nav-copy">
+            <strong>${escapeHtml(tab.label)}</strong>
+            <span>${escapeHtml(tab.note)}</span>
+          </span>
+        `;
+        button.addEventListener("click", () => setView(tab.id));
+        host.appendChild(button);
+      });
+    }
+
+    function renderMetrics() {
+      const conceptCount = concepts.length;
+      const connectionCount = connections.length;
+      const sourceCount = sources.length;
+      const pinCount = (state.pinned || []).length;
+      document.getElementById("side-concepts").textContent = conceptCount;
+      document.getElementById("side-connections").textContent = connectionCount;
+      document.getElementById("side-sources").textContent = sourceCount;
+      document.getElementById("side-pins").textContent = pinCount;
+      document.getElementById("hero-concepts").textContent = conceptCount;
+      document.getElementById("hero-connections").textContent = connectionCount;
+      document.getElementById("hero-sources").textContent = sourceCount;
+      document.getElementById("hero-pins").textContent = pinCount;
+      document.getElementById("storage-key").textContent = storageKey;
+    }
+
+    function renderClusterButtons() {
+      const host = document.getElementById("cluster-buttons");
+      host.innerHTML = "";
+      categories.forEach((category) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "cluster-button" + (activeCategory === category.id ? " active" : "");
+        button.textContent = category.label;
+        if (activeCategory === category.id) {
+          button.style.borderColor = category.color;
+        }
+        button.addEventListener("click", () => {
+          activeCategory = category.id;
+          saveState();
+          renderClusterButtons();
+          renderCategoryFilters();
+          renderNetwork();
+          renderConcepts();
+        });
+        host.appendChild(button);
+      });
+    }
+
+    function renderCategoryFilters() {
+      const host = document.getElementById("category-filters");
+      host.innerHTML = "";
+      categories.forEach((category) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip" + (activeCategory === category.id ? " active" : "");
+        button.textContent = category.label;
+        if (activeCategory === category.id) {
+          button.style.borderColor = category.color;
+        }
+        button.addEventListener("click", () => {
+          activeCategory = category.id;
+          saveState();
+          renderCategoryFilters();
+          renderClusterButtons();
+          renderConcepts();
+          renderNetwork();
+          document.getElementById("library-title").textContent = category.label;
+          document.getElementById("library-copy").textContent = categoryCopy[category.id];
+        });
+        host.appendChild(button);
+      });
+      document.getElementById("library-title").textContent = categoryMeta(activeCategory).label;
+      document.getElementById("library-copy").textContent = categoryCopy[activeCategory];
+    }
+
+    function networkVisible(node) {
+      return activeCategory === "all" || node.category === activeCategory || node.id === "platform";
+    }
+
+    function renderNetwork() {
+      const host = document.getElementById("network");
+      host.innerHTML = "";
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 100 100");
+      edges.forEach(([from, to]) => {
+        const a = clusterNodes.find((node) => node.id === from);
+        const b = clusterNodes.find((node) => node.id === to);
+        if (!networkVisible(a) || !networkVisible(b)) {
+          return;
+        }
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", a.x);
+        line.setAttribute("y1", a.y);
+        line.setAttribute("x2", b.x);
+        line.setAttribute("y2", b.y);
+        line.setAttribute("stroke", "rgba(169, 185, 207, 0.26)");
+        line.setAttribute("stroke-width", "0.35");
+        svg.appendChild(line);
+      });
+      host.appendChild(svg);
+
+      const layer = document.createElement("div");
+      layer.className = "node-layer";
+      clusterNodes.forEach((node) => {
+        if (!networkVisible(node)) {
+          return;
+        }
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "node" + (node.id === "platform" ? " center" : "") + (spotlightId === node.id ? " active" : "");
+        el.style.left = node.x + "%";
+        el.style.top = node.y + "%";
+        el.style.borderColor = categoryMeta(node.category).color + "55";
+        el.innerHTML = `<strong>${escapeHtml(node.title)}</strong><small>${escapeHtml(node.summary)}</small>`;
+        el.addEventListener("click", () => {
+          spotlightId = node.id;
+          saveState();
+          renderNetwork();
+          renderSpotlight();
+        });
+        layer.appendChild(el);
+      });
+      host.appendChild(layer);
+      renderSpotlight();
+    }
+
+    function renderSpotlight() {
+      const item = clusterNodes.find((node) => node.id === spotlightId) || clusterNodes[0];
+      const meta = categoryMeta(item.category);
+      document.getElementById("spotlight-swatch").style.background = `linear-gradient(135deg, ${meta.color}, var(--teal))`;
+      document.getElementById("spotlight-title").textContent = item.title;
+      document.getElementById("spotlight-summary").textContent = item.summary;
+      document.getElementById("spotlight-tags").innerHTML = `<span class="tag">${escapeHtml(meta.label)}</span><span class="tag">${escapeHtml(item.type)}</span>`;
+      document.getElementById("spotlight-related").innerHTML = item.related.map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join("");
+      document.getElementById("spotlight-sources").innerHTML = item.sources.map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join("");
+      document.getElementById("spotlight-flow").innerHTML = item.flow.map((step, index) => `
+        <div class="flow-step">
+          <div class="flow-bullet">${index + 1}</div>
+          <div>${escapeHtml(step)}</div>
+        </div>
+      `).join("");
+    }
+
+    function filteredConcepts() {
+      const q = conceptQuery.trim().toLowerCase();
+      return concepts.filter((concept) => {
+        const categoryOk = activeCategory === "all" || concept.category === activeCategory;
+        const queryOk = !q || [concept.title, concept.summary, concept.example, concept.related.join(" "), concept.sources.join(" "), concept.category].join(" ").toLowerCase().includes(q);
+        return categoryOk && queryOk;
+      });
+    }
+
+    function renderConcepts() {
+      const host = document.getElementById("concept-cards");
+      const note = document.getElementById("concept-note");
+      const items = filteredConcepts();
+      host.innerHTML = "";
+      if (!items.length) {
+        host.innerHTML = `<div class="empty">No concepts match this filter. Loosen the search or switch clusters.</div>`;
+        note.textContent = "0 concepts shown.";
+        return;
+      }
+
+      items.forEach((concept) => {
+        const meta = categoryMeta(concept.category);
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-meta">
+              <span class="tag">${escapeHtml(meta.label)}</span>
+              <span class="tag">${concept.sources.length} source${concept.sources.length === 1 ? "" : "s"}</span>
+            </div>
+            <button class="pin-button ${isPinned(concept.slug) ? "active" : ""}" type="button" data-pin="${escapeHtml(concept.slug)}">
+              ${isPinned(concept.slug) ? "Pinned" : "Pin"}
+            </button>
+          </div>
+          <h3>${escapeHtml(concept.title)}</h3>
+          <p>${escapeHtml(concept.summary)}</p>
+          <div class="related-row">${concept.related.map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join("")}</div>
+          <div class="source-row">${(concept.sources.length ? concept.sources : ["No direct source listed"]).map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join("")}</div>
+          <div class="concept-example">${escapeHtml(concept.example)}</div>
+        `;
+        host.appendChild(card);
+      });
+
+      host.querySelectorAll("[data-pin]").forEach((button) => {
+        button.addEventListener("click", () => togglePin(button.dataset.pin));
+      });
+      note.textContent = `${items.length} concept${items.length === 1 ? "" : "s"} shown in ${categoryMeta(activeCategory).label}.`;
+    }
+
+    function renderBridges() {
+      const host = document.getElementById("bridge-cards");
+      host.innerHTML = "";
+      connections.forEach((bridge) => {
+        const card = document.createElement("article");
+        card.className = "bridge-card";
+        card.innerHTML = `
+          <div class="eyebrow">Bridge</div>
+          <h3>${escapeHtml(bridge.title)}</h3>
+          <p><span class="accent">Tension:</span> ${escapeHtml(bridge.tension)}</p>
+          <p>${escapeHtml(bridge.summary)}</p>
+          <div class="related-row">${bridge.clusters.map((entry) => `<span class="tag">${escapeHtml(categoryMeta(entry).label)}</span>`).join("")}</div>
+        `;
+        host.appendChild(card);
+      });
+    }
+
+    function renderBridgeMatrix() {
+      const host = document.getElementById("bridge-matrix");
+      host.innerHTML = "";
+      const cols = ["modeling", "ingestion", "governance", "security", "serving", "operations"];
+      host.insertAdjacentHTML("beforeend", `<div class="matrix-head">Bridge</div>${cols.map((col) => `<div class="matrix-head">${escapeHtml(categoryMeta(col).label)}</div>`).join("")}`);
+      connections.forEach((bridge) => {
+        host.insertAdjacentHTML("beforeend", `<div class="matrix-head">${escapeHtml(bridge.title)}</div>`);
+        cols.forEach((col) => {
+          const hit = bridge.clusters.includes(col) ? bridge.clusters.length : 0;
+          const level = hit === 0 ? 0 : Math.min(hit, 4);
+          host.insertAdjacentHTML("beforeend", `<div class="matrix-cell hot-${level}">${hit ? "Linked" : ""}</div>`);
+        });
+      });
+    }
+
+    function filteredSources() {
+      const q = sourceQuery.trim().toLowerCase();
+      return sources.filter((source) => {
+        const used = source.usedBy.length > 0;
+        const modeOk =
+          sourceMode === "all" ||
+          sourceMode === source.type ||
+          (sourceMode === "used" && used) ||
+          (sourceMode === "unused" && !used);
+        const queryOk = !q || [source.file, source.title, source.type, source.usedBy.join(" ")].join(" ").toLowerCase().includes(q);
+        return modeOk && queryOk;
+      });
+    }
+
+    function sourceUsageByCluster(source) {
+      const counts = { platform: 0, modeling: 0, ingestion: 0, distributed: 0, governance: 0, security: 0, serving: 0, operations: 0 };
+      source.usedBy.forEach((title) => {
+        const concept = concepts.find((item) => item.title === title);
+        if (concept) {
+          counts[concept.category] += 1;
+        }
+      });
+      return counts;
+    }
+
+    function renderSources() {
+      const host = document.getElementById("source-cards");
+      const note = document.getElementById("source-note");
+      const items = filteredSources();
+      host.innerHTML = "";
+      if (!items.length) {
+        host.innerHTML = `<div class="empty">No sources match this filter. Change the mode or relax the search.</div>`;
+        note.textContent = "0 sources shown.";
+        return;
+      }
+
+      items.forEach((source) => {
+        const card = document.createElement("article");
+        card.className = "source-card";
+        card.innerHTML = `
+          <div class="card-meta">
+            <span class="tag">${escapeHtml(source.type)}</span>
+            <span class="tag">${source.usedBy.length} cited page${source.usedBy.length === 1 ? "" : "s"}</span>
+          </div>
+          <h3>${escapeHtml(source.title)}</h3>
+          <div class="source-file">${escapeHtml(source.file)}</div>
+          <p>${source.usedBy.length ? "Used by: " + escapeHtml(source.usedBy.join(", ")) : "Processed source currently not cited directly in the compiled pages."}</p>
+        `;
+        host.appendChild(card);
+      });
+      note.textContent = `${items.length} source${items.length === 1 ? "" : "s"} shown.`;
+    }
+
+    function renderSourceHeatmap() {
+      const host = document.getElementById("source-heatmap");
+      host.innerHTML = "";
+      const topSources = [...sources].sort((a, b) => b.usedBy.length - a.usedBy.length).slice(0, 10);
+      const cols = ["platform", "modeling", "ingestion", "distributed", "governance", "security", "serving"];
+      const head = document.createElement("div");
+      head.className = "heat-row";
+      head.innerHTML = `<div class="heat-label">Source</div>${cols.map((col) => `<div class="heat-label">${escapeHtml(categoryMeta(col).label)}</div>`).join("")}`;
+      host.appendChild(head);
+
+      topSources.forEach((source) => {
+        const counts = sourceUsageByCluster(source);
+        const row = document.createElement("div");
+        row.className = "heat-row";
+        row.innerHTML = `<div class="heat-label">${escapeHtml(source.title)}</div>` + cols.map((col) => {
+          const raw = counts[col];
+          const level = raw === 0 ? 0 : raw === 1 ? 1 : raw === 2 ? 2 : raw === 3 ? 3 : 4;
+          return `<div class="heat-box level-${level}">${raw || ""}</div>`;
+        }).join("");
+        host.appendChild(row);
+      });
+    }
+
+    function renderDeepDives() {
+      const host = document.getElementById("deep-stack");
+      host.innerHTML = "";
+      deepDives.forEach((item, index) => {
+        const card = document.createElement("article");
+        card.className = "deep-card" + (index === 0 ? " open" : "");
+        card.innerHTML = `
+          <button class="deep-toggle" type="button">
+            <span>
+              <div class="eyebrow">Deep Dive ${index + 1}</div>
+              <strong>${escapeHtml(item.title)}</strong>
+              <span>${escapeHtml(item.why)}</span>
+            </span>
+            <span class="deep-chevron">›</span>
+          </button>
+          <div class="deep-body">
+            <div class="deep-sections">
+              <section class="deep-section">
+                <h4>Mechanism</h4>
+                <ul>${item.mechanism.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
+                <div class="deep-diagram">
+                  <div class="metric-label">Mechanism / Risk / Evidence balance</div>
+                  ${item.bars.map((value) => `<div class="deep-bar"><span style="width:${value}%"></span></div>`).join("")}
+                </div>
+              </section>
+              <section class="deep-section">
+                <h4>Failure Modes</h4>
+                <ul>${item.failure.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
+              </section>
+              <section class="deep-section">
+                <h4>Worked Example</h4>
+                <div class="example-code">${escapeHtml(item.example)}</div>
+              </section>
+              <section class="deep-section">
+                <h4>Source Digest</h4>
+                <ul>${item.sourceDigest.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("")}</ul>
+              </section>
+              <section class="deep-section" style="grid-column: 1 / -1;">
+                <h4>Linked Concepts</h4>
+                <div class="related-row">${item.links.map((entry) => `<span class="tag">${escapeHtml(entry)}</span>`).join("")}</div>
+              </section>
+            </div>
+          </div>
+        `;
+        host.appendChild(card);
+      });
+
+      host.querySelectorAll(".deep-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+          button.parentElement.classList.toggle("open");
+        });
+      });
+    }
+
+    function renderPins() {
+      const host = document.getElementById("pin-board");
+      host.innerHTML = "";
+      const pinned = concepts.filter((concept) => isPinned(concept.slug));
+      if (!pinned.length) {
+        host.innerHTML = `<div class="empty">No pinned concepts yet. Pin concept cards in the library to build a shortlist.</div>`;
+        return;
+      }
+      pinned.forEach((concept) => {
+        const meta = categoryMeta(concept.category);
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-meta">
+              <span class="tag">${escapeHtml(meta.label)}</span>
+              <span class="tag">${concept.sources.length} source${concept.sources.length === 1 ? "" : "s"}</span>
+            </div>
+            <button class="pin-button active" type="button" data-pin="${escapeHtml(concept.slug)}">Pinned</button>
+          </div>
+          <h3>${escapeHtml(concept.title)}</h3>
+          <p>${escapeHtml(concept.summary)}</p>
+          <div class="concept-example">${escapeHtml(concept.example)}</div>
+        `;
+        host.appendChild(card);
+      });
+
+      host.querySelectorAll("[data-pin]").forEach((button) => {
+        button.addEventListener("click", () => togglePin(button.dataset.pin));
+      });
+    }
+
+    document.getElementById("concept-search").value = conceptQuery;
+    document.getElementById("source-search").value = sourceQuery;
+    document.getElementById("source-filter").value = sourceMode;
+
+    document.getElementById("concept-search").addEventListener("input", (event) => {
+      conceptQuery = event.target.value;
+      saveState();
+      renderConcepts();
+    });
+
+    document.getElementById("source-search").addEventListener("input", (event) => {
+      sourceQuery = event.target.value;
+      saveState();
+      renderSources();
+    });
+
+    document.getElementById("source-filter").addEventListener("change", (event) => {
+      sourceMode = event.target.value;
+      saveState();
+      renderSources();
+    });
+
+    document.getElementById("open-network").addEventListener("click", () => setView("network"));
+    document.getElementById("clear-pins").addEventListener("click", () => {
+      state.pinned = [];
+      saveState();
+      renderMetrics();
+      renderConcepts();
+      renderPins();
+    });
+
+    renderTabs();
+    renderMetrics();
+    renderClusterButtons();
+    renderCategoryFilters();
+    renderNetwork();
+    renderConcepts();
+    renderBridges();
+    renderBridgeMatrix();
+    renderSources();
+    renderSourceHeatmap();
+    renderDeepDives();
+    renderPins();
+    setView(activeView);
+  </script>
+</body>
+</html>
