@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gateforge, step by step</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #fafafa; color: #111;
+    font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { height: 100%; display: flex; flex-direction: column; align-items: center; }
+  .top { width: min(1100px, 94vw); padding-top: 3vh; }
+  .count { color: #888; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; }
+  h1 { font-size: clamp(26px, 3.2vw, 40px); margin: 6px 0 8px; }
+  .text { font-size: clamp(17px, 1.7vw, 22px); color: #333; min-height: 2.6em; line-height: 1.35; }
+  svg { width: min(1150px, 96vw); flex: 1; min-height: 0; }
+  .box rect.frame { fill: #fff; stroke: #111; stroke-width: 2.5; rx: 14; transition: stroke .3s, fill .3s; }
+  .box.ok rect.frame { stroke: #16a34a; fill: #f0fdf4; }
+  .box.bad rect.frame { stroke: #dc2626; fill: #fef2f2; }
+  .box .label { font-size: 23px; font-weight: 800; }
+  .box .sub { font-size: 16px; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; fill: #444; }
+  .box .mark { font-size: 30px; font-weight: 900; }
+  .box { opacity: 0; transition: opacity .45s, transform .45s; transform: translateY(10px); }
+  .box.on { opacity: 1; transform: none; }
+  /* file cards */
+  .card rect.frame { rx: 10; }
+  .card rect.head { fill: #111; }
+  .card .fname { font-size: 15px; font-weight: 700; fill: #fff; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+  .card .who { font-size: 12px; fill: #bbb; }
+  .card .code { font-size: 13.5px; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; fill: #222; white-space: pre; font-variant-ligatures: none; }
+  .card rect.hl { fill: #fde68a; opacity: 0; transition: opacity .35s; }
+  .card rect.hl.on { opacity: 1; }
+  .dotlabel { font-size: 17px; font-weight: 700; paint-order: stroke; stroke: #fafafa; stroke-width: 6px; }
+  .note { font-size: clamp(16px, 1.6vw, 21px); font-weight: 700; text-align: center; min-height: 1.6em; padding: 0 4vw; }
+  .lines { font-size: clamp(18px, 2vw, 26px); line-height: 1.9; text-align: center; }
+  .lines div { opacity: 0; transition: opacity .5s; } .lines div.on { opacity: 1; }
+  .bar { display: flex; gap: 10px; align-items: center; padding: 12px 0 20px; }
+  button { font-size: 16px; padding: 9px 16px; border-radius: 8px; border: 2px solid #111; background: #fff; cursor: pointer; }
+  button.main { background: #111; color: #fff; }
+  .dots { display: flex; gap: 4px; margin-left: 12px; flex-wrap: wrap; max-width: 420px; }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: #ddd; cursor: pointer; }
+  .dots i.done { background: #999; } .dots i.cur { background: #111; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="count" id="count"></div>
+    <h1 id="title"></h1>
+    <div class="text" id="text"></div>
+  </div>
+  <svg id="stage" viewBox="0 0 1200 440" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="note" id="note"></div>
+  <div class="lines" id="lines"></div>
+  <div class="bar">
+    <button id="back">◀ Back</button>
+    <button id="replay">↺ Replay</button>
+    <button id="next" class="main">Next ▶</button>
+    <button id="auto">Auto: off</button>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<script>
+// Slots: 3 items → L C R ; 2 items → l r ; 1 item → C
+const X = { L: 190, C: 600, R: 1010, l: 290, r: 910 };
+const CY = 220;         // vertical centre of the stage
+const BW = 320;         // plain box width
+const CARD_W = { L: 360, C: 360, R: 360, l: 480, r: 480 };
+
+// Items:  plain box  = [slot, label, sub]
+//         file card  = { slot, file, who, lines: [...], w? }
+// Actions: show:id · dot:[from,to,label,color] (from/to may be 'id:lineIndex')
+//          hi:'id:lineIndex' · set:[id,sub] · mark:[id,'ok'|'bad'] · note:text · line:text
+const STEPS = [
+  { title: 'The problem', text: 'An AI writes code and a test. The test can pass while the real thing is broken.',
+    boxes: { a: ['L', 'AI agent', 'writes code'], t: ['C', 'its test', ''], d: ['R', 'database', ''] },
+    actions: [{ show: 'a' }, { dot: ['a', 't', 'writes a test'] }, { show: 't' }, { set: ['t', 'result: passed'] }, { mark: ['t', 'ok'] },
+      { show: 'd' }, { dot: ['t', 'd', 'was it saved?'] }, { set: ['d', 'orders: (empty)'] }, { mark: ['d', 'bad'] },
+      { note: 'Green test. Nothing saved. Nobody noticed.' }] },
+
+  { title: 'The idea', text: 'Gateforge blocks a commit until a referee — not the test — proves the new code really works.',
+    boxes: { r: ['l', 'your repo', 'code + tests'], g: ['r', 'Gateforge', 'the gatekeeper'] },
+    actions: [{ show: 'r' }, { note: '$ npm i -D @gate-forge/cli' }, { show: 'g' }, { dot: ['g', 'r', 'installed'] }] },
+
+  { title: 'Setup: one command', text: 'gateforge init writes a few files into the repo. Next steps open them one by one.',
+    boxes: { i: ['L', 'gateforge init', ''], f: ['C', 'config files', '.gateforge.yml\npolicies.yml'], h: ['R', 'git hook', '.git/hooks/\npre-commit'] },
+    actions: [{ show: 'i' }, { dot: ['i', 'f', 'writes'] }, { show: 'f' }, { dot: ['i', 'h', 'installs'] }, { show: 'h' }] },
+
+  { title: 'File: .gateforge.yml', text: 'The main settings file. Gateforge finds every other file through it.',
+    boxes: { c: { slot: 'C', w: 660, file: '.gateforge.yml', who: 'written by init · owner edits · shortened', lines: [
+      'plugins:',
+      '  - id: gateforge.pack-sqlalchemy',
+      "    version: '0.2.0'",
+      'policies: .gateforge/policies.yml',
+      'classificationPolicy: .gateforge/classification-policy.yml',
+      'adapters: .gateforge/adapters',
+      'waivers: .gateforge/waivers',
+      'baselines: .gateforge/baselines/obligations.json',
+      'changed: { provider: auto }',
+      'mode: changed'] } },
+    actions: [{ show: 'c' }, { hi: 'c:1' }, { note: 'plugins → which detectors read your code' }, { hi: 'c:3' }, { note: 'policies → where the rules live' },
+      { hi: 'c:5' }, { note: 'adapters → where the read-back files live' }, { hi: 'c:9' }, { note: 'mode → how hard to block (strict · changed · warn)' }] },
+
+  { title: '.gateforge.yml points to the rules', text: 'One line in the settings file names the rules file.',
+    boxes: { s: { slot: 'l', file: '.gateforge.yml', who: 'shortened', lines: ['policies: .gateforge/policies.yml', 'adapters: .gateforge/adapters', 'mode: changed'] },
+             p: { slot: 'r', file: '.gateforge/policies.yml', who: 'written by init · owner only', lines: [
+               'policies:', '  - id: user-facing-persistence', '    when:', '      exposure: user-facing', '    require:',
+               '      - persistence:create', '      - persistence:read', '      - persistence:update', '      - persistence:delete'] } },
+    actions: [{ show: 's' }, { show: 'p' }, { dot: ['s:0', 'p:0', 'points to'] }, { hi: 'p:3' }, { hi: 'p:5' },
+      { note: 'Rule: a table users can reach must prove create, read, update, delete.' }] },
+
+  { title: 'File: the git hook', text: 'init installs this script. Git runs it on every commit.',
+    boxes: { h: { slot: 'C', w: 620, file: '.git/hooks/pre-commit', who: 'installed by init · shortened', lines: [
+      'if [ -f node_modules/.bin/gateforge ]; then',
+      '  GF_BIN=node_modules/.bin/gateforge',
+      'fi',
+      'if [ -z "$GF_BIN" ]; then',
+      "  echo 'gateforge: CLI engine not found - commit blocked'",
+      '  exit 1',
+      'fi',
+      "exec node \"$GF_BIN\" 'check' '--changed'"] } },
+    actions: [{ show: 'h' }, { hi: 'h:7' }, { note: 'Every commit runs gateforge check.' }, { hi: 'h:5' }, { note: 'Gateforge missing → commit blocked, never waved through.' }] },
+
+  { title: 'The agent writes code', text: 'Say the agent adds a new database table: orders.',
+    boxes: { a: ['l', 'AI agent', ''], c: { slot: 'r', file: 'app/models.py', who: 'your code', lines: ['class Order(Base):', '    __tablename__ = "orders"', '    id: Mapped[int] = mapped_column(primary_key=True)', '    item: Mapped[str]', '    qty: Mapped[int]'] } },
+    actions: [{ show: 'a' }, { show: 'c' }, { dot: ['a', 'c:0', '+ class Order'] }] },
+
+  { title: 'Gateforge finds it', text: 'Gateforge reads the code. It never changes it.',
+    boxes: { c: ['L', 'app/models.py', 'class Order'], g: ['C', 'Gateforge', 'scan'], f: ['R', 'found', 'table: orders\nmodels.py line 6'] },
+    actions: [{ show: 'c' }, { show: 'g' }, { dot: ['c', 'g', 'read'] }, { show: 'f' }, { dot: ['g', 'f', 'found'] }] },
+
+  { title: 'Unsure? Ask, don\'t guess', text: 'When the code can\'t answer a question, Gateforge stops and asks the owner.',
+    boxes: { g: ['l', 'Gateforge', 'whose data is\norders?'], o: ['r', 'owner (human)', ''] },
+    actions: [{ show: 'g' }, { show: 'o' }, { dot: ['g', 'o', 'asks'] }, { dot: ['o', 'g', '"one customer\'s"'] },
+      { set: ['g', 'orders = tenant data'] }, { mark: ['g', 'ok'] }] },
+
+  { title: 'File: planes.json', text: 'The owner\'s answer is saved in a file, so it is asked only once.',
+    boxes: { o: ['l', 'owner (human)', ''], f: { slot: 'r', file: '.gateforge/planes.json', who: 'owner only', lines: [
+      '{', '  "rules": [', '    { "match": "app/*.py",', '      "plane": "tenant",', '      "reason": "orders belong to one customer" }', '  ]', '}'] } },
+    actions: [{ show: 'o' }, { show: 'f' }, { dot: ['o', 'f:3', 'tenant'] },
+      { note: 'This is where "tenant." in tenant.orders comes from.' }] },
+
+  { title: 'File: endpoints.json', text: 'Same for what a route does, when the code can\'t tell. Here: does DELETE really remove the row?',
+    boxes: { o: ['l', 'owner (human)', ''], f: { slot: 'r', file: '.gateforge/endpoints.json', who: 'owner only', lines: [
+      '{ "rules": [ {', '    "method": "DELETE",', '    "paths": ["/api/orders/{}"],', '    "capability": "crud-delete",', '    "reason": "handler removes the row"', '} ] }'] } },
+    actions: [{ show: 'o' }, { show: 'f' }, { dot: ['o', 'f:3', 'really deletes'] },
+      { note: 'Gateforge printed this exact entry; the owner only picked the answer.' }] },
+
+  { title: 'Rule → "must prove" list', text: 'The rule matches the table. Out come 4 obligations: things that must be proven.',
+    boxes: { m: { slot: 'L', file: 'app/models.py', who: 'your code', lines: ['class Order(Base):', '  __tablename__ = "orders"', '  item: Mapped[str]', '  qty: Mapped[int]'] },
+             p: { slot: 'C', file: 'policies.yml', who: 'the rule', lines: ['- id: user-facing-persistence', '  when:', '    exposure: user-facing', '  require:',
+               '    - persistence:create', '    - persistence:read', '    - persistence:update', '    - persistence:delete'] },
+             o: { slot: 'R', file: 'obligations', who: 'computed, not a file', lines: ['tenant.orders:persistence:create', 'tenant.orders:persistence:read',
+               'tenant.orders:persistence:update', 'tenant.orders:persistence:delete'] } },
+    actions: [{ show: 'm' }, { show: 'p' }, { dot: ['m:1', 'p:2', 'a user table'] }, { show: 'o' }, { dot: ['p:4', 'o:0', 'create'] }, { dot: ['p:7', 'o:3', 'delete'] },
+      { note: 'Name = <resource>:<contract>. Remember it — the test will use the same name.' }] },
+
+  { title: 'File: the adapter', text: 'One small file says how to read one order back. The referee will use it later.',
+    boxes: { a: { slot: 'l', file: '.gateforge/adapters/tenant.orders.mjs', who: 'human-reviewed', lines: [
+      "import { defineHttpAdapter } from",
+      "  '@gate-forge/witness/adapter-kit';",
+      'export default defineHttpAdapter({',
+      "  resourceId: 'tenant.orders',",
+      "  readPath: '/api/orders/{id}',",
+      "  listPath: '/api/orders',",
+      "  fields: ['item', 'qty'],",
+      "  deletion: 'hard',",
+      '});'] },
+             p: ['r', 'app', ''] },
+    actions: [{ show: 'a' }, { show: 'p' }, { hi: 'a:3' }, { note: 'resourceId matches tenant.orders — that is how the two are linked.' },
+      { dot: ['a:4', 'p', 'GET /api/orders/42'] }, { dot: ['p', 'a:6', '{ item: "pen", qty: 3 }'] },
+      { note: 'Read-only. It can only look, never change.' }] },
+
+  { title: 'Commit without proof', text: 'The agent tries to commit. Nothing proves orders works yet.',
+    boxes: { a: ['L', 'AI agent', ''], h: ['C', 'git hook', 'gateforge check'], x: ['R', 'result', ''] },
+    actions: [{ show: 'a' }, { show: 'h' }, { dot: ['a', 'h', 'git commit'] }, { show: 'x' }, { dot: ['h', 'x', 'check'] },
+      { set: ['x', 'REFUSED\norders:create\nhas no proof'] }, { mark: ['x', 'bad'] },
+      { note: 'gateforge next → "write a proof test for orders:create"' }] },
+
+  { title: 'File: GATEFORGE.md', text: 'init also wrote the agent\'s rules. The agent follows them when blocked.',
+    boxes: { g: { slot: 'C', w: 620, file: 'GATEFORGE.md', who: 'written by init · shortened', lines: [
+      '1. If blocked, run `gateforge next`.',
+      '2. Read cause, why, and exactly one do: line.',
+      '3. Do the single do: line. Stop. Run next again.',
+      '- New proof tests go in tests/e2e/gateforge/.',
+      '- Never run `tests mark` as proof.',
+      '- Never edit policies, waivers or baselines',
+      '  to make the gate pass.'] } },
+    actions: [{ show: 'g' }, { hi: 'g:0' }, { hi: 'g:2' }, { note: 'One blocker at a time.' }, { hi: 'g:5' }, { note: 'The agent may not loosen its own rules.' }] },
+
+  { title: 'File: the proof test', text: 'The agent writes a short test. Its annotation names the obligation — the same name as before.',
+    boxes: { t: { slot: 'l', file: 'tests/e2e/gateforge/orders.create.spec.js', who: 'by the agent', lines: [
+      "import { test } from '@gate-forge/pack-playwright';",
+      "test('creates an order', {",
+      "  annotation: { type: 'gateforge',",
+      "    description: 'tenant.orders:persistence:create' },",
+      '}, async ({ evidence }) => {',
+      '  const r = await evidence.ui.create(',
+      "    { fields: { item: 'pen', qty: '3' } });",
+      '  await evidence.persistence.verify(r);',
+      '  await evidence.finalize();',
+      '});'] },
+             o: { slot: 'r', file: 'obligations', who: 'computed, not a file', lines: ['tenant.orders:persistence:create', 'tenant.orders:persistence:read',
+               'tenant.orders:persistence:update', 'tenant.orders:persistence:delete'] } },
+    actions: [{ show: 't' }, { show: 'o' }, { dot: ['t:3', 'o:0', 'same name'] },
+      { note: 'This link is a claim. The proof comes later, from the referee.' }] },
+
+  { title: 'File: test-map.yml', text: 'For a test that already exists, `gateforge tests mark` writes the same link into a file.',
+    boxes: { m: { slot: 'C', w: 760, file: '.gateforge/test-map.yml', who: 'written by tests mark · shortened', lines: [
+      'schemaVersion: 1',
+      'tests:',
+      "  - key: 'playwright:chromium:tests/e2e/orders.spec.js:lists orders'",
+      '    kind: browser-e2e',
+      '    claims:',
+      '      - tenant.orders:persistence:read',
+      "    reason: 'existing test opens the order list'"] } },
+    actions: [{ show: 'm' }, { hi: 'm:2' }, { note: 'which test' }, { hi: 'm:5' }, { note: 'which obligation it is about. Still a claim, not proof.' }] },
+
+  { title: 'Before the run: the repo starts the app', text: 'The repo\'s recipe file starts the app on a clean database.',
+    boxes: { r: { slot: 'L', file: '.gateforge/runtime.yml', who: 'written by the repo', lines: [
+      'schemaVersion: 1', 'reset:', "  commands: [['./scripts/reset-db.sh']]", 'seed:', "  commands: [['./scripts/seed.sh']]",
+      'services_up:', "  commands: [['./scripts/start.sh']]", 'services_down:', "  commands: [['./scripts/stop.sh']]"] },
+             g: ['C', 'gateforge run', 'runs the recipe'], p: ['R', 'app', 'clean database'] },
+    actions: [{ show: 'r' }, { show: 'g' }, { dot: ['r:2', 'g', 'reset · seed · start'] }, { show: 'p' }, { dot: ['g', 'p', 'start'] },
+      { note: 'Where the app is: GATEFORGE_APP_BASE_URL=http://127.0.0.1:8000' }] },
+
+  { title: 'Gateforge starts the referee', text: 'Gateforge starts the referee itself and gives it the key, the app address, and the adapter files.',
+    boxes: { g: ['l', 'Gateforge', ''], w: ['r', 'referee', ''] },
+    actions: [{ show: 'g' }, { show: 'w' }, { dot: ['g', 'w', '🔑 key · app address · adapters'] },
+      { set: ['w', 'listening on\n127.0.0.1:<random port>'] }, { mark: ['w', 'ok'] },
+      { note: 'The repo writes nothing for this. Gateforge does it on every run.' }] },
+
+  { title: 'Gateforge starts the tests', text: 'Gateforge starts the test runner and hands it the referee\'s address and a run pass — never the key.',
+    boxes: { g: ['L', 'Gateforge', ''], t: ['C', 'tests', ''], w: ['R', 'referee', ''] },
+    actions: [{ show: 'g' }, { show: 'w' }, { show: 't' }, { dot: ['g', 't', 'referee address + run pass'] },
+      { set: ['t', 'knows the referee\nhas no key'] }, { note: 'The list of tests is locked first. A skipped test = fail.' }] },
+
+  { title: 'The plug: one import line', text: 'This import is what connects the test to the referee.',
+    boxes: { t: { slot: 'C', w: 620, file: 'orders.create.spec.js', who: 'line 1', lines: ["import { test } from '@gate-forge/pack-playwright';"] } },
+    actions: [{ show: 't' }, { hi: 't:0' }, { note: 'Gateforge\'s test, not the plain Playwright one. Everything after it is automatic.' }] },
+
+  { title: 'The test asks, the referee does', text: 'The test asks: "create an order: pen". The referee uses its OWN browser to fill the real form.',
+    boxes: { t: ['L', 'proof test', ''], w: ['C', 'referee', 'its own browser'], p: ['R', 'app', ''] },
+    actions: [{ show: 't' }, { show: 'w' }, { show: 'p' }, { dot: ['t', 'w', 'create: pen'] }, { dot: ['w', 'p', 'fills form · POST /api/orders'] },
+      { dot: ['p', 'w', 'created, id 42'] }, { set: ['w', 'typed: pen\nsaw: order 42'] },
+      { note: 'The test never touches that browser, so a faked page can\'t fool it.' }] },
+
+  { title: 'Older tests: the referee in the middle', text: 'An existing test that drives its own browser can still be used. Then the referee sits in the middle as a proxy.',
+    boxes: { t: ['L', 'existing test', 'its own browser'], w: ['C', 'referee', 'proxy'], p: ['R', 'app', ''] },
+    actions: [{ show: 't' }, { show: 'w' }, { show: 'p' }, { dot: ['t', 'w', 'POST /api/orders'] }, { dot: ['w', 'p', 'forward'] },
+      { dot: ['p', 'w', 'id 42'] }, { dot: ['w', 't', 'id 42'] },
+      { note: 'Gateforge reroutes the test page\'s app requests to the referee automatically. Weaker than the step before.' }] },
+
+  { title: 'The referee checks for itself', text: 'The referee reads order 42 back with the adapter, and compares it with what was typed.',
+    boxes: { w: ['l', 'referee', 'typed: pen'], p: ['r', 'app', ''] },
+    actions: [{ show: 'w' }, { show: 'p' }, { dot: ['w', 'p', 'GET /api/orders/42'] }, { dot: ['p', 'w', 'item: pen'] },
+      { set: ['w', 'typed:  pen\nstored: pen'] }, { mark: ['w', 'ok'] }, { note: 'pen = pen → proven ✓' }] },
+
+  { title: 'If the app is wrong', text: 'Same test, but the app saves something else. The page said "Saved" — still fails.',
+    boxes: { w: ['l', 'referee', 'typed: pen'], p: ['r', 'app', '(has a bug)'] },
+    actions: [{ show: 'w' }, { show: 'p' }, { dot: ['w', 'p', 'GET /api/orders/42'] }, { dot: ['p', 'w', 'item: PEN', '#dc2626'] },
+      { set: ['w', 'typed:  pen\nstored: PEN'] }, { mark: ['w', 'bad'] }, { note: 'pen ≠ PEN → blocked ✗' }] },
+
+  { title: 'The test can\'t cheat', text: 'Only Gateforge and the referee hold the signing key. The test never gets it.',
+    boxes: { t: ['l', 'proof test', 'no key'], w: ['r', 'referee', '🔑 signing key'] },
+    actions: [{ show: 't' }, { show: 'w' }, { dot: ['t', 'w', 'fake "it worked"', '#dc2626'] }, { mark: ['t', 'bad'] },
+      { note: 'Refused. Only records the referee signs count.' }] },
+
+  { title: 'File: receipt.json', text: 'Everything proven, nothing skipped → Gateforge writes a signed receipt.',
+    boxes: { g: ['l', 'gateforge run', 'all proven ✓'], r: { slot: 'r', file: '.gateforge/test-gates/receipt.json', who: 'by Gateforge · not committed · shortened', lines: [
+      '{',
+      '  "inputDigest": "08b57a15…",',
+      '  "candidateTreeId": "986fe48d…",',
+      '  "trustedPolicyDigest": "60aa2ea3…",',
+      '  "verifierKeyId": "key-e0781e48…",',
+      '  "verdictSummary": { "satisfied": 4, "blocking": 0 },',
+      '  "issuedAt": "2026-10-03T09:12:00Z",',
+      '  "mac": "c1f0…"',
+      '}'] } },
+    actions: [{ show: 'g' }, { show: 'r' }, { dot: ['g', 'r:5', 'all 4 proven'] }, { dot: ['g', 'r:7', 'sign 🔑'] }, { mark: ['r', 'ok'] },
+      { note: 'mac = the signature. Made with the key the test never had.' }] },
+
+  { title: 'What the fingerprints cover', text: 'Each fingerprint is a hash of a group of files. Change any byte and the hash changes.',
+    boxes: { f: ['L', 'every file', 'code · tests\nlockfiles · config'],
+             r: { slot: 'C', file: 'receipt.json', who: 'shortened', lines: ['"inputDigest": "08b57a15…",', '"trustedPolicyDigest": "60aa2ea3…",', '"mac": "c1f0…"'] },
+             p: ['R', 'rule files', '.gateforge.yml\npolicies.yml\nadapters · waivers\ntest-map.yml'] },
+    actions: [{ show: 'f' }, { show: 'r' }, { show: 'p' }, { dot: ['f', 'r:0', 'hash'] }, { dot: ['p', 'r:1', 'hash'] },
+      { hi: 'r:2' }, { note: 'mac = signature over everything above.' }] },
+
+  { title: 'File: the push hook', text: 'git push runs this script. It runs gateforge check. The agent never touches a fingerprint.',
+    boxes: { a: ['l', 'AI agent', ''], h: { slot: 'r', file: '.git/hooks/pre-push', who: 'installed by init · shortened', lines: [
+      '# for each pushed commit:', 'node "$GF_BIN" check \\', '  --candidate-commit "$local_sha" \\', '  --require-e2e'] } },
+    actions: [{ show: 'a' }, { show: 'h' }, { dot: ['a', 'h:1', 'git push'] }, { hi: 'h:3' }, { note: '--require-e2e = "a valid receipt must exist for these exact files"' }] },
+
+  { title: 'Push: how the match works', text: 'gateforge check fingerprints the pushed files itself, then compares with the receipt on disk.',
+    boxes: { f: ['L', 'pushed files', ''], c: ['C', 'gateforge check', ''], r: { slot: 'R', file: 'receipt.json', who: 'shortened', lines: ['"inputDigest": "08b57a15…",', '"mac": "c1f0…"'] } },
+    actions: [{ show: 'f' }, { show: 'c' }, { show: 'r' }, { dot: ['f', 'c', 'hash → 08b57a15…'] }, { dot: ['r:0', 'c', 'says 08b57a15…'] },
+      { set: ['c', 'hashes match ✓\nsignature valid ✓'] }, { mark: ['c', 'ok'] }, { note: 'Both match → push allowed ✓' }] },
+
+  { title: 'Change one byte', text: 'Edit even one comment after the run, and the old receipt stops counting.',
+    boxes: { c: ['l', 'app code', 'edit 1 comment'], r: { slot: 'r', file: 'receipt.json', who: 'shortened', lines: ['"inputDigest": "08b57a15…",', '"mac": "c1f0…"'] } },
+    actions: [{ show: 'c' }, { show: 'r' }, { set: ['c', 'hash now: 5e1c90d2…'] }, { dot: ['c', 'r:0', '5e1c… ≠ 08b5…', '#dc2626'] },
+      { mark: ['r', 'bad'] }, { note: 'Receipt is stale → run again.' }] },
+
+  { title: 'File: the CI job', text: 'init also wrote a CI job. It runs the same two commands on the server, for the exact commit.',
+    boxes: { j: { slot: 'l', file: '.gateforge/ci/gitlab-gateforge.yml', who: 'written by init · shortened', lines: [
+      'gateforge:e2e-gate:',
+      '  script:',
+      '    - run_gateforge test-gates --changed',
+      '    - run_gateforge check --changed \\',
+      '        --candidate-commit "$CI_COMMIT_SHA" \\',
+      '        --require-e2e',
+      '  artifacts:',
+      '    paths: [.gateforge/test-gates/receipt.json]'] },
+             s: ['r', 'CI server', 'secrets:\nkey + policy pin'] },
+    actions: [{ show: 'j' }, { show: 's' }, { dot: ['j:2', 's', 'run + receipt'] }, { dot: ['j:3', 's', 'check'] },
+      { note: 'The server uses its own key, so a laptop receipt is not trusted there.' }] },
+
+  { title: 'The server has the last word', text: 'A local hook can be skipped. The server check can\'t, once the branch is protected.',
+    boxes: { p: ['L', 'your push', ''], s: ['C', 'CI server', 'same check'], m: ['R', 'main branch', 'protected'] },
+    actions: [{ show: 'p' }, { show: 's' }, { show: 'm' }, { dot: ['p', 's', 'push'] }, { dot: ['s', 'm', 'green ✓', '#16a34a'] }, { mark: ['m', 'ok'] },
+      { note: 'The owner must turn on branch protection. Gateforge prints how; it can\'t do it.' }] },
+
+  { title: 'File: a waiver', text: 'The owner can forgive one obligation for a while. It is a file too.',
+    boxes: { w: { slot: 'l', file: 'waivers/tenant.orders-persistence-delete.json', who: 'owner only', lines: [
+      '{ "owner": "team-orders",', '  "approver": "lead@x.test",', '  "justificationUrl": "https://tracker/T-12",', '  "scope": { "kind": "exact",',
+      '    "resourceId": "tenant.orders",', '    "fingerprint": "be160c40…" },', '  "expiresAt": "2026-11-01T00:00:00.000Z" }'] },
+             o: ['r', 'tenant.orders:\npersistence:delete', 'fingerprint\nbe160c40…'] },
+    actions: [{ show: 'w' }, { show: 'o' }, { dot: ['w:5', 'o', 'forgives exactly this'] }, { hi: 'w:6' },
+      { note: 'It expires. In strict mode it is still not proof.' }] },
+
+  { title: 'Who does what', text: 'There is a clear line between the two.',
+    boxes: { g: ['l', 'Gateforge does', 'find what needs proof\nask, never guess\nstart referee + tests\nsign receipts\nblock commits'],
+             r: ['r', 'Your repo does', 'the app + tests\nstart the app, say where\nthe import line\nthe read-back files\nkeys + server rules'] },
+    actions: [{ show: 'g' }, { show: 'r' }] },
+
+  { title: 'The whole journey', text: '',
+    boxes: {},
+    actions: [{ line: '1. Agent writes code' }, { line: '2. Gateforge finds it and lists what must be proven' }, { line: '3. Agent writes a proof test' },
+      { line: '4. Referee runs it and checks the database itself' }, { line: '5. All proven → signed receipt' }, { line: '6. Receipt matches the files → push allowed' }] },
+];
+
+// ------------------------------------------------------------------ engine
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+let cur = 0, run = 0, auto = false, boxes = {};
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const LINE_H = 21, HEAD_H = 34;
+
+function drawItem(id, spec) {
+  const g = mk('g', { class: 'box' }, $('stage'));
+  const isCard = !Array.isArray(spec);
+  const slot = isCard ? spec.slot : spec[0];
+  const b = { g, x: X[slot], isCard, spec, hl: new Set(), sub: isCard ? null : spec[2] };
+  b.w = isCard ? (spec.w ?? CARD_W[slot]) : BW;
+  if (isCard) g.classList.add('card');
+  b.draw = () => {
+    g.innerHTML = '';
+    const x = b.x, w = b.w;
+    if (isCard) {
+      const lines = spec.lines; b.h = HEAD_H + 12 + lines.length * LINE_H + 8; const y = CY - b.h / 2; b.y = y;
+      mk('rect', { class: 'frame', x: x - w / 2, y, width: w, height: b.h }, g);
+      mk('rect', { class: 'head', x: x - w / 2, y, width: w, height: HEAD_H, rx: 10 }, g);
+      mk('rect', { class: 'head', x: x - w / 2, y: y + HEAD_H - 10, width: w, height: 10 }, g);
+      const f = mk('text', { class: 'fname', x: x - w / 2 + 12, y: y + 22 }, g); f.textContent = spec.file;
+      if (spec.who) {
+        const wh = mk('text', { class: 'who', x: x + w / 2 - 12, y: y + 22, 'text-anchor': 'end' }, g); wh.textContent = spec.who;
+        // No room next to the file name → show it just under the card instead.
+        if (f.getBBox().width > 0 && f.getBBox().x + f.getBBox().width > wh.getBBox().x - 8) { wh.setAttribute('y', y + b.h + 16); wh.setAttribute('x', x + w / 2 - 4); wh.style.fill = '#777'; }
+      }
+      b.lineY = (n) => y + HEAD_H + 12 + n * LINE_H + LINE_H / 2;
+      lines.forEach((ln, n) => {
+        const r = mk('rect', { class: 'hl' + (b.hl.has(n) ? ' on' : ''), x: x - w / 2 + 6, y: b.lineY(n) - LINE_H / 2, width: w - 12, height: LINE_H, rx: 4 }, g);
+        r.dataset.n = n;
+        const t = mk('text', { class: 'code', x: x - w / 2 + 14, y: b.lineY(n) + 5 }, g); t.textContent = ln;
+      });
+      if (b.mark) { const m = mk('text', { x: x + w / 2 - 18, y: y + HEAD_H + 26, class: 'mark', 'text-anchor': 'middle', fill: b.mark === 'ok' ? '#16a34a' : '#dc2626' }, g); m.textContent = b.mark === 'ok' ? '✓' : '✗'; }
+    } else {
+      const label = spec[1];
+      const labelLines = label.split('\n');
+      const subLines = b.sub ? b.sub.split('\n') : [];
+      b.h = 44 + labelLines.length * 26 + subLines.length * 22; const y = CY - b.h / 2; b.y = y;
+      mk('rect', { class: 'frame', x: x - w / 2, y, width: w, height: b.h }, g);
+      labelLines.forEach((ln, i) => { const t = mk('text', { x, y: y + 38 + i * 26, class: 'label', 'text-anchor': 'middle' }, g); t.textContent = ln; });
+      subLines.forEach((ln, i) => { if (!ln) return; const s = mk('text', { x, y: y + 44 + labelLines.length * 26 + i * 22, class: 'sub', 'text-anchor': 'middle' }, g); s.textContent = ln; });
+      b.lineY = () => CY;
+      if (b.mark) { const m = mk('text', { x: x + w / 2 - 22, y: y + 36, class: 'mark', 'text-anchor': 'middle', fill: b.mark === 'ok' ? '#16a34a' : '#dc2626' }, g); m.textContent = b.mark === 'ok' ? '✓' : '✗'; }
+    }
+  };
+  b.draw(); boxes[id] = b;
+}
+
+// 'id' or 'id:lineIndex' → { box, line }
+function ref(r) { const [id, n] = r.split(':'); return { b: boxes[id], n: n === undefined ? null : Number(n) }; }
+function highlight(r) { const { b, n } = ref(r); if (n === null || !b.isCard) return; b.hl.add(n); b.g.querySelectorAll('rect.hl').forEach((e) => { if (Number(e.dataset.n) === n) e.classList.add('on'); }); }
+
+async function dot([from, to, label, color = '#2563eb'], token) {
+  const A = ref(from), B = ref(to);
+  if (A.n !== null) highlight(from);
+  const dir = B.b.x > A.b.x ? 1 : -1;
+  const yA = A.n !== null ? A.b.lineY(A.n) : CY + (dir > 0 ? -14 : 14);
+  const yB = B.n !== null ? B.b.lineY(B.n) : CY + (dir > 0 ? -14 : 14);
+  const x0 = A.b.x + dir * A.b.w / 2, x1 = B.b.x - dir * B.b.w / 2;
+  const line = mk('line', { x1: x0, y1: yA, x2: x0, y2: yA, stroke: color, 'stroke-width': 3, 'stroke-dasharray': '7 6' }, $('stage'));
+  const c = mk('circle', { r: 9, fill: color, cx: x0, cy: yA }, $('stage'));
+  // Labels sit above (forward) or below (return) the tallest item, so they never cover content.
+  const maxH = Math.max(...Object.values(boxes).map((bx) => bx.h));
+  // One label per lane (same gap, same direction): a new dot replaces the old label there.
+  const lane = `${Math.round((x0 + x1) / 2)}:${dir}`;
+  $('stage').querySelectorAll(`.dotlabel[data-lane="${lane}"]`).forEach((e) => e.remove());
+  const t = mk('text', { class: 'dotlabel', 'data-lane': lane, 'text-anchor': 'middle', fill: color, x: (x0 + x1) / 2, y: dir > 0 ? CY - maxH / 2 - 14 : CY + maxH / 2 + 30 }, $('stage')); t.textContent = label;
+  const dur = 1300, t0 = performance.now();
+  await new Promise((res) => { const f = (now) => { if (token !== run) return res();
+    const p = Math.min(1, (now - t0) / dur), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    const x = x0 + (x1 - x0) * e, y = yA + (yB - yA) * e;
+    c.setAttribute('cx', x); c.setAttribute('cy', y); line.setAttribute('x2', x); line.setAttribute('y2', y);
+    p < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); });
+  if (token !== run) return;
+  if (B.n !== null) highlight(to);
+  c.remove(); await wait(250);
+}
+
+// Option: true = step 0 waits for Next before animating.
+const START_PAUSED = true;
+let held = false;
+const next = () => { if (held) { held = false; play(0); } else play(cur + 1); };
+
+async function play(i, hold = false) {
+  held = hold;
+  cur = Math.max(0, Math.min(i, STEPS.length - 1)); const token = ++run; const s = STEPS[cur];
+  $('stage').innerHTML = ''; boxes = {}; $('note').textContent = ''; $('lines').innerHTML = '';
+  $('stage').style.display = Object.keys(s.boxes).length ? '' : 'none';
+  $('count').textContent = `Step ${cur} of ${STEPS.length - 1}`; $('title').textContent = s.title; $('text').textContent = s.text;
+  $('dots').innerHTML = ''; STEPS.forEach((_, k) => { const d = document.createElement('i'); d.className = k < cur ? 'done' : k === cur ? 'cur' : ''; d.title = STEPS[k].title; d.onclick = () => play(k); $('dots').appendChild(d); });
+  for (const id in s.boxes) drawItem(id, s.boxes[id]);
+  if (held) return;
+  await wait(400);
+  for (const a of s.actions) {
+    if (token !== run) return;
+    if (a.show) { boxes[a.show].g.classList.add('on'); await wait(500); }
+    else if (a.dot) await dot(a.dot, token);
+    else if (a.hi) { highlight(a.hi); await wait(700); }
+    else if (a.set) { const b = boxes[a.set[0]]; b.sub = a.set[1]; b.draw(); await wait(700); }
+    else if (a.mark) { const b = boxes[a.mark[0]]; b.mark = a.mark[1]; b.draw(); b.g.classList.add(a.mark[1]); await wait(600); }
+    else if (a.note) { $('note').textContent = a.note; await wait(1300); }
+    else if (a.line) { const d = document.createElement('div'); d.textContent = a.line; $('lines').appendChild(d); requestAnimationFrame(() => d.classList.add('on')); await wait(900); }
+  }
+  if (auto && token === run && cur < STEPS.length - 1) { await wait(2200); if (token === run && auto) play(cur + 1); }
+}
+
+$('next').onclick = next;
+$('back').onclick = () => play(cur - 1);
+$('replay').onclick = () => play(cur);
+$('auto').onclick = () => { auto = !auto; $('auto').textContent = `Auto: ${auto ? 'on' : 'off'}`; if (auto) play(cur); };
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft') play(cur - 1);
+  else if (e.key === 'r') play(cur);
+});
+play(0, START_PAUSED);
+</script>
+</body>
+</html>

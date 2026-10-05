@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITLE, step by step</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #fafafa; color: #111;
+    font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { height: 100%; display: flex; flex-direction: column; align-items: center; }
+  .top { width: min(1100px, 94vw); padding-top: 3vh; }
+  .count { color: #888; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; }
+  h1 { font-size: clamp(26px, 3.2vw, 40px); margin: 6px 0 8px; }
+  .text { font-size: clamp(17px, 1.7vw, 22px); color: #333; min-height: 2.6em; line-height: 1.35; }
+  svg { width: min(1150px, 96vw); flex: 1; min-height: 0; }
+  .box rect.frame { fill: #fff; stroke: #111; stroke-width: 2.5; rx: 14; transition: stroke .3s, fill .3s; }
+  .box.ok rect.frame { stroke: #16a34a; fill: #f0fdf4; }
+  .box.bad rect.frame { stroke: #dc2626; fill: #fef2f2; }
+  .box .label { font-size: 23px; font-weight: 800; }
+  .box .sub { font-size: 16px; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; fill: #444; }
+  .box .mark { font-size: 30px; font-weight: 900; }
+  .box { opacity: 0; transition: opacity .45s, transform .45s; transform: translateY(10px); }
+  .box.on { opacity: 1; transform: none; }
+  /* file cards */
+  .card rect.frame { rx: 10; }
+  .card rect.head { fill: #111; }
+  .card .fname { font-size: 15px; font-weight: 700; fill: #fff; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+  .card .who { font-size: 12px; fill: #bbb; }
+  .card .code { font-size: 13.5px; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; fill: #222; white-space: pre; font-variant-ligatures: none; }
+  .card rect.hl { fill: #fde68a; opacity: 0; transition: opacity .35s; }
+  .card rect.hl.on { opacity: 1; }
+  .dotlabel { font-size: 17px; font-weight: 700; paint-order: stroke; stroke: #fafafa; stroke-width: 6px; }
+  .note { font-size: clamp(16px, 1.6vw, 21px); font-weight: 700; text-align: center; min-height: 1.6em; padding: 0 4vw; }
+  .lines { font-size: clamp(18px, 2vw, 26px); line-height: 1.9; text-align: center; }
+  .lines div { opacity: 0; transition: opacity .5s; } .lines div.on { opacity: 1; }
+  .bar { display: flex; gap: 10px; align-items: center; padding: 12px 0 20px; }
+  button { font-size: 16px; padding: 9px 16px; border-radius: 8px; border: 2px solid #111; background: #fff; cursor: pointer; }
+  button.main { background: #111; color: #fff; }
+  .dots { display: flex; gap: 4px; margin-left: 12px; flex-wrap: wrap; max-width: 420px; }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: #ddd; cursor: pointer; }
+  .dots i.done { background: #999; } .dots i.cur { background: #111; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="count" id="count"></div>
+    <h1 id="title"></h1>
+    <div class="text" id="text"></div>
+  </div>
+  <svg id="stage" viewBox="0 0 1200 440" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="note" id="note"></div>
+  <div class="lines" id="lines"></div>
+  <div class="bar">
+    <button id="back">◀ Back</button>
+    <button id="replay">↺ Replay</button>
+    <button id="next" class="main">Next ▶</button>
+    <button id="auto">Auto: off</button>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<script>
+// Slots: 3 items → L C R ; 2 items → l r ; 1 item → C
+const X = { L: 190, C: 600, R: 1010, l: 290, r: 910 };
+const CY = 220;         // vertical centre of the stage
+const BW = 320;         // plain box width
+const CARD_W = { L: 360, C: 360, R: 360, l: 480, r: 480 };
+
+// Items:  plain box  = [slot, label, sub]
+//         file card  = { slot, file, who, lines: [...], w? }
+// Actions: show:id · dot:[from,to,label,color] (from/to may be 'id:lineIndex')
+//          hi:'id:lineIndex' · set:[id,sub] · mark:[id,'ok'|'bad'] · note:text · line:text
+const STEPS = [
+  // REPLACE THESE. One idea per step. At most 3 items. Plain words.
+  { title: 'The problem', text: 'One plain sentence that says what is wrong.',
+    boxes: { a: ['L', 'actor', 'does a thing'], b: ['C', 'middle', ''], c: ['R', 'result', ''] },
+    actions: [{ show: 'a' }, { show: 'b' }, { dot: ['a', 'b', 'sends X'] }, { show: 'c' },
+      { dot: ['b', 'c', 'checks'] }, { set: ['c', 'looked fine\nbut was wrong'] }, { mark: ['c', 'bad'] },
+      { note: 'The punchline, one line.' }] },
+
+  { title: 'File: settings.yml', text: 'A file card: real file name, real (shortened) content, who writes it.',
+    boxes: { s: { slot: 'l', file: 'settings.yml', who: 'written by init', lines: ['rules: rules.yml', 'mode: strict'] },
+             r: { slot: 'r', file: 'rules.yml', who: 'owner only', lines: ['- when: table', '  require: create'] } },
+    actions: [{ show: 's' }, { show: 'r' }, { hi: 's:1' }, { note: 'hi = highlight one line' },
+      { dot: ['s:0', 'r:0', 'points to'] }, { note: 'A dot from a LINE in one file to a LINE in another.' }] },
+
+  { title: 'The whole journey', text: '',
+    boxes: {},
+    actions: [{ line: '1. First thing' }, { line: '2. Second thing' }, { line: '3. Third thing' }] },
+];
+
+// ------------------------------------------------------------------ engine
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+let cur = 0, run = 0, auto = false, boxes = {};
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const LINE_H = 21, HEAD_H = 34;
+
+function drawItem(id, spec) {
+  const g = mk('g', { class: 'box' }, $('stage'));
+  const isCard = !Array.isArray(spec);
+  const slot = isCard ? spec.slot : spec[0];
+  const b = { g, x: X[slot], isCard, spec, hl: new Set(), sub: isCard ? null : spec[2] };
+  b.w = isCard ? (spec.w ?? CARD_W[slot]) : BW;
+  if (isCard) g.classList.add('card');
+  b.draw = () => {
+    g.innerHTML = '';
+    const x = b.x, w = b.w;
+    if (isCard) {
+      const lines = spec.lines; b.h = HEAD_H + 12 + lines.length * LINE_H + 8; const y = CY - b.h / 2; b.y = y;
+      mk('rect', { class: 'frame', x: x - w / 2, y, width: w, height: b.h }, g);
+      mk('rect', { class: 'head', x: x - w / 2, y, width: w, height: HEAD_H, rx: 10 }, g);
+      mk('rect', { class: 'head', x: x - w / 2, y: y + HEAD_H - 10, width: w, height: 10 }, g);
+      const f = mk('text', { class: 'fname', x: x - w / 2 + 12, y: y + 22 }, g); f.textContent = spec.file;
+      if (spec.who) {
+        const wh = mk('text', { class: 'who', x: x + w / 2 - 12, y: y + 22, 'text-anchor': 'end' }, g); wh.textContent = spec.who;
+        // No room next to the file name → show it just under the card instead.
+        if (f.getBBox().width > 0 && f.getBBox().x + f.getBBox().width > wh.getBBox().x - 8) { wh.setAttribute('y', y + b.h + 16); wh.setAttribute('x', x + w / 2 - 4); wh.style.fill = '#777'; }
+      }
+      b.lineY = (n) => y + HEAD_H + 12 + n * LINE_H + LINE_H / 2;
+      lines.forEach((ln, n) => {
+        const r = mk('rect', { class: 'hl' + (b.hl.has(n) ? ' on' : ''), x: x - w / 2 + 6, y: b.lineY(n) - LINE_H / 2, width: w - 12, height: LINE_H, rx: 4 }, g);
+        r.dataset.n = n;
+        const t = mk('text', { class: 'code', x: x - w / 2 + 14, y: b.lineY(n) + 5 }, g); t.textContent = ln;
+      });
+      if (b.mark) { const m = mk('text', { x: x + w / 2 - 18, y: y + HEAD_H + 26, class: 'mark', 'text-anchor': 'middle', fill: b.mark === 'ok' ? '#16a34a' : '#dc2626' }, g); m.textContent = b.mark === 'ok' ? '✓' : '✗'; }
+    } else {
+      const label = spec[1];
+      const labelLines = label.split('\n');
+      const subLines = b.sub ? b.sub.split('\n') : [];
+      b.h = 44 + labelLines.length * 26 + subLines.length * 22; const y = CY - b.h / 2; b.y = y;
+      mk('rect', { class: 'frame', x: x - w / 2, y, width: w, height: b.h }, g);
+      labelLines.forEach((ln, i) => { const t = mk('text', { x, y: y + 38 + i * 26, class: 'label', 'text-anchor': 'middle' }, g); t.textContent = ln; });
+      subLines.forEach((ln, i) => { if (!ln) return; const s = mk('text', { x, y: y + 44 + labelLines.length * 26 + i * 22, class: 'sub', 'text-anchor': 'middle' }, g); s.textContent = ln; });
+      b.lineY = () => CY;
+      if (b.mark) { const m = mk('text', { x: x + w / 2 - 22, y: y + 36, class: 'mark', 'text-anchor': 'middle', fill: b.mark === 'ok' ? '#16a34a' : '#dc2626' }, g); m.textContent = b.mark === 'ok' ? '✓' : '✗'; }
+    }
+  };
+  b.draw(); boxes[id] = b;
+}
+
+// 'id' or 'id:lineIndex' → { box, line }
+function ref(r) { const [id, n] = r.split(':'); return { b: boxes[id], n: n === undefined ? null : Number(n) }; }
+function highlight(r) { const { b, n } = ref(r); if (n === null || !b.isCard) return; b.hl.add(n); b.g.querySelectorAll('rect.hl').forEach((e) => { if (Number(e.dataset.n) === n) e.classList.add('on'); }); }
+
+async function dot([from, to, label, color = '#2563eb'], token) {
+  const A = ref(from), B = ref(to);
+  if (A.n !== null) highlight(from);
+  const dir = B.b.x > A.b.x ? 1 : -1;
+  const yA = A.n !== null ? A.b.lineY(A.n) : CY + (dir > 0 ? -14 : 14);
+  const yB = B.n !== null ? B.b.lineY(B.n) : CY + (dir > 0 ? -14 : 14);
+  const x0 = A.b.x + dir * A.b.w / 2, x1 = B.b.x - dir * B.b.w / 2;
+  const line = mk('line', { x1: x0, y1: yA, x2: x0, y2: yA, stroke: color, 'stroke-width': 3, 'stroke-dasharray': '7 6' }, $('stage'));
+  const c = mk('circle', { r: 9, fill: color, cx: x0, cy: yA }, $('stage'));
+  // Labels sit above (forward) or below (return) the tallest item, so they never cover content.
+  const maxH = Math.max(...Object.values(boxes).map((bx) => bx.h));
+  // One label per lane (same gap, same direction): a new dot replaces the old label there.
+  const lane = `${Math.round((x0 + x1) / 2)}:${dir}`;
+  $('stage').querySelectorAll(`.dotlabel[data-lane="${lane}"]`).forEach((e) => e.remove());
+  const t = mk('text', { class: 'dotlabel', 'data-lane': lane, 'text-anchor': 'middle', fill: color, x: (x0 + x1) / 2, y: dir > 0 ? CY - maxH / 2 - 14 : CY + maxH / 2 + 30 }, $('stage')); t.textContent = label;
+  const dur = 1300, t0 = performance.now();
+  await new Promise((res) => { const f = (now) => { if (token !== run) return res();
+    const p = Math.min(1, (now - t0) / dur), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    const x = x0 + (x1 - x0) * e, y = yA + (yB - yA) * e;
+    c.setAttribute('cx', x); c.setAttribute('cy', y); line.setAttribute('x2', x); line.setAttribute('y2', y);
+    p < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); });
+  if (token !== run) return;
+  if (B.n !== null) highlight(to);
+  c.remove(); await wait(250);
+}
+
+async function play(i) {
+  cur = Math.max(0, Math.min(i, STEPS.length - 1)); const token = ++run; const s = STEPS[cur];
+  $('stage').innerHTML = ''; boxes = {}; $('note').textContent = ''; $('lines').innerHTML = '';
+  $('stage').style.display = Object.keys(s.boxes).length ? '' : 'none';
+  $('count').textContent = `Step ${cur} of ${STEPS.length - 1}`; $('title').textContent = s.title; $('text').textContent = s.text;
+  $('dots').innerHTML = ''; STEPS.forEach((_, k) => { const d = document.createElement('i'); d.className = k < cur ? 'done' : k === cur ? 'cur' : ''; d.title = STEPS[k].title; d.onclick = () => play(k); $('dots').appendChild(d); });
+  for (const id in s.boxes) drawItem(id, s.boxes[id]);
+  await wait(400);
+  for (const a of s.actions) {
+    if (token !== run) return;
+    if (a.show) { boxes[a.show].g.classList.add('on'); await wait(500); }
+    else if (a.dot) await dot(a.dot, token);
+    else if (a.hi) { highlight(a.hi); await wait(700); }
+    else if (a.set) { const b = boxes[a.set[0]]; b.sub = a.set[1]; b.draw(); await wait(700); }
+    else if (a.mark) { const b = boxes[a.mark[0]]; b.mark = a.mark[1]; b.draw(); b.g.classList.add(a.mark[1]); await wait(600); }
+    else if (a.note) { $('note').textContent = a.note; await wait(1300); }
+    else if (a.line) { const d = document.createElement('div'); d.textContent = a.line; $('lines').appendChild(d); requestAnimationFrame(() => d.classList.add('on')); await wait(900); }
+  }
+  if (auto && token === run && cur < STEPS.length - 1) { await wait(2200); if (token === run && auto) play(cur + 1); }
+}
+
+$('next').onclick = () => play(cur + 1);
+$('back').onclick = () => play(cur - 1);
+$('replay').onclick = () => play(cur);
+$('auto').onclick = () => { auto = !auto; $('auto').textContent = `Auto: ${auto ? 'on' : 'off'}`; if (auto) play(cur); };
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); play(cur + 1); }
+  else if (e.key === 'ArrowLeft') play(cur - 1);
+  else if (e.key === 'r') play(cur);
+});
+play(0);
+</script>
+</body>
+</html>
