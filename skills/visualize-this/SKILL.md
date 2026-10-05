@@ -10,7 +10,7 @@ step 0 → 1 → 2 → … → end. Each step is one idea, shown with the fewest
 possible, animated so the eye follows one moving thing.
 
 **Gold reference (the user called it "close to perfect"):**
-https://github.com/umiddey/knowledge-base/blob/master/skills/visualize-this/gold-reference/gateforge-ecosystem.html — 36 steps, open it in a browser.
+`gold-reference/gateforge-ecosystem.html` (next to this file), 36 steps.
 When unsure how a step should look, open it and copy the pattern.
 
 ## The hard rules
