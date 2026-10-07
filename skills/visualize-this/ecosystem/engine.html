@@ -2,68 +2,87 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>/*TITLE*/</title>
 <style>
-:root { --ink:#111; --blue:#2563eb; --green:#16a34a; --red:#dc2626; --yellow:#fde047; --muted:#6b7280; }
-* { box-sizing: border-box; }
-html, body { margin:0; height:100%; background:#fff; color:var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+/*FONTS*/
+:root {
+  --paper:#F6F8FB; --card:#FFFFFF; --ink:#0F172A; --ink2:#1E293B; --body:#334155; --muted:#64748B; --faint:#94A3B8;
+  --line:#D5DCE6; --soft:#EEF2F7; --blue:#2563EB; --green:#059669; --red:#E11D48; --hl:#FFE58A;
+  --sans: Manrope, "Inter", "Adwaita Sans", "Noto Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; height:100%; background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; }
 #app { display:grid; grid-template-rows:auto 1fr auto; height:100vh; }
-header { display:flex; align-items:center; gap:20px; padding:10px 28px 0; }
-#crumb { font-size:19px; color:#444; white-space:nowrap; min-width:300px; }
-#crumb a { color:var(--blue); cursor:pointer; text-decoration:underline; }
-#mini { flex:1; height:58px; max-width:1100px; }
-#mini .pill { cursor:pointer; }
+header { display:grid; grid-template-columns:minmax(260px,auto) 1fr; align-items:center; gap:32px; padding:14px 32px 4px; }
+#deck { font-weight:700; font-size:16px; letter-spacing:-0.01em; }
+#crumb { font-size:14px; color:var(--muted); margin-top:3px; white-space:nowrap; }
+#crumb a { color:var(--blue); cursor:pointer; text-decoration:none; font-weight:600; }
+#crumb a:hover { text-decoration:underline; }
+#mini { width:100%; height:56px; }
+#mini .node { cursor:pointer; }
 #stagewrap { position:relative; min-height:0; }
 #stage { width:100%; height:100%; display:block; }
-footer { padding:4px 32px 14px; }
-#title { font-size:31px; font-weight:750; margin:0; }
-#text { font-size:23px; margin:6px 0 0; min-height:30px; max-width:1300px; }
-#note { font-size:21px; margin:8px 0 0; background:var(--yellow); display:inline-block; padding:3px 12px; border-radius:6px; opacity:0; transition:opacity .35s; }
-#note.on { opacity:1; }
-#bar { display:flex; align-items:center; gap:10px; margin-top:10px; }
-button { font:inherit; font-size:17px; padding:6px 16px; border:2px solid #111; background:#fff; border-radius:8px; cursor:pointer; }
-button:hover { background:#f3f4f6; }
-button.on { background:#111; color:#fff; }
-#count { font-size:17px; color:#444; min-width:120px; text-align:right; }
-.dots { display:flex; gap:5px; flex-wrap:wrap; flex:1; align-items:center; }
-.dots i { width:13px; height:13px; border-radius:50%; border:2px solid #111; cursor:pointer; display:block; }
-.dots i.done { background:#111; }
-.dots i.cur { background:var(--blue); border-color:var(--blue); transform:scale(1.25); }
-.dots i.gap { margin-left:12px; }
-svg text { white-space: pre; }
-.mono { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace; }
-.box { cursor:pointer; }
+#stage .box { cursor:pointer; }
+#stage .box:hover .frame { stroke:var(--ink); }
+svg text { white-space:pre; }
+#stage, #mini { font-family:var(--sans); }
+footer { padding:6px 40px 18px; }
+#eyebrow { font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+#title { font-size:30px; font-weight:800; letter-spacing:-0.02em; margin:4px 0 0; }
+#text { font-size:20px; line-height:1.4; color:var(--body); margin:6px 0 0; max-width:1250px; min-height:28px; }
+#note { display:inline-block; margin-top:10px; font-size:17px; font-weight:600; color:#3F3200; background:#FFF6CC; border-left:4px solid #FACC15; border-radius:8px; padding:5px 14px; opacity:0; transform:translateY(4px); transition:opacity .35s, transform .35s; }
+#note.on { opacity:1; transform:none; }
+#bar { display:flex; align-items:center; gap:10px; margin-top:14px; }
+button { font:inherit; font-size:15px; font-weight:600; height:38px; padding:0 16px; border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; cursor:pointer; }
+button:hover { border-color:var(--ink); }
+button:focus-visible { outline:3px solid #93C5FD; outline-offset:2px; }
+button.primary { background:var(--ink); color:#fff; border-color:var(--ink); }
+button.on { background:#EEF4FF; border-color:var(--blue); color:var(--blue); }
+.prog { display:flex; align-items:center; gap:3px; flex:1; margin:0 10px; }
+.prog i { flex:1 1 0; height:6px; border-radius:3px; background:#E2E8F0; cursor:pointer; transition:background .2s; }
+.prog i:hover { background:var(--faint); }
+.prog i.done { background:#94A3B8; }
+.prog i.cur { background:var(--blue); height:8px; }
+.prog i.gap { margin-left:9px; }
+#count { font-family:var(--mono); font-size:13px; color:var(--muted); min-width:72px; text-align:right; }
+@media (prefers-reduced-motion: reduce) { #note { transition:none; } }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <div id="crumb"></div>
-    <svg id="mini" viewBox="0 0 1000 58" preserveAspectRatio="xMidYMid meet"></svg>
+    <div><div id="deck"></div><div id="crumb"></div></div>
+    <svg id="mini" viewBox="0 0 1000 56" preserveAspectRatio="xMidYMid meet"></svg>
   </header>
   <div id="stagewrap">
     <svg id="stage" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <pattern id="stripes" patternUnits="userSpaceOnUse" width="18" height="18"><rect width="18" height="18" fill="#fff"/><rect width="9" height="18" fill="#111"/></pattern>
-        <pattern id="barrier" patternUnits="userSpaceOnUse" width="56" height="26"><rect width="56" height="26" fill="#fff"/><rect width="28" height="26" fill="#dc2626"/></pattern>
-        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/></marker>
-        <marker id="ahk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker>
-        <marker id="ahy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ca8a04"/></marker>
-        <marker id="ahb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+        <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#0F172A" flood-opacity="0.08"/></filter>
+        <filter id="sh2" x="-20%" y="-30%" width="140%" height="180%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0F172A" flood-opacity="0.16"/></filter>
+        <pattern id="stripes" patternUnits="userSpaceOnUse" width="18" height="18"><rect width="18" height="18" fill="#fff"/><rect width="9" height="18" fill="#1E293B"/></pattern>
+        <pattern id="barrier" patternUnits="userSpaceOnUse" width="56" height="26"><rect width="56" height="26" fill="#fff"/><rect width="28" height="26" fill="#E11D48"/></pattern>
+        <marker id="chev" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#9AA8BB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="chevk" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#1E293B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="chevy" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#CA8A04" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="chevb" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="mini-ah" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="5" markerHeight="5" orient="auto"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#CBD5E1" stroke-width="2.4"/></marker>
       </defs>
       <g id="world"></g>
     </svg>
   </div>
   <footer>
+    <div id="eyebrow"></div>
     <h1 id="title"></h1>
     <div id="text"></div>
     <div id="note"></div>
     <div id="bar">
-      <button id="back">← Back</button>
-      <button id="next">Next →</button>
-      <button id="replay">Replay</button>
-      <button id="auto">Auto</button>
-      <div class="dots" id="dots"></div>
+      <button id="back" aria-label="Previous step">←</button>
+      <button id="next" class="primary">Next →</button>
+      <button id="replay">↻ Replay</button>
+      <button id="auto">▶ Auto</button>
+      <div class="prog" id="dots"></div>
       <div id="count"></div>
     </div>
   </footer>
@@ -75,12 +94,17 @@ svg text { white-space: pre; }
 'use strict';
 /* ============================================================
    Forest + trees explainer engine.
-   Content lives in ECO (bottom of file). Do not edit the engine
+   Content lives in ECO (the script above). Don't edit the engine
    to make a new deck.
    ============================================================ */
 const NS = 'http://www.w3.org/2000/svg';
-const MONO = 'ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace';
-const C = { ink:'#111', blue:'#2563eb', green:'#16a34a', red:'#dc2626', yellow:'#fde047', amber:'#f59e0b', muted:'#6b7280', light:'#f3f4f6' };
+const MONO = '"JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace';
+const C = {
+  ink: '#0F172A', ink2: '#1E293B', body: '#334155', muted: '#64748B', faint: '#94A3B8', line: '#D5DCE6', soft: '#EEF2F7', fill: '#F1F5F9',
+  blue: '#2563EB', blueSoft: '#EFF6FF', blueLine: '#93C5FD', green: '#059669', greenSoft: '#ECFDF5', red: '#E11D48', redSoft: '#FFF1F2',
+  yellow: '#FACC15', hl: '#FFE58A', amber: '#F59E0B',
+};
+const SW = 3.5;                      // stroke width of every drawing
 const IW = 1600, IH = 800;           // inner scene size (every box interior)
 function el(tag, attrs, parent) {
   const e = document.createElementNS(NS, tag);
@@ -89,20 +113,23 @@ function el(tag, attrs, parent) {
   return e;
 }
 function T(p, x, y, s, o = {}) {
-  const t = el('text', { x, y, 'font-size': o.size || 22 }, p);
+  const t = el('text', { x, y, 'font-size': o.size || 20 }, p);
   if (o.mono) t.setAttribute('font-family', MONO);
-  if (o.bold) t.setAttribute('font-weight', 700);
+  t.setAttribute('font-weight', o.weight || (o.bold ? 700 : o.mono ? 500 : 500));
   if (o.italic) t.setAttribute('font-style', 'italic');
   if (o.anchor) t.setAttribute('text-anchor', o.anchor);
+  if (o.spacing) t.setAttribute('letter-spacing', o.spacing);
   t.setAttribute('fill', o.fill || C.ink);
-  t.textContent = s;
+  t.textContent = o.upper ? String(s).toUpperCase() : s;
   return t;
 }
+const eyebrow = (p, x, y, s, o = {}) => T(p, x, y, s, { size: o.size || 13, mono: true, weight: 600, spacing: '1.2', upper: true, fill: o.fill || C.faint, anchor: o.anchor });
 function textW(t) { try { return t.getComputedTextLength(); } catch (e) { return t.textContent.length * 12; } }
+const S_ = (extra = {}) => ({ fill: '#fff', stroke: C.ink2, 'stroke-width': SW, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', ...extra });
 
 /* ---------- time ---------- */
 let GEN = 0, INSTANT = false;
-const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a, b, t) => a + (b - a) * t;
 function tween(ms, fn) {
   if (INSTANT || ms <= 0) { fn(1); return Promise.resolve(); }
@@ -122,115 +149,119 @@ function wait(ms) { if (INSTANT) return Promise.resolve(); const g = GEN; return
 function opac(e) { const v = e.getAttribute('opacity'); return v === null ? 1 : +v; }
 function fade(e, to, ms = 380) { const from = opac(e); return tween(ms, (t) => e.setAttribute('opacity', lerp(from, to, t))); }
 function pop(g, ms = 320) {
-  // scale bump around the element's own centre
   let bb; try { bb = g.getBBox(); } catch (e) { return Promise.resolve(); }
   const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
   const base = g.getAttribute('transform') || '';
   return tween(ms, (t) => {
-    const s = 1 + 0.12 * Math.sin(Math.PI * t);
+    const s = 1 + 0.1 * Math.sin(Math.PI * t);
     g.setAttribute('transform', `${base} translate(${cx},${cy}) scale(${s}) translate(${-cx},${-cy})`);
   }).then(() => g.setAttribute('transform', base));
 }
+function check(p, x, y, color = '#fff', w = 4) { return el('path', { d: `M${x - 9},${y} L${x - 3},${y + 6} L${x + 9},${y - 7}`, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, p); }
+function cross(p, x, y, color = '#fff', w = 4) { return el('path', { d: `M${x - 7},${y - 7} L${x + 7},${y + 7} M${x + 7},${y - 7} L${x - 7},${y + 7}`, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round' }, p); }
 
-/* ---------- drawings (pure; local coords from 0,0) ---------- */
+/* ---------- drawings (pure; local coords from 0,0; one line style) ---------- */
 const DRAW = {
   robot(g) {
-    el('line', { x1: 65, y1: 8, x2: 65, y2: 30, stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 65, cy: 8, r: 7, fill: C.blue }, g);
-    el('rect', { x: 15, y: 30, width: 100, height: 70, rx: 16, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 45, cy: 62, r: 9, fill: C.ink }, g);
-    el('circle', { cx: 85, cy: 62, r: 9, fill: C.ink }, g);
-    el('rect', { x: 45, y: 82, width: 40, height: 6, rx: 3, fill: C.ink }, g);
-    el('rect', { x: 30, y: 106, width: 70, height: 52, rx: 10, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 65, cy: 132, r: 7, fill: C.blue }, g);
-    el('line', { x1: 30, y1: 116, x2: 8, y2: 142, stroke: C.ink, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
-    el('line', { x1: 100, y1: 116, x2: 122, y2: 142, stroke: C.ink, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    el('line', { x1: 65, y1: 12, x2: 65, y2: 30, stroke: C.ink2, 'stroke-width': SW, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: 65, cy: 10, r: 6.5, fill: C.blue }, g);
+    el('rect', S_({ x: 18, y: 30, width: 94, height: 68, rx: 22, fill: C.fill }), g);
+    el('rect', { x: 31, y: 46, width: 68, height: 34, rx: 13, fill: C.ink2 }, g);
+    el('circle', { cx: 51, cy: 63, r: 6, fill: '#60A5FA' }, g);
+    el('circle', { cx: 79, cy: 63, r: 6, fill: '#60A5FA' }, g);
+    el('rect', S_({ x: 36, y: 106, width: 58, height: 48, rx: 15 }), g);
+    el('rect', { x: 55, y: 122, width: 20, height: 8, rx: 4, fill: C.blue }, g);
+    el('path', S_({ d: 'M36,116 Q16,122 12,144 M94,116 Q114,122 118,144', fill: 'none' }), g);
     return { w: 130, h: 160 };
   },
   person(g) {
-    el('circle', { cx: 60, cy: 36, r: 26, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('path', { d: 'M12,150 Q12,76 60,76 Q108,76 108,150 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', S_({ cx: 60, cy: 36, r: 25, fill: C.fill }), g);
+    el('path', S_({ d: 'M14,148 L14,122 Q14,80 60,80 Q106,80 106,122 L106,148 Z' }), g);
+    el('path', S_({ d: 'M46,82 L60,100 L74,82', fill: 'none' }), g);
     return { w: 120, h: 150 };
   },
+  referee(g) {
+    el('circle', S_({ cx: 70, cy: 34, r: 25, fill: C.fill }), g);
+    el('circle', { cx: 61, cy: 32, r: 3.2, fill: C.ink2 }, g);
+    el('circle', { cx: 79, cy: 32, r: 3.2, fill: C.ink2 }, g);
+    el('path', S_({ d: 'M24,148 L24,104 Q24,70 70,70 Q116,70 116,104 L116,148 Z', fill: 'url(#stripes)' }), g);
+    el('path', { d: 'M70,46 Q86,58 98,58', fill: 'none', stroke: C.ink2, 'stroke-width': 2.5 }, g);
+    el('circle', { cx: 102, cy: 59, r: 6.5, fill: C.yellow, stroke: C.ink2, 'stroke-width': 2.5 }, g);
+    return { w: 140, h: 150 };
+  },
   camera(g) {
-    el('rect', { x: 50, y: 12, width: 60, height: 24, rx: 6, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('rect', { x: 8, y: 30, width: 154, height: 104, rx: 14, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 85, cy: 82, r: 33, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 85, cy: 82, r: 16, fill: C.ink }, g);
-    el('rect', { x: 126, y: 42, width: 24, height: 14, rx: 3, fill: C.yellow, stroke: C.ink, 'stroke-width': 3, class: 'bulb' }, g);
+    el('rect', S_({ x: 50, y: 16, width: 52, height: 26, rx: 8, fill: C.fill }), g);
+    el('rect', S_({ x: 10, y: 34, width: 150, height: 98, rx: 20 }), g);
+    el('circle', S_({ cx: 85, cy: 83, r: 32, fill: C.fill }), g);
+    el('circle', { cx: 85, cy: 83, r: 15, fill: C.ink2 }, g);
+    el('circle', { cx: 79, cy: 77, r: 4, fill: '#fff' }, g);
+    el('rect', { x: 128, y: 48, width: 20, height: 12, rx: 3, fill: C.yellow, stroke: C.ink2, 'stroke-width': 2.5, class: 'bulb' }, g);
     return { w: 170, h: 140 };
   },
   server(g) {
-    el('rect', { x: 0, y: 0, width: 170, height: 170, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('rect', S_({ x: 2, y: 2, width: 166, height: 166, rx: 20 }), g);
     for (let i = 0; i < 3; i++) {
-      el('rect', { x: 16, y: 18 + i * 50, width: 138, height: 34, rx: 6, fill: C.light, stroke: C.ink, 'stroke-width': 3 }, g);
-      el('line', { x1: 30, y1: 35 + i * 50, x2: 90, y2: 35 + i * 50, stroke: C.ink, 'stroke-width': 3 }, g);
+      el('rect', { x: 18, y: 20 + i * 48, width: 134, height: 34, rx: 9, fill: C.fill, stroke: C.ink2, 'stroke-width': 2.5 }, g);
+      el('line', { x1: 34, y1: 37 + i * 48, x2: 84, y2: 37 + i * 48, stroke: C.faint, 'stroke-width': 3.5, 'stroke-linecap': 'round' }, g);
     }
-    el('circle', { cx: 134, cy: 35, r: 9, fill: '#d1d5db', stroke: C.ink, 'stroke-width': 2, class: 'led' }, g);
+    el('circle', { cx: 134, cy: 37, r: 7, fill: '#CBD5E1', class: 'led' }, g);
     return { w: 170, h: 170 };
   },
   dbIcon(g) {
-    el('path', { d: 'M0,22 L0,118 A70,20 0 0 0 140,118 L140,22', fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('ellipse', { cx: 70, cy: 22, rx: 70, ry: 20, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('path', { d: 'M0,56 A70,20 0 0 0 140,56 M0,88 A70,20 0 0 0 140,88', fill: 'none', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('path', S_({ d: 'M4,24 L4,116 A66,20 0 0 0 136,116 L136,24' }), g);
+    el('ellipse', S_({ cx: 70, cy: 24, rx: 66, ry: 20, fill: C.fill }), g);
+    el('path', { d: 'M4,56 A66,20 0 0 0 136,56 M4,88 A66,20 0 0 0 136,88', fill: 'none', stroke: C.ink2, 'stroke-width': 2.5 }, g);
     return { w: 140, h: 140 };
   },
   magnifier(g) {
-    el('circle', { cx: 52, cy: 52, r: 40, fill: 'rgba(37,99,235,0.08)', stroke: C.ink, 'stroke-width': 8 }, g);
-    el('line', { x1: 82, y1: 82, x2: 132, y2: 132, stroke: C.ink, 'stroke-width': 14, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: 54, cy: 54, r: 38, fill: 'rgba(37,99,235,0.10)', stroke: C.ink2, 'stroke-width': 7 }, g);
+    el('path', { d: 'M34,40 A24,24 0 0 1 52,30', fill: 'none', stroke: '#fff', 'stroke-width': 5, 'stroke-linecap': 'round' }, g);
+    el('line', { x1: 82, y1: 82, x2: 128, y2: 128, stroke: C.ink2, 'stroke-width': 13, 'stroke-linecap': 'round' }, g);
     return { w: 140, h: 140 };
   },
   doc(g) {
-    el('path', { d: 'M0,0 L70,0 L96,26 L96,120 L0,120 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    for (let i = 0; i < 4; i++) el('line', { x1: 14, y1: 42 + i * 18, x2: 82, y2: 42 + i * 18, stroke: C.ink, 'stroke-width': 3 }, g);
-    return { w: 96, h: 120 };
+    el('path', S_({ d: 'M4,4 L66,4 L94,32 L94,118 L4,118 Z' }), g);
+    el('path', S_({ d: 'M66,4 L66,32 L94,32', fill: C.fill }), g);
+    for (let i = 0; i < 4; i++) el('line', { x1: 18, y1: 50 + i * 16, x2: i === 3 ? 56 : 80, y2: 50 + i * 16, stroke: C.faint, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    return { w: 98, h: 122 };
   },
   key(g) {
-    el('circle', { cx: 28, cy: 30, r: 20, fill: '#fff', stroke: C.ink, 'stroke-width': 7 }, g);
-    el('line', { x1: 48, y1: 30, x2: 128, y2: 30, stroke: C.ink, 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
-    el('line', { x1: 108, y1: 30, x2: 108, y2: 50, stroke: C.ink, 'stroke-width': 8 }, g);
-    el('line', { x1: 124, y1: 30, x2: 124, y2: 46, stroke: C.ink, 'stroke-width': 8 }, g);
-    return { w: 132, h: 60 };
+    el('circle', { cx: 28, cy: 30, r: 19, fill: C.yellow, stroke: C.ink2, 'stroke-width': 6 }, g);
+    el('circle', { cx: 28, cy: 30, r: 6, fill: '#fff', stroke: C.ink2, 'stroke-width': 3 }, g);
+    el('path', { d: 'M47,30 L128,30 M108,30 L108,48 M124,30 L124,44', fill: 'none', stroke: C.ink2, 'stroke-width': 8, 'stroke-linecap': 'round' }, g);
+    return { w: 134, h: 60 };
   },
   lock(g) {
-    el('path', { d: 'M12,30 L12,20 A18,18 0 0 1 48,20 L48,30', fill: 'none', stroke: C.ink, 'stroke-width': 7 }, g);
-    el('rect', { x: 0, y: 28, width: 60, height: 44, rx: 8, fill: C.yellow, stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 30, cy: 48, r: 6, fill: C.ink }, g);
-    return { w: 60, h: 72 };
-  },
-  referee(g) {
-    el('circle', { cx: 70, cy: 34, r: 26, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('circle', { cx: 60, cy: 30, r: 3.5, fill: C.ink }, g);
-    el('circle', { cx: 80, cy: 30, r: 3.5, fill: C.ink }, g);
-    el('path', { d: 'M24,150 L24,96 Q24,66 70,66 Q116,66 116,96 L116,150 Z', fill: 'url(#stripes)', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('line', { x1: 70, y1: 46, x2: 96, y2: 56, stroke: C.ink, 'stroke-width': 3 }, g);
-    el('circle', { cx: 100, cy: 58, r: 6, fill: C.yellow, stroke: C.ink, 'stroke-width': 2.5 }, g);
-    return { w: 140, h: 150 };
+    el('path', { d: 'M14,32 L14,22 A16,16 0 0 1 46,22 L46,32', fill: 'none', stroke: C.ink2, 'stroke-width': 7, 'stroke-linecap': 'round' }, g);
+    el('rect', { x: 2, y: 30, width: 56, height: 42, rx: 11, fill: C.yellow, stroke: C.ink2, 'stroke-width': SW }, g);
+    el('circle', { cx: 30, cy: 48, r: 5, fill: C.ink2 }, g);
+    el('rect', { x: 28, y: 50, width: 4, height: 11, rx: 2, fill: C.ink2 }, g);
+    return { w: 60, h: 74 };
   },
   hook(g) {
-    el('circle', { cx: 60, cy: 8, r: 8, fill: '#fff', stroke: C.ink, 'stroke-width': 5 }, g);
-    el('path', { d: 'M60,16 L60,78 A30,30 0 0 1 0,78 L0,58', fill: 'none', stroke: C.ink, 'stroke-width': 10, 'stroke-linecap': 'round' }, g);
-    el('path', { d: 'M-12,72 L0,50 L12,72', fill: C.ink, stroke: C.ink, 'stroke-width': 4, 'stroke-linejoin': 'round' }, g);
+    el('circle', { cx: 60, cy: 8, r: 8, fill: '#fff', stroke: C.ink2, 'stroke-width': 5 }, g);
+    el('path', { d: 'M60,16 L60,78 A30,30 0 0 1 0,78 L0,58', fill: 'none', stroke: C.ink2, 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
+    el('path', { d: 'M-11,72 L0,50 L11,72 Z', fill: C.ink2, stroke: C.ink2, 'stroke-width': 3, 'stroke-linejoin': 'round' }, g);
     return { w: 90, h: 110 };
   },
   checklistIcon(g) {
-    el('rect', { x: 0, y: 0, width: 110, height: 120, rx: 8, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('rect', S_({ x: 2, y: 2, width: 106, height: 118, rx: 16 }), g);
     for (let i = 0; i < 3; i++) {
-      el('rect', { x: 14, y: 16 + i * 34, width: 20, height: 20, rx: 3, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
-      el('line', { x1: 44, y1: 26 + i * 34, x2: 96, y2: 26 + i * 34, stroke: C.ink, 'stroke-width': 3 }, g);
+      el('rect', { x: 16, y: 18 + i * 32, width: 20, height: 20, rx: 6, fill: i < 2 ? C.greenSoft : '#fff', stroke: i < 2 ? C.green : C.faint, 'stroke-width': 3 }, g);
+      el('line', { x1: 48, y1: 28 + i * 32, x2: 92, y2: 28 + i * 32, stroke: C.faint, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
     }
-    el('path', { d: 'M16,26 L24,34 L38,14', fill: 'none', stroke: C.green, 'stroke-width': 5 }, g);
-    el('path', { d: 'M16,60 L24,68 L38,48', fill: 'none', stroke: C.green, 'stroke-width': 5 }, g);
-    return { w: 110, h: 120 };
+    check(g, 26, 28, C.green, 3.5); check(g, 26, 60, C.green, 3.5);
+    return { w: 110, h: 122 };
   },
   gateIcon(g) {
-    el('rect', { x: 0, y: 30, width: 22, height: 90, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
-    el('rect', { x: 11, y: 40, width: 170, height: 22, fill: 'url(#barrier)', stroke: C.ink, 'stroke-width': 3 }, g);
-    el('rect', { x: 170, y: 62, width: 14, height: 58, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
-    return { w: 190, h: 120 };
+    el('rect', S_({ x: 2, y: 30, width: 22, height: 90, rx: 6 }), g);
+    el('rect', { x: 13, y: 40, width: 172, height: 22, rx: 6, fill: 'url(#barrier)', stroke: C.ink2, 'stroke-width': 3 }, g);
+    el('rect', S_({ x: 170, y: 64, width: 14, height: 56, rx: 4 }), g);
+    el('circle', { cx: 13, cy: 51, r: 6, fill: C.ink2 }, g);
+    return { w: 190, h: 122 };
   },
   folder(g, w = 220, h = 150) {
-    el('path', { d: `M0,18 L0,${h} L${w},${h} L${w},30 L${w * 0.45},30 L${w * 0.38},8 L8,8 Q0,8 0,18 Z`, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('path', S_({ d: `M4,22 Q4,10 16,10 L${w * 0.36},10 L${w * 0.44},28 L${w - 16},28 Q${w - 4},28 ${w - 4},40 L${w - 4},${h - 12} Q${w - 4},${h} ${w - 16},${h} L16,${h} Q4,${h} 4,${h - 12} Z`, fill: C.fill }), g);
     return { w, h };
   },
 };
@@ -258,23 +289,32 @@ function mkActor(S, o, w, h) {
   };
   return a;
 }
-function labelUnder(a, text, y, size = 23) {
+function labelUnder(a, text, y, size = 20) {
   const lines = String(text).split('\n');
-  lines.forEach((ln, i) => T(a.g, a.w / 2, y + i * (size + 4), ln, { size, bold: i === 0, anchor: 'middle' }));
-  return y + (lines.length - 1) * (size + 4) + 8;
+  lines.forEach((ln, i) => T(a.g, a.w / 2, y + i * (size + 3), ln, i === 0
+    ? { size, weight: 700, anchor: 'middle' }
+    : { size: size - 3, weight: 500, anchor: 'middle', fill: C.muted }));
+  return y + (lines.length - 1) * (size + 3) + 8;
+}
+function card(g, w, h, extra = {}) {
+  return el('rect', { x: 0, y: 0, width: w, height: h, rx: 14, fill: '#fff', stroke: C.line, 'stroke-width': 2, filter: 'url(#sh)', ...extra }, g);
+}
+function cardHead(g, w, head, fill = '#F8FAFC') {
+  el('path', { d: `M2,14 Q2,2 14,2 L${w - 14},2 Q${w - 2},2 ${w - 2},14 L${w - 2},${head} L2,${head} Z`, fill }, g);
+  el('line', { x1: 0, y1: head, x2: w, y2: head, stroke: '#E2E8F0', 'stroke-width': 2 }, g);
 }
 const ACTORS = {
   robot(S, o) { const a = mkActor(S, o, 130, 0); DRAW.robot(a.g); a.h = labelUnder(a, o.label || 'the agent', 188); return a; },
   person(S, o) { const a = mkActor(S, o, 120, 0); DRAW.person(a.g); a.h = labelUnder(a, o.label || 'the owner', 180); return a; },
-  referee(S, o) { const a = mkActor(S, o, 140, 0); DRAW.referee(a.g); a.h = labelUnder(a, o.label || 'referee', 176, 21); return a; },
+  referee(S, o) { const a = mkActor(S, o, 140, 0); DRAW.referee(a.g); a.h = labelUnder(a, o.label || 'referee', 178); return a; },
   camera(S, o) {
     const a = mkActor(S, o, 170, 140); DRAW.camera(a.g);
     a.flash = async (ref) => {
       const t = S.actor(ref);
-      const r = el('rect', { x: t.x - 16, y: t.y - 16, width: t.w + 32, height: t.h + 32, rx: 16, fill: C.yellow, opacity: 0 }, S.layerFx);
+      const r = el('rect', { x: t.x - 18, y: t.y - 18, width: t.w + 36, height: t.h + 36, rx: 22, fill: C.hl, opacity: 0 }, S.layerFx);
       const bulb = a.g.querySelector('.bulb');
-      await tween(140, (k) => { r.setAttribute('opacity', 0.9 * k); bulb.setAttribute('fill', '#fff'); });
-      await tween(520, (k) => r.setAttribute('opacity', 0.9 * (1 - k)));
+      await tween(140, (k) => { r.setAttribute('opacity', 0.85 * k); bulb.setAttribute('fill', '#fff'); });
+      await tween(520, (k) => r.setAttribute('opacity', 0.85 * (1 - k)));
       bulb.setAttribute('fill', C.yellow); r.remove();
     };
     return a;
@@ -282,7 +322,7 @@ const ACTORS = {
   server(S, o) {
     const a = mkActor(S, o, 170, 0); DRAW.server(a.g); a.h = labelUnder(a, o.label || 'app server', 200);
     const led = a.g.querySelector('.led');
-    a.up = () => tween(300, (k) => led.setAttribute('fill', k > 0.5 ? C.green : '#d1d5db'));
+    a.up = () => tween(300, (k) => led.setAttribute('fill', k > 0.5 ? '#10B981' : '#CBD5E1'));
     return a;
   },
   hook(S, o) {
@@ -299,33 +339,31 @@ const ACTORS = {
       const t = S.actor(ref);
       const fx = a.x, fy = a.y, tx = t.x + t.w - 120, ty = t.y + t.h / 2 - 60;
       await tween(600, (k) => { a.x = lerp(fx, tx, k); a.y = lerp(fy, ty, k); a.g.setAttribute('transform', `translate(${a.x},${a.y})`); });
-      // sweep across the card once
       const sx = a.x;
-      await tween(500, (k) => { a.x = sx - Math.sin(Math.PI * k) * Math.min(260, t.w * 0.45); a.g.setAttribute('transform', `translate(${a.x},${a.y})`); });
+      await tween(520, (k) => { a.x = sx - Math.sin(Math.PI * k) * Math.min(260, t.w * 0.45); a.g.setAttribute('transform', `translate(${a.x},${a.y})`); });
     };
     return a;
   },
   file(S, o) {
     const w = o.w || 560, lh = 36, n = Math.max(o.lines.length, o.max || 0), head = 50;
-    const h = head + 10 + n * lh + 10;
+    const h = head + 10 + n * lh + 12;
     const a = mkActor(S, o, w, h);
-    el('rect', { x: 0, y: 0, width: w, height: h, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    el('path', { d: `M0,12 Q0,0 12,0 L${w - 12},0 Q${w},0 ${w},12 L${w},${head} L0,${head} Z`, fill: C.light, stroke: C.ink, 'stroke-width': 3 }, a.g);
-    T(a.g, 16, 33, o.name, { size: 21, bold: true, mono: true });
-    if (o.who) T(a.g, w - 14, 32, o.who, { size: 17, italic: true, anchor: 'end', fill: '#555', }).classList.add('who');
+    card(a.g, w, h); cardHead(a.g, w, head);
+    T(a.g, 18, 32, o.name, { size: 18.5, mono: true, weight: 700 });
+    if (o.who) eyebrow(a.g, w - 16, 31, o.who, { anchor: 'end', size: 12.5 }).classList.add('who');
     const hl = el('g', {}, a.g);
     const texts = [];
-    for (let i = 0; i < n; i++) texts.push(T(a.g, 16, head + 10 + i * lh + 25, (o.typed ? '' : (o.lines[i] || '')), { size: 21, mono: true }));
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, head + 10 + i * lh + 25, (o.typed ? '' : (o.lines[i] || '')), { size: 19, mono: true, fill: C.ink2 }));
     a.lineAnchor = (i, s = 'r') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + 10 + i * lh + lh / 2 });
     const bars = {};
     const bar = (i, fill) => {
-      if (!bars[i]) bars[i] = el('rect', { x: 4, y: head + 10 + i * lh + 1, width: w - 8, height: lh - 2, rx: 5, fill, opacity: 0 }, hl);
+      if (!bars[i]) bars[i] = el('rect', { x: 6, y: head + 10 + i * lh + 2, width: w - 12, height: lh - 4, rx: 7, fill, opacity: 0 }, hl);
       bars[i].setAttribute('fill', fill);
       return bars[i];
     };
-    a.hi = (i) => fade(bar(i, C.yellow), 0.85, 300);
+    a.hi = (i) => fade(bar(i, C.hl), 0.75, 300);
     a.unhi = (i) => (bars[i] ? fade(bars[i], 0, 200) : Promise.resolve());
-    a.bad = (i) => fade(bar(i, '#fecaca'), 1, 300);
+    a.bad = (i) => fade(bar(i, '#FECDD3'), 1, 300);
     a.setLine = async (i, s, fill) => { texts[i].textContent = s; if (fill) texts[i].setAttribute('fill', fill); await pop(texts[i], 250); };
     a.type = async () => {
       for (let i = 0; i < o.lines.length; i++) {
@@ -339,25 +377,26 @@ const ACTORS = {
     return a;
   },
   terminal(S, o) {
-    const w = o.w || 640, lh = 34, n = o.rows || 2, h = 20 + n * lh + 14;
+    const w = o.w || 640, lh = 34, n = o.rows || 2, h = 22 + n * lh + 14;
     const a = mkActor(S, o, w, h);
-    el('rect', { x: 0, y: 0, width: w, height: h, rx: 10, fill: '#f8fafc', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    card(a.g, w, h, { fill: C.ink, stroke: C.ink });
     const texts = []; let next = 0;
-    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, 20 + i * lh + 22, '', { size: 22, mono: true }));
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 22, 22 + i * lh + 22, '', { size: 20, mono: true, fill: '#E2E8F0' }));
+    const tone = (f) => (f === C.red ? '#FB7185' : f === C.green ? '#34D399' : f || '#E2E8F0');
     a.type = async (s) => {
       const t = texts[next++];
       if (INSTANT) { t.textContent = s; return; }
-      for (let k = 0; k <= s.length; k++) { t.textContent = s.slice(0, k); await wait(26); }
+      for (let k = 0; k <= s.length; k++) { t.textContent = s.slice(0, k); await wait(24); }
     };
-    a.print = async (s, fill) => { const t = texts[next++]; t.textContent = s; if (fill) t.setAttribute('fill', fill); await fade(t, 1, 200); };
+    a.print = async (s, fill) => { const t = texts[next++]; t.textContent = s; t.setAttribute('fill', tone(fill)); await fade(t, 1, 200); };
     return a;
   },
   chip(S, o) {
-    const a = mkActor(S, o, 0, 50);
-    const r = el('rect', { x: 0, y: 0, height: 50, rx: 25, fill: o.fill || '#fff', stroke: o.color || C.ink, 'stroke-width': 3 }, a.g);
-    const t = T(a.g, 0, 33, o.text, { size: 21, mono: true, bold: true, fill: o.color || C.ink });
-    let whoT = null;
-    if (o.who) { whoT = T(a.g, 8, -10, o.who, { size: 17, italic: true, fill: '#555' }); whoT.classList.add('who'); }
+    const a = mkActor(S, o, 0, 48);
+    const col = o.color ? tone(o.color) : null;
+    const r = el('rect', { x: 0, y: 0, height: 48, rx: 24, fill: col === C.red ? C.redSoft : '#fff', stroke: col || C.line, 'stroke-width': 2, filter: 'url(#sh2)' }, a.g);
+    const t = T(a.g, 0, 31, o.text, { size: 18, mono: true, weight: 600, fill: col || C.ink });
+    if (o.who) eyebrow(a.g, 6, -11, o.who, { size: 12.5 }).classList.add('who');
     const fit = () => {
       const tw = textW(t);
       a.w = o.w || tw + 40;
@@ -365,22 +404,26 @@ const ACTORS = {
       t.setAttribute('x', o.w ? (a.w - tw) / 2 : 20);
     };
     fit();
-    a.set = async (s, fill) => { t.textContent = s; if (fill) { t.setAttribute('fill', fill); r.setAttribute('stroke', fill); } fit(); await pop(a.g, 260); };
+    a.set = async (s, fill) => {
+      t.textContent = s;
+      if (fill) { t.setAttribute('fill', fill); r.setAttribute('stroke', fill === C.ink || fill === '#111' ? C.line : fill); r.setAttribute('fill', fill === C.red ? C.redSoft : '#fff'); }
+      fit(); await pop(a.g, 260);
+    };
     a.pop = () => pop(a.g);
     a.strike = async () => {
       const tw = textW(t), x0 = +t.getAttribute('x');
-      const ln = el('line', { x1: x0, y1: 26, x2: x0, y2: 26, stroke: C.red, 'stroke-width': 4 }, a.g);
+      const ln = el('line', { x1: x0, y1: 25, x2: x0, y2: 25, stroke: C.red, 'stroke-width': 3.5, 'stroke-linecap': 'round' }, a.g);
       await tween(450, (k) => ln.setAttribute('x2', x0 + tw * k));
-      await fade(a.g, 0.45, 300);
+      await fade(a.g, 0.5, 300);
     };
     return a;
   },
   key(S, o) {
     const a = mkActor(S, o, 0, 0);
-    const ig = el('g', { transform: 'translate(0,0)' }, a.g); DRAW.key(ig);
-    const lt = T(a.g, 148, 26, o.label || 'key', { size: 20, bold: true });
-    const ft = o.fp ? T(a.g, 148, 54, o.fp, { size: 21, mono: true }) : null;
-    a.w = 148 + Math.max(textW(lt), ft ? textW(ft) : 0) + 4;
+    DRAW.key(el('g', {}, a.g));
+    const lt = T(a.g, 150, 26, o.label || 'key', { size: 18, weight: 700 });
+    const ft = o.fp ? T(a.g, 150, 52, o.fp, { size: 18, mono: true, fill: C.body }) : null;
+    a.w = 150 + Math.max(textW(lt), ft ? textW(ft) : 0) + 4;
     a.h = 64;
     a.points.k = { x: 66, y: 30 };
     return a;
@@ -390,42 +433,42 @@ const ACTORS = {
     const a = mkActor(S, o, fw, 0);
     DRAW.folder(a.g, fw, fh);
     const files = el('g', {}, a.g);
-    for (let i = 0; i < (o.files || 3); i++) {
-      const fg = el('g', { transform: `translate(${28 + i * 50},${46}) scale(0.5)` }, files); DRAW.doc(fg);
-    }
-    const lockG = el('g', { transform: `translate(${fw - 46},${fh - 52}) scale(0.75)`, opacity: 0 }, a.g); DRAW.lock(lockG);
+    for (let i = 0; i < (o.files || 3); i++) DRAW.doc(el('g', { transform: `translate(${30 + i * 48},${44}) scale(0.48)` }, files));
+    const lockG = el('g', { transform: `translate(${fw - 44},${fh - 50}) scale(0.72)`, opacity: 0 }, a.g); DRAW.lock(lockG);
     const pen = el('g', { opacity: 0 }, a.g);
-    el('path', { d: `M${fw - 70},${36} l46,-26 l10,14 l-46,26 z`, fill: C.amber, stroke: C.ink, 'stroke-width': 3 }, pen);
-    let y = labelUnder(a, o.label || 'folder', fh + 30);
-    const fpT = T(a.g, fw / 2, y + 22, o.fp || '', { size: 21, mono: true, anchor: 'middle' });
+    el('path', { d: `M${fw - 72},${38} l44,-25 l10,15 l-44,25 z`, fill: C.amber, stroke: C.ink2, 'stroke-width': 3, 'stroke-linejoin': 'round' }, pen);
+    const y = labelUnder(a, o.label || 'folder', fh + 30);
+    const fpT = T(a.g, fw / 2, y + 22, o.fp || '', { size: 18, mono: true, anchor: 'middle', fill: C.body });
     a.h = o.fp !== undefined ? y + 30 : y;
     a.lock = async () => { await fade(lockG, 1, 250); await pop(lockG); };
     a.edit = async () => { await fade(pen, 1, 200); await tween(500, (k) => pen.setAttribute('transform', `translate(${-30 * Math.sin(k * Math.PI * 2)},0)`)); };
     a.pulse = () => pop(a.g, 420);
-    a.setFp = async (s, fill) => { fpT.textContent = s; fpT.setAttribute('fill', fill || C.ink); await pop(fpT, 260); };
+    a.setFp = async (s, fill) => { fpT.textContent = s; fpT.setAttribute('fill', fill && fill !== '#111' ? fill : C.body); await pop(fpT, 260); };
     return a;
   },
   db(S, o) {
     const w = o.w || 300, rh = 38, rows = o.rows.map((r) => r.slice());
     const n = rows.length, top = 26, body0 = 64;
-    const bottom = body0 + n * rh + 12;
+    const bottom = body0 + n * rh + 10;
     const a = mkActor(S, o, w, 0);
-    el('path', { d: `M0,${top} L0,${bottom} A${w / 2},20 0 0 0 ${w},${bottom} L${w},${top}`, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
-    el('ellipse', { cx: w / 2, cy: top, rx: w / 2, ry: 20, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
+    el('path', S_({ d: `M2,${top} L2,${bottom} A${w / 2 - 2},20 0 0 0 ${w - 2},${bottom} L${w - 2},${top}`, filter: 'url(#sh)' }), a.g);
+    el('ellipse', S_({ cx: w / 2, cy: top, rx: w / 2 - 2, ry: 20, fill: C.fill }), a.g);
     const rowG = el('g', {}, a.g);
     const items = rows.map((r, i) => {
       const g = el('g', { transform: `translate(0,${body0 + i * rh})` }, rowG);
-      const bg = el('rect', { x: 14, y: 0, width: w - 28, height: rh - 4, rx: 5, fill: C.yellow, opacity: 0 }, g);
-      const t = T(g, w / 2, 26, `${r[0]} │ ${r[1]}`, { size: 22, mono: true, anchor: 'middle' });
-      return { id: String(r[0]), g, bg, t, i, gone: false };
+      const bg = el('rect', { x: 16, y: 0, width: w - 32, height: rh - 4, rx: 7, fill: C.hl, opacity: 0 }, g);
+      T(g, w / 2 - 14, 25, r[0], { size: 20, mono: true, weight: 600, anchor: 'end', fill: C.muted });
+      el('line', { x1: w / 2, y1: 6, x2: w / 2, y2: rh - 10, stroke: C.line, 'stroke-width': 2 }, g);
+      T(g, w / 2 + 14, 25, r[1], { size: 20, mono: true, fill: C.ink2 });
+      return { id: String(r[0]), g, bg, i, gone: false };
     });
-    a.h = labelUnder(a, o.label || 'database', bottom + 50, 21);
+    a.h = labelUnder(a, o.label || 'database', bottom + 44);
     const idx = (id) => items.find((it) => it.id === String(id));
-    a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 14 : w - 14), y: a.y + body0 + i * rh + rh / 2 - 2 });
-    a.hiRow = async (id, fill) => { const it = idx(id); it.bg.setAttribute('fill', fill ? (fill === C.red ? '#fecaca' : fill) : C.yellow); await fade(it.bg, 0.9, 300); };
+    a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 16 : w - 16), y: a.y + body0 + i * rh + rh / 2 - 2 });
+    a.hiRow = async (id, fill) => { const it = idx(id); it.bg.setAttribute('fill', fill === C.red || fill === '#dc2626' ? '#FECDD3' : (fill || C.hl)); await fade(it.bg, 0.9, 300); };
     a.removeRow = async (id) => {
       const it = idx(id); if (!it || it.gone) return;
-      it.bg.setAttribute('fill', '#fecaca');
+      it.bg.setAttribute('fill', '#FECDD3');
       await fade(it.bg, 1, 250);
       await wait(250);
       await fade(it.g, 0, 400);
@@ -440,7 +483,6 @@ const ACTORS = {
       items.forEach((it) => { it.gone = false; it.g.setAttribute('transform', `translate(0,${body0 + it.i * rh})`); it.bg.setAttribute('opacity', 0); });
       await Promise.all(items.map((it) => fade(it.g, 1, 300)));
     };
-    // back to a state without animation (used after a "what if" detour)
     a.drop = (id) => {
       const it = idx(id); it.gone = true; it.g.setAttribute('opacity', 0); it.bg.setAttribute('opacity', 0);
       items.filter((x) => x.i > it.i).forEach((x) => x.g.setAttribute('transform', `translate(0,${body0 + (x.i - 1) * rh})`));
@@ -449,43 +491,43 @@ const ACTORS = {
     return a;
   },
   browser(S, o) {
-    const w = o.w || 520, bar = 44, rh = 38, rows = o.rows;
+    const w = o.w || 520, bar = 46, rh = 38, rows = o.rows;
     const h = bar + 20 + rows.length * rh + 14;
     const a = mkActor(S, o, w, h);
-    el('rect', { x: 0, y: 0, width: w, height: h, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    el('path', { d: `M0,12 Q0,0 12,0 L${w - 12},0 Q${w},0 ${w},12 L${w},${bar} L0,${bar} Z`, fill: C.light, stroke: C.ink, 'stroke-width': 3 }, a.g);
-    [0, 1, 2].forEach((i) => el('circle', { cx: 22 + i * 22, cy: 22, r: 7, fill: '#fff', stroke: C.ink, 'stroke-width': 2 }, a.g));
-    el('rect', { x: 94, y: 9, width: w - 110, height: 26, rx: 13, fill: '#fff', stroke: '#9ca3af', 'stroke-width': 2 }, a.g);
-    T(a.g, 110, 29, o.url || '/', { size: 18, mono: true, fill: '#333' });
+    card(a.g, w, h); cardHead(a.g, w, bar);
+    ['#F87171', '#FBBF24', '#34D399'].forEach((c, i) => el('circle', { cx: 24 + i * 20, cy: 23, r: 6, fill: c }, a.g));
+    el('rect', { x: 92, y: 10, width: w - 108, height: 26, rx: 13, fill: '#fff', stroke: '#E2E8F0', 'stroke-width': 2 }, a.g);
+    T(a.g, 108, 28, o.url || '/', { size: 15, mono: true, fill: C.muted });
     const rowG = el('g', {}, a.g);
     const items = rows.map((r, i) => {
       const g = el('g', { transform: `translate(0,${bar + 14 + i * rh})` }, rowG);
-      const bg = el('rect', { x: 10, y: 0, width: w - 20, height: rh - 4, rx: 5, fill: '#fecaca', opacity: 0 }, g);
-      T(g, 26, 26, `${r[0]}   ${r[1]}`, { size: 22, mono: true });
-      const btn = el('rect', { x: w - 128, y: 2, width: 106, height: rh - 8, rx: 6, fill: '#fff', stroke: C.red, 'stroke-width': 2.5 }, g);
-      T(g, w - 75, 25, 'Delete', { size: 18, bold: true, anchor: 'middle', fill: C.red });
+      const bg = el('rect', { x: 10, y: 0, width: w - 20, height: rh - 4, rx: 7, fill: '#FECDD3', opacity: 0 }, g);
+      T(g, 26, 25, r[0], { size: 20, mono: true, weight: 600, fill: C.muted });
+      T(g, 74, 25, r[1], { size: 20, mono: true, fill: C.ink2 });
+      const btn = el('rect', { x: w - 126, y: 3, width: 104, height: rh - 10, rx: 8, fill: C.redSoft, stroke: '#FDA4AF', 'stroke-width': 2 }, g);
+      T(g, w - 74, 23, 'Delete', { size: 15, weight: 700, anchor: 'middle', fill: C.red });
       return { id: String(r[0]), g, bg, btn, i, gone: false };
     });
-    const cursor = el('path', { d: 'M0,0 L0,30 L8,23 L14,36 L20,33 L14,21 L24,21 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 2.5, opacity: 0 }, a.g);
+    const cursor = el('path', { d: 'M0,0 L0,30 L8,23 L14,36 L20,33 L14,21 L24,21 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 2.5, 'stroke-linejoin': 'round', opacity: 0 }, a.g);
     const mock = el('g', { opacity: 0 }, a.g);
-    el('rect', { x: 16, y: h - 6, width: 300, height: 40, rx: 8, fill: '#fff7ed', stroke: C.amber, 'stroke-width': 3 }, mock);
-    T(mock, 30, h + 21, 'page.route(…) → 204', { size: 19, mono: true, bold: true, fill: '#9a3412' });
-    a.points.mock = { x: 166, y: h + 14 };
+    el('rect', { x: 16, y: h - 8, width: 300, height: 40, rx: 10, fill: '#FFFBEB', stroke: C.amber, 'stroke-width': 2.5, filter: 'url(#sh2)' }, mock);
+    T(mock, 32, h + 18, 'page.route(…) → 204', { size: 17, mono: true, weight: 700, fill: '#92400E' });
+    a.points.mock = { x: 166, y: h + 12 };
     const idx = (id) => items.find((it) => it.id === String(id));
     a.lineAnchor = (i, s = 'b') => {
-      const bx = a.x + w - 75, by = a.y + bar + 14 + i * rh;
+      const bx = a.x + w - 74, by = a.y + bar + 14 + i * rh;
       if (s === 'b') return { x: bx, y: by + rh - 4 };
       if (s === 'l') return { x: a.x, y: by + rh / 2 };
       return { x: a.x + w, y: by + rh / 2 };
     };
     a.click = async (id) => {
       const it = idx(id);
-      const tx = w - 70, ty = bar + 14 + it.i * rh + 12;
+      const tx = w - 68, ty = bar + 14 + it.i * rh + 12;
       cursor.setAttribute('opacity', 1);
       await tween(550, (k) => cursor.setAttribute('transform', `translate(${lerp(w - 30, tx, k)},${lerp(h - 10, ty, k)})`));
-      it.btn.setAttribute('fill', '#fecaca');
+      it.btn.setAttribute('fill', '#FECDD3');
       await wait(220);
-      it.btn.setAttribute('fill', '#fff');
+      it.btn.setAttribute('fill', C.redSoft);
       await fade(cursor, 0, 250);
     };
     a.removeRow = async (id) => {
@@ -506,98 +548,101 @@ const ACTORS = {
   },
   proxy(S, o) {
     const w = 220, a = mkActor(S, o, w, 0);
-    el('rect', { x: 0, y: 26, width: 28, height: 92, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
-    el('rect', { x: w - 28, y: 26, width: 28, height: 92, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
-    el('rect', { x: 0, y: 0, width: w, height: 30, rx: 6, fill: C.ink }, a.g);
-    T(a.g, w / 2, 22, 'proxy', { size: 19, bold: true, anchor: 'middle', fill: '#fff' });
-    a.points.c = { x: w / 2, y: 70 };
-    a.h = labelUnder(a, o.label || "referee's checkpoint", 146, 20);
+    el('rect', S_({ x: 6, y: 26, width: 26, height: 92, rx: 7, fill: C.fill }), a.g);
+    el('rect', S_({ x: w - 32, y: 26, width: 26, height: 92, rx: 7, fill: C.fill }), a.g);
+    el('rect', { x: 0, y: 0, width: w, height: 32, rx: 9, fill: C.ink2 }, a.g);
+    T(a.g, w / 2, 22, 'PROXY', { size: 14, mono: true, weight: 700, anchor: 'middle', fill: '#fff', spacing: '2' });
+    a.points.c = { x: w / 2, y: 72 };
+    a.h = labelUnder(a, o.label || "referee's checkpoint", 148, 19);
     return a;
   },
   clipboard(S, o) {
-    const w = o.w || 400, lh = 34, n = o.rows || 4, h = 56 + n * lh + 14;
+    const w = o.w || 400, lh = 34, n = o.rows || 4, h = 58 + n * lh + 14;
     const a = mkActor(S, o, w, h);
-    el('rect', { x: 0, y: 10, width: w, height: h - 10, rx: 10, fill: '#fffdf5', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    el('rect', { x: w / 2 - 50, y: 0, width: 100, height: 24, rx: 6, fill: '#9ca3af', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    T(a.g, 16, 48, o.title || "referee's notes", { size: 19, bold: true });
+    card(a.g, w, h, { y: 10, height: h - 10, fill: '#FFFDF6', stroke: '#E7DFC6' });
+    el('rect', { x: w / 2 - 46, y: 0, width: 92, height: 22, rx: 7, fill: '#CBD5E1', stroke: C.ink2, 'stroke-width': 2.5 }, a.g);
+    T(a.g, 18, 50, o.title || "referee's notes", { size: 18, weight: 700 });
     const texts = []; let next = 0;
-    for (let i = 0; i < n; i++) texts.push(T(a.g, 16, 56 + i * lh + 26, '', { size: 18, mono: true }));
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, 58 + i * lh + 26, '', { size: 17, mono: true }));
     a.record = async (s, fill) => {
       const t = texts[next++]; if (!t) return;
-      t.textContent = s; t.setAttribute('fill', fill || C.ink); t.setAttribute('opacity', 0);
+      t.textContent = s; t.setAttribute('fill', fill === '#16a34a' ? C.green : fill === '#dc2626' ? C.red : (fill || C.ink2)); t.setAttribute('opacity', 0);
       await fade(t, 1, 300);
     };
     return a;
   },
   receipt(S, o) {
     const w = o.w || 210, h = o.h || 230, a = mkActor(S, o, w, h);
-    el('path', { d: `M0,0 L${w - 30},0 L${w},30 L${w},${h} L0,${h} Z`, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    T(a.g, 14, 36, 'receipt.json', { size: 20, bold: true, mono: true });
-    for (let i = 0; i < 5; i++) el('rect', { x: 14, y: 58 + i * 24, width: (i % 2 ? 120 : 170) - (i === 4 ? 60 : 0), height: 9, rx: 4, fill: '#d1d5db' }, a.g);
+    el('path', { d: `M2,2 L${w - 32},2 L${w - 2},32 L${w - 2},${h - 2} L2,${h - 2} Z`, fill: '#fff', stroke: C.line, 'stroke-width': 2, 'stroke-linejoin': 'round', filter: 'url(#sh)' }, a.g);
+    el('path', { d: `M${w - 32},2 L${w - 32},32 L${w - 2},32`, fill: C.fill, stroke: C.line, 'stroke-width': 2, 'stroke-linejoin': 'round' }, a.g);
+    T(a.g, 16, 38, 'receipt.json', { size: 17, mono: true, weight: 700 });
+    for (let i = 0; i < 5; i++) el('rect', { x: 16, y: 60 + i * 24, width: (i % 2 ? 118 : 168) - (i === 4 ? 60 : 0), height: 9, rx: 4.5, fill: '#E2E8F0' }, a.g);
     const seal = el('g', { opacity: 0 }, a.g);
-    el('circle', { cx: w - 52, cy: h - 50, r: 36, fill: C.red, stroke: '#7f1d1d', 'stroke-width': 3 }, seal);
-    T(seal, w - 52, h - 44, 'signed', { size: 17, bold: true, anchor: 'middle', fill: '#fff' });
-    if (o.who) { const wt = T(a.g, w / 2, h + 26, o.who, { size: 18, italic: true, anchor: 'middle', fill: '#555' }); wt.classList.add('who'); a.h = h + 34; }
+    el('circle', { cx: w - 54, cy: h - 52, r: 36, fill: C.red }, seal);
+    el('circle', { cx: w - 54, cy: h - 52, r: 29, fill: 'none', stroke: '#fff', 'stroke-width': 2, 'stroke-dasharray': '4 4', opacity: 0.7 }, seal);
+    T(seal, w - 54, h - 47, 'SIGNED', { size: 13, weight: 800, anchor: 'middle', fill: '#fff', spacing: '1' });
     a.seal = async () => {
       seal.setAttribute('opacity', 1);
-      const cx = w - 52, cy = h - 50;
-      await tween(380, (k) => seal.setAttribute('transform', `translate(${cx},${cy}) scale(${lerp(2.2, 1, k)}) translate(${-cx},${-cy})`));
+      const cx = w - 54, cy = h - 52;
+      await tween(380, (k) => seal.setAttribute('transform', `translate(${cx},${cy}) scale(${lerp(2.2, 1, k)}) rotate(${lerp(-25, -8, k)}) translate(${-cx},${-cy})`));
     };
     return a;
   },
   gate(S, o) {
     const a = mkActor(S, o, 360, 190);
-    el('rect', { x: 0, y: 40, width: 34, height: 150, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
-    el('rect', { x: 300, y: 100, width: 20, height: 90, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    el('rect', S_({ x: 2, y: 40, width: 32, height: 148, rx: 8, fill: C.fill }), a.g);
+    el('rect', S_({ x: 300, y: 100, width: 20, height: 88, rx: 6 }), a.g);
     const arm = el('g', {}, a.g);
-    el('rect', { x: 17, y: 62, width: 320, height: 28, fill: 'url(#barrier)', stroke: C.ink, 'stroke-width': 3 }, arm);
-    el('circle', { cx: 17, cy: 76, r: 9, fill: C.ink }, a.g);
+    el('rect', { x: 17, y: 63, width: 320, height: 26, rx: 8, fill: 'url(#barrier)', stroke: C.ink2, 'stroke-width': 3 }, arm);
+    el('circle', { cx: 18, cy: 76, r: 9, fill: C.ink2 }, a.g);
     let ang = 0;
-    const rot = (to) => { const from = ang; return tween(650, (k) => { ang = lerp(from, to, k); arm.setAttribute('transform', `rotate(${ang},17,76)`); }); };
+    const rot = (to) => { const from = ang; return tween(650, (k) => { ang = lerp(from, to, k); arm.setAttribute('transform', `rotate(${ang},18,76)`); }); };
     a.open = () => rot(-78);
     a.close = () => rot(0);
     a.points.c = { x: 180, y: 140 };
     return a;
   },
   checklist(S, o) {
-    const w = o.w || 560, rh = 68, n = Math.max((o.items || []).length, o.max || 1), head = 48;
+    const w = o.w || 560, rh = 68, n = Math.max((o.items || []).length, o.max || 1), head = 50;
     const h = head + n * rh + 10;
     const a = mkActor(S, o, w, h);
-    el('rect', { x: 0, y: 0, width: w, height: h, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    T(a.g, 18, 32, o.title || 'list', { size: 21, bold: true });
-    el('line', { x1: 0, y1: head, x2: w, y2: head, stroke: C.ink, 'stroke-width': 2 }, a.g);
+    card(a.g, w, h); cardHead(a.g, w, head);
+    T(a.g, 18, 32, o.title || 'list', { size: 18, weight: 700 });
     const rows = [];
     const mkRow = (i, text) => {
       const g = el('g', { transform: `translate(0,${head + i * rh})` }, a.g);
-      const bg = el('rect', { x: 6, y: 6, width: w - 12, height: rh - 10, rx: 6, fill: C.yellow, opacity: 0 }, g);
-      el('rect', { x: 16, y: 16, width: 28, height: 28, rx: 4, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
-      const t = T(g, 58, 38, text, { size: 20, mono: true });
-      const tag = T(g, 58, 60, '', { size: 16, bold: true });
+      const bg = el('rect', { x: 8, y: 8, width: w - 16, height: rh - 12, rx: 9, fill: C.hl, opacity: 0 }, g);
+      const box = el('rect', { x: 18, y: 18, width: 26, height: 26, rx: 7, fill: '#fff', stroke: C.faint, 'stroke-width': 2.5 }, g);
+      const t = T(g, 58, 37, text, { size: 18.5, mono: true, fill: C.ink2 });
+      const tag = T(g, 58, 59, '', { size: 13, mono: true, weight: 700, spacing: '0.6' });
       const mark = el('g', {}, g);
-      return { g, bg, t, tag, mark };
+      return { g, bg, box, t, tag, mark };
     };
     (o.items || []).forEach((s, i) => rows.push(mkRow(i, s)));
-    a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + i * rh + rh / 2 - 4 });
+    a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + i * rh + rh / 2 - 2 });
     a.add = async (s) => { const r = mkRow(rows.length, s); r.g.setAttribute('opacity', 0); rows.push(r); await fade(r.g, 1, 300); };
-    a.hi = (i) => fade(rows[i].bg, 0.8, 300);
-    a.tick = async (i) => { rows[i].mark.innerHTML = ''; const p = el('path', { d: 'M18,30 L28,40 L46,14', fill: 'none', stroke: C.green, 'stroke-width': 6, 'stroke-linecap': 'round' }, rows[i].mark); await pop(p); };
-    a.cross = async (i) => { rows[i].mark.innerHTML = ''; const p = el('path', { d: 'M20,20 L40,40 M40,20 L20,40', fill: 'none', stroke: C.red, 'stroke-width': 6, 'stroke-linecap': 'round' }, rows[i].mark); await pop(p); };
-    a.tag = async (i, s, fill) => { rows[i].tag.textContent = s; rows[i].tag.setAttribute('fill', fill || C.ink); await pop(rows[i].tag, 260); };
+    a.hi = (i) => fade(rows[i].bg, 0.7, 300);
+    a.tick = async (i) => { const r = rows[i]; r.mark.innerHTML = ''; r.box.setAttribute('fill', C.green); r.box.setAttribute('stroke', C.green); await pop(check(r.mark, 31, 31, '#fff', 3.5)); };
+    a.cross = async (i) => { const r = rows[i]; r.mark.innerHTML = ''; r.box.setAttribute('fill', C.red); r.box.setAttribute('stroke', C.red); await pop(cross(r.mark, 31, 31, '#fff', 3.5)); };
+    a.tag = async (i, s, fill) => {
+      const col = fill === '#16a34a' ? C.green : fill === '#dc2626' ? C.red : fill === '#2563eb' ? C.blue : (fill || C.ink);
+      rows[i].tag.textContent = s.toUpperCase(); rows[i].tag.setAttribute('fill', col); await pop(rows[i].tag, 260);
+    };
     return a;
   },
   bar(S, o) {
     const w = o.w || 520, a = mkActor(S, o, w, 64);
-    T(a.g, 0, 22, o.label || 'working', { size: 20, bold: true });
-    el('rect', { x: 0, y: 34, width: w, height: 26, rx: 13, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
-    const f = el('rect', { x: 3, y: 37, width: 0, height: 20, rx: 10, fill: C.blue }, a.g);
-    a.fill = () => tween(900, (k) => f.setAttribute('width', (w - 6) * k));
+    T(a.g, 0, 20, o.label || 'working', { size: 17, weight: 700, fill: C.body });
+    el('rect', { x: 0, y: 34, width: w, height: 18, rx: 9, fill: '#E2E8F0' }, a.g);
+    const f = el('rect', { x: 0, y: 34, width: 0, height: 18, rx: 9, fill: C.blue }, a.g);
+    a.fill = () => tween(900, (k) => f.setAttribute('width', w * k));
     return a;
   },
   label(S, o) {
     const a = mkActor(S, o, 0, 0);
-    const t = T(a.g, 0, o.size || 60, o.text, { size: o.size || 60, bold: true, fill: o.color || C.ink });
+    const t = T(a.g, 0, o.size || 60, o.text, { size: o.size || 60, weight: 800, fill: o.color || C.ink2 });
     a.w = Math.max(20, textW(t)); a.h = (o.size || 60) + 12;
-    a.set = async (s, fill) => { t.textContent = s; if (fill) t.setAttribute('fill', fill); await pop(a.g, 260); };
+    a.set = async (s, fill) => { t.textContent = s; t.setAttribute('fill', fill === '#dc2626' ? C.red : fill === '#111' ? C.ink2 : (fill || C.ink2)); await pop(a.g, 260); };
     return a;
   },
 };
@@ -608,7 +653,7 @@ class Scene {
     this.box = box; this.spec = spec; this.actors = {};
     const s = box.w / IW;
     this.root = el('g', { transform: `translate(${box.x},${box.y}) scale(${s})`, visibility: 'hidden', opacity: 0 }, parent);
-    el('rect', { x: 0, y: 0, width: IW, height: IH, rx: 18 / s * 0.6, fill: '#fff' }, this.root);
+    el('rect', { x: 0, y: 0, width: IW, height: IH, rx: 34, fill: '#fff', stroke: '#E2E8F0', 'stroke-width': 3 }, this.root);
     this.layerBg = el('g', {}, this.root);
     this.layerLinks = el('g', {}, this.root);
     this.layerActors = el('g', {}, this.root);
@@ -626,46 +671,47 @@ class Scene {
   drawLanes() {
     for (const L of this.spec.lanes || []) {
       const g = el('g', {}, this.layerBg);
-      const r = el('rect', { x: 196, y: L.y, width: 1208, height: L.h, rx: 14, fill: '#fafafa', stroke: '#cbd5e1', 'stroke-width': 3, 'stroke-dasharray': '10 8' }, g);
-      T(g, 212, L.y + 30, L.label, { size: 20, bold: true, fill: C.muted });
-      L.rect = r;
+      L.rect = el('rect', { x: 196, y: L.y, width: 1208, height: L.h, rx: 22, fill: '#F8FAFC', stroke: '#E2E8F0', 'stroke-width': 2 }, g);
+      eyebrow(g, 218, L.y + 30, L.label, { size: 14, fill: C.muted });
     }
   }
   drawPorts() {
     const P = this.spec.ports || {};
     const port = (x, y, art, sub, dir, solid) => {
       const g = el('g', { transform: `translate(${x},${y})` }, this.layerBg);
-      const w = 160, h = 96;
+      const w = 160, h = 92;
       const d = dir === 'in'
-        ? `M0,0 L${w - 22},0 L${w},${h / 2} L${w - 22},${h} L0,${h} Z`
-        : `M0,0 L${w - 22},0 L${w},${h / 2} L${w - 22},${h} L0,${h} L18,${h / 2} Z`;
-      const shape = el('path', { d, fill: solid ? '#eff6ff' : '#fff', stroke: solid ? C.blue : '#9ca3af', 'stroke-width': 3, 'stroke-dasharray': solid ? '' : '8 6' }, g);
+        ? `M14,0 L${w - 30},0 Q${w - 22},0 ${w - 17},7 L${w},${h / 2} L${w - 17},${h - 7} Q${w - 22},${h} ${w - 30},${h} L14,${h} Q0,${h} 0,${h - 14} L0,14 Q0,0 14,0 Z`
+        : `M10,0 L${w - 30},0 Q${w - 22},0 ${w - 17},7 L${w},${h / 2} L${w - 17},${h - 7} Q${w - 22},${h} ${w - 30},${h} L10,${h} Q2,${h} 6,${h - 8} L20,${h / 2} L6,8 Q2,0 10,0 Z`;
+      const shape = el('path', { d, fill: solid ? C.blueSoft : '#fff', stroke: solid ? C.blueLine : '#CBD5E1', 'stroke-width': 2.5, 'stroke-dasharray': solid ? '' : '7 6', 'stroke-linejoin': 'round' }, g);
       const lines = art.split('\n');
-      lines.forEach((ln, i) => T(g, dir === 'in' ? 70 : 84, h / 2 + 7 - (lines.length - 1) * 12 + i * 24, ln, { size: 20, bold: true, anchor: 'middle' }));
-      T(g, w / 2, -12, sub, { size: 17, anchor: 'middle', fill: C.muted });
-      return { g, shape, x, y, w, h };
+      const tx = dir === 'in' ? 72 : 86;
+      const tt = lines.map((ln, i) => T(g, tx, h / 2 + 7 - (lines.length - 1) * 11 + i * 22, ln, { size: 18, weight: 800, anchor: 'middle', fill: solid ? '#1E3A8A' : C.muted }));
+      eyebrow(g, w / 2, -12, sub, { anchor: 'middle', size: 12, fill: C.faint });
+      return { g, shape, tt, x, y, w, h };
     };
     (P.in || []).forEach((p) => {
-      const y = (p.y !== undefined ? p.y : IH / 2) - 48;
-      this.ports.in.push(port(16, y, p.art, `from ${p.from}`, 'in', true));
+      const y = (p.y !== undefined ? p.y : IH / 2) - 46;
+      this.ports.in.push(port(18, y, p.art, `from ${p.from}`, 'in', true));
     });
     if (P.out) {
-      const y = (P.out.y !== undefined ? P.out.y : IH / 2) - 48;
-      this.ports.out = port(IW - 176, y, P.out.art, `to ${P.out.to}`, 'out', false);
+      const y = (P.out.y !== undefined ? P.out.y : IH / 2) - 46;
+      this.ports.out = port(IW - 178, y, P.out.art, `to ${P.out.to}`, 'out', false);
     }
   }
   async setOut(state) {
     const p = this.ports.out; if (!p) return;
     const ok = state !== 'bad';
     p.shape.setAttribute('stroke-dasharray', '');
-    p.shape.setAttribute('stroke', ok ? C.green : C.red);
-    p.shape.setAttribute('fill', ok ? '#f0fdf4' : '#fef2f2');
+    p.shape.setAttribute('stroke', ok ? '#6EE7B7' : '#FDA4AF');
+    p.shape.setAttribute('fill', ok ? C.greenSoft : C.redSoft);
+    p.tt.forEach((t) => t.setAttribute('fill', ok ? '#065F46' : '#9F1239'));
     await pop(p.g);
   }
   point(ref) {
-    if (ref === 'OUT') { const p = this.ports.out; return { x: p.x + 20, y: p.y + p.h / 2 }; }
+    if (ref === 'OUT') { const p = this.ports.out; return { x: p.x + 24, y: p.y + p.h / 2 }; }
     const m = /^IN(\d?)$/.exec(ref);
-    if (m) { const p = this.ports.in[+(m[1] || 0)]; return { x: p.x + p.w - 10, y: p.y + p.h / 2 }; }
+    if (m) { const p = this.ports.in[+(m[1] || 0)]; return { x: p.x + p.w - 12, y: p.y + p.h / 2 }; }
     const mm = /^([\w-]+)(?::(\d+))?(?:\.(\w+))?$/.exec(ref);
     if (!mm) throw new Error(`bad ref ${ref}`);
     const a = this.actor(mm[1]);
@@ -677,12 +723,12 @@ class Scene {
 /* ---------- world: forest + scenes ---------- */
 const stage = document.getElementById('stage');
 const world = document.getElementById('world');
-let F = null;          // forest objects
+let F = null;
 let SCENES = {};
 let cam = { x: 0, y: 0, w: IW, h: IH };
 function setCam(c) { cam = c; stage.setAttribute('viewBox', `${c.x} ${c.y} ${c.w} ${c.h}`); }
 function camFor(at) {
-  if (at === 'forest') return { x: 0, y: 0, w: IW, h: IH };
+  if (at === 'forest') return ECO.forestView || { x: 0, y: 0, w: IW, h: IH };
   if (at === 'recap') return ECO.recapView || { x: -200, y: 20, w: 2000, h: 1000 };
   const b = F.box[at]; const pad = b.w * 0.012;
   return { x: b.x - pad, y: b.y - pad, w: b.w + 2 * pad, h: b.h + 2 * pad };
@@ -692,13 +738,24 @@ function moveCam(to, ms) {
   const fcx = from.x + from.w / 2, fcy = from.y + from.h / 2, tcx = to.x + to.w / 2, tcy = to.y + to.h / 2;
   return tween(ms, (k) => {
     const w = from.w * Math.pow(to.w / from.w, k), h = from.h * Math.pow(to.h / from.h, k);
-    // keep the zoom feeling natural: centre follows the size change
     const q = Math.abs(to.w - from.w) < 1 ? k : (from.w - w) / (from.w - to.w);
     const cx = lerp(fcx, tcx, q), cy = lerp(fcy, tcy, q);
     setCam({ x: cx - w / 2, y: cy - h / 2, w, h });
   });
 }
-
+function roundedPath(pts, r = 20) {
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+    const l1 = Math.hypot(x1 - x0, y1 - y0), l2 = Math.hypot(x2 - x1, y2 - y1);
+    const rr = Math.min(r, l1 / 2, l2 / 2);
+    const ax = x1 - (x1 - x0) / l1 * rr, ay = y1 - (y1 - y0) / l1 * rr;
+    const bx = x1 + (x2 - x1) / l2 * rr, by = y1 + (y2 - y1) / l2 * rr;
+    d += ` L${ax},${ay} Q${x1},${y1} ${bx},${by}`;
+  }
+  const last = pts[pts.length - 1];
+  return d + ` L${last[0]},${last[1]}`;
+}
 function buildWorld() {
   world.innerHTML = '';
   F = { box: {}, links: [], g: el('g', {}, world) };
@@ -707,44 +764,46 @@ function buildWorld() {
   F.linkG = linkG;
   F.fx = el('g', {}, world);
   F.recap = el('g', {}, world);
+  if (ECO.forest.bracket) {
+    const k = ECO.forest.bracket;
+    el('rect', { x: k.x, y: k.y, width: k.w, height: k.h, rx: 32, fill: '#EAF1FF' }, linkG);
+    eyebrow(linkG, k.x + k.w / 2, k.y + k.h + 24, k.label, { anchor: 'middle', fill: C.blue, size: 13 });
+  }
   for (const L of ECO.forest.links) {
-    const d = 'M' + L.pts.map((p) => p.join(',')).join(' L');
-    const path = el('path', { d, fill: 'none', stroke: '#9ca3af', 'stroke-width': 6, 'stroke-dasharray': L.dashed ? '12 10' : '', 'marker-end': 'url(#ah)', 'stroke-linejoin': 'round' }, linkG);
+    const path = el('path', { d: roundedPath(L.pts), fill: 'none', stroke: '#B8C4D4', 'stroke-width': L.dashed ? 3 : 3.5, 'stroke-dasharray': L.dashed ? '1 10' : '', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'marker-end': 'url(#chev)' }, linkG);
     if (L.label && !L.hideLabel) {
       const [lx, ly] = L.labelAt || mid(L.pts);
       const lines = L.label.split('\n');
-      lines.forEach((ln, i) => T(linkG, lx, ly - (lines.length - 1 - i) * 21, ln, { size: 18, anchor: 'middle', fill: '#4b5563', bold: true }));
+      lines.forEach((ln, i) => eyebrow(linkG, lx, ly - (lines.length - 1 - i) * 17, ln, { anchor: 'middle', fill: C.muted, size: 12.5 }));
     }
     F.links.push({ ...L, path });
   }
   for (const B of ECO.forest.boxes) {
     const b = { ...B, w: ECO.forest.boxW, h: ECO.forest.boxH };
-    const g = el('g', { class: 'box' }, boxG);
-    const r = el('rect', { x: b.x, y: b.y, width: b.w, height: b.h, rx: 18, fill: '#fff', stroke: C.ink, 'stroke-width': 3, 'vector-effect': 'non-scaling-stroke' }, g);
+    const g = el('g', { class: 'box', tabindex: 0 }, boxG);
+    const r = el('rect', { class: 'frame', x: b.x, y: b.y, width: b.w, height: b.h, rx: 22, fill: '#fff', stroke: '#DCE3EC', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke', filter: 'url(#sh)' }, g);
     const face = el('g', {}, g);
     if (B.lanes) {
+      const dots = [C.blue, C.ink2, C.faint];
       B.lanes.forEach((ln, i) => {
-        el('rect', { x: b.x + 22, y: b.y + 12 + i * 30, width: b.w - 44, height: 24, rx: 6, fill: '#fafafa', stroke: '#94a3b8', 'stroke-width': 2, 'stroke-dasharray': '6 4' }, face);
-        T(face, b.x + b.w / 2, b.y + 30 + i * 30, ln, { size: 16, anchor: 'middle', bold: true, fill: '#334155' });
+        const y = b.y + 14 + i * 27;
+        el('rect', { x: b.x + 46, y, width: b.w - 66, height: 22, rx: 7, fill: '#F8FAFC', stroke: '#E2E8F0', 'stroke-width': 1.5 }, face);
+        el('circle', { cx: b.x + 60, cy: y + 11, r: 4.5, fill: dots[i % 3] }, face);
+        T(face, b.x + 72, y + 16, ln, { size: 13.5, weight: 700, fill: C.body });
       });
     } else {
       for (const p of B.pict || []) drawAt(face, p[0], b.x + p[1], b.y + p[2], p[3]);
     }
-    T(face, b.x + b.w / 2, b.y + b.h - 16, B.name, { size: 24, bold: true, anchor: 'middle' });
+    T(face, b.x + b.w / 2, b.y + b.h - 17, B.name, { size: 20, weight: 800, anchor: 'middle', spacing: '-0.2' });
     const num = el('g', {}, g);
-    el('circle', { cx: b.x + 4, cy: b.y + 4, r: 17, fill: C.ink }, num);
-    T(num, b.x + 4, b.y + 10, String(B.n), { size: 18, bold: true, anchor: 'middle', fill: '#fff' });
+    T(num, b.x + 18, b.y + 27, String(B.n).padStart(2, '0'), { size: 13, mono: true, weight: 700, fill: C.faint });
     const badge = el('g', { opacity: 0 }, g);
-    el('circle', { cx: b.x + b.w - 4, cy: b.y + 4, r: 18, fill: C.green }, badge);
-    const bt = T(badge, b.x + b.w - 4, b.y + 12, '✓', { size: 22, bold: true, anchor: 'middle', fill: '#fff' });
+    const bc = el('circle', { cx: b.x + b.w - 6, cy: b.y + 6, r: 15, fill: C.green, stroke: '#fff', 'stroke-width': 3 }, badge);
+    const bm = el('g', {}, badge); check(bm, b.x + b.w - 6, b.y + 7, '#fff', 3.2);
     g.addEventListener('click', () => { if (viewIsForest()) jumpToBox(B.id); });
-    Object.assign(b, { g, r, face, badge, bt, num });
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' && viewIsForest()) jumpToBox(B.id); });
+    Object.assign(b, { g, r, face, badge, bc, bm, num });
     F.box[B.id] = b;
-  }
-  if (ECO.forest.bracket) {
-    const k = ECO.forest.bracket;
-    el('rect', { x: k.x, y: k.y, width: k.w, height: k.h, rx: 22, fill: 'none', stroke: C.blue, 'stroke-width': 3, 'stroke-dasharray': '10 8' }, linkG);
-    T(linkG, k.x + k.w / 2, k.y + k.h + 26, k.label, { size: 18, bold: true, anchor: 'middle', fill: C.blue });
   }
   SCENES = {};
   const sceneG = el('g', {}, world);
@@ -752,7 +811,6 @@ function buildWorld() {
   world.appendChild(F.fx); world.appendChild(F.recap);
 }
 function mid(pts) {
-  // label position: middle of the longest horizontal segment, a little above it
   let best = null, len = -1;
   for (let i = 1; i < pts.length; i++) {
     const [x1, y1] = pts[i - 1], [x2, y2] = pts[i];
@@ -763,36 +821,32 @@ function mid(pts) {
 }
 function setBoxState(id, st) {
   const b = F.box[id];
-  if (st === 'ok') { b.badge.setAttribute('opacity', 1); b.r.setAttribute('stroke', C.green); }
-  if (st === 'bad') { b.badge.setAttribute('opacity', 1); b.badge.firstChild.setAttribute('fill', C.red); b.bt.textContent = '✗'; b.r.setAttribute('stroke', C.red); }
-  if (st === 'idle') { b.badge.setAttribute('opacity', 0); b.r.setAttribute('stroke', C.ink); }
+  if (st === 'ok') { b.badge.setAttribute('opacity', 1); b.r.setAttribute('stroke', '#6EE7B7'); b.r.setAttribute('stroke-width', 2.5); }
+  if (st === 'bad') { b.badge.setAttribute('opacity', 1); b.bc.setAttribute('fill', C.red); b.bm.innerHTML = ''; cross(b.bm, b.x + b.w - 6, b.y + 6, '#fff', 3.2); b.r.setAttribute('stroke', '#FDA4AF'); }
+  if (st === 'idle') { b.badge.setAttribute('opacity', 0); b.r.setAttribute('stroke', '#DCE3EC'); }
 }
 async function flashBox(id, ms = 500) {
   const b = F.box[id];
-  b.r.setAttribute('fill', C.yellow);
-  await tween(ms, (k) => b.r.setAttribute('fill-opacity', 1 - 0.0 * k));
+  b.r.setAttribute('fill', '#FFF6CC');
+  await wait(ms);
   b.r.setAttribute('fill', '#fff');
 }
 
-/* forest token */
+/* forest token: the one moving thing on the map */
 function mkToken(label, color = C.blue) {
   const g = el('g', {}, F.fx);
-  el('circle', { r: 14, fill: color, stroke: '#fff', 'stroke-width': 3 }, g);
+  el('circle', { r: 17, fill: color, opacity: 0.18 }, g);
+  el('circle', { r: 9, fill: color, stroke: '#fff', 'stroke-width': 3 }, g);
   const lg = el('g', {}, g);
-  const t = T(lg, 0, -30, label || '', { size: 19, bold: true, anchor: 'middle', fill: '#fff' });
-  const w = label ? textW(t) + 24 : 0;
-  const r = el('rect', { x: -w / 2, y: -52, width: w, height: 30, rx: 15, fill: color }, lg);
+  const t = T(lg, 0, -27, label ? label.toUpperCase() : '', { size: 13, mono: true, weight: 700, anchor: 'middle', fill: '#fff', spacing: '1' });
+  const w = label ? textW(t) + 22 : 0;
+  const r = el('rect', { x: -w / 2, y: -46, width: w, height: 27, rx: 13.5, fill: color, filter: 'url(#sh2)' }, lg);
   lg.insertBefore(r, t);
   if (!label) lg.setAttribute('opacity', 0);
-  return {
-    g,
-    at(x, y) { g.setAttribute('transform', `translate(${x},${y})`); },
-    label(s) { t.textContent = s; const w2 = textW(t) + 24; r.setAttribute('x', -w2 / 2); r.setAttribute('width', w2); lg.setAttribute('opacity', s ? 1 : 0); },
-  };
+  return { g, at(x, y) { g.setAttribute('transform', `translate(${x},${y})`); } };
 }
 async function along(tok, pts, speed = 1.1) {
-  const segs = [];
-  let total = 0;
+  const segs = []; let total = 0;
   for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); total += l; }
   const ms = Math.max(450, total / speed);
   await tween(ms, (k) => {
@@ -816,30 +870,25 @@ async function journey(opts = {}) {
     const id = order[i], b = F.box[id];
     if (b.lanes) {
       const toks = b.lanes.map(() => mkToken(''));
-      await Promise.all(toks.map((t, j) => along(t, [[b.x + 24, b.y + 24 + j * 30], [b.x + b.w - 24, b.y + 24 + j * 30]], 0.32)));
+      await Promise.all(toks.map((t, j) => along(t, [[b.x + 60, b.y + 25 + j * 27], [b.x + b.w - 26, b.y + 25 + j * 27]], 0.3)));
       toks.forEach((t) => t.g.remove());
     } else {
       await flashBox(id, opts.tick ? 250 : 350);
     }
-    if (opts.tick) { setBoxState(id, 'ok'); await pop(F.box[id].g, 220); }
+    if (opts.tick) { setBoxState(id, 'ok'); await pop(F.box[id].badge, 220); }
     if (i < order.length - 1) await forestHop(id, order[i + 1]);
   }
 }
 
 /* ---------- action runner ---------- */
 let REPLAYING = false;
-async function runActions(list, at) {
-  const S = SCENES[at] || null;
-  for (const act of list) {
-    await runAction(act, S, at);
-  }
-}
+async function runActions(list, at) { for (const act of list) await runAction(act, SCENES[at] || null, at); }
 function need(S, what) { if (!S) throw new Error(`"${what}" needs a box scene, step is at forest`); return S; }
 async function runAction(act, S, at) {
   if (act.parallel) { await Promise.all(act.parallel.map((lane) => runActions(lane, at))); return; }
-  if (act.show !== undefined) { const ids = [].concat(act.show); await Promise.all(ids.map((id) => fade(need(S, 'show').actor(id).g, 1, 380))); return; }
-  if (act.hide !== undefined) { const ids = [].concat(act.hide); await Promise.all(ids.map((id) => fade(need(S, 'hide').actor(id).g, 0, 300))); return; }
-  if (act.call) { const [id, m, ...args] = act.call; const a = need(S, 'call').actor(id); if (typeof a[m] !== 'function') throw new Error(`${id} has no method ${m}`); await a[m](...args); return; }
+  if (act.show !== undefined) { await Promise.all([].concat(act.show).map((id) => fade(need(S, 'show').actor(id).g, 1, 380))); return; }
+  if (act.hide !== undefined) { await Promise.all([].concat(act.hide).map((id) => fade(need(S, 'hide').actor(id).g, 0, 300))); return; }
+  if (act.call) { const [id, m, ...args] = act.call; const a = need(S, 'call').actor(id); if (typeof a[m] !== 'function') throw new Error(`${id} has no method ${m}`); await a[m](...args.map((x) => (typeof x === 'string' ? tone(x) : x))); return; }
   if (act.move !== undefined) { await movePacket(need(S, 'move'), act); return; }
   if (act.connect) { await connect(need(S, 'connect'), act); return; }
   if (act.unconnect) { const s = need(S, 'unconnect'); await fade(s.layerLinks, 0, 250); s.layerLinks.innerHTML = ''; s.layerLinks.setAttribute('opacity', 1); return; }
@@ -858,62 +907,59 @@ async function runAction(act, S, at) {
 async function boxesIn() {
   const bs = ECO.forest.order.map((id) => F.box[id]);
   bs.forEach((b) => b.g.setAttribute('opacity', 0));
-  for (const b of bs) { await fade(b.g, 1, 160); }
+  for (const b of bs) await fade(b.g, 1, 160);
 }
 async function laneFlash(S, id) {
   const L = (S.spec.lanes || []).find((l) => l.id === id); if (!L) throw new Error('no lane ' + id);
   const r = L.rect;
-  r.setAttribute('stroke', C.blue); r.setAttribute('fill', '#eff6ff');
+  r.setAttribute('stroke', C.blueLine); r.setAttribute('fill', '#EEF4FF');
   await wait(450);
-  r.setAttribute('fill', '#fafafa'); r.setAttribute('stroke', '#93c5fd');
+  r.setAttribute('fill', '#F8FAFC'); r.setAttribute('stroke', '#BFDBFE');
 }
 async function mark(a, kind) {
   const old = a.g.querySelector('.mark'); if (old) old.remove();
-  const g = el('g', { class: 'mark', transform: `translate(${a.w + 4},${-4})` }, a.g);
-  el('circle', { r: 24, fill: kind === 'ok' ? C.green : C.red, stroke: '#fff', 'stroke-width': 3 }, g);
-  T(g, 0, 10, kind === 'ok' ? '✓' : '✗', { size: 28, bold: true, anchor: 'middle', fill: '#fff' });
+  const g = el('g', { class: 'mark', transform: `translate(${a.w + 2},${-2})` }, a.g);
+  el('circle', { r: 20, fill: kind === 'ok' ? C.green : C.red, stroke: '#fff', 'stroke-width': 3.5, filter: 'url(#sh2)' }, g);
+  if (kind === 'ok') check(g, 0, 1, '#fff', 3.6); else cross(g, 0, 0, '#fff', 3.6);
   await pop(g, 300);
 }
-function autoSide(p, q) { return p; }
+// Deck files may use plain hex colours; map them onto the palette.
+const TONES = { '#16a34a': C.green, '#dc2626': C.red, '#f59e0b': C.amber, '#6b7280': C.muted, '#ca8a04': '#CA8A04', '#2563eb': C.blue, '#111': C.ink2, '#111111': C.ink2 };
+function tone(c) { return (typeof c === 'string' && TONES[c.toLowerCase()]) || c; }
 async function movePacket(S, act) {
-  const color = act.color || C.blue;
-  const refs = [act.from, ...(act.via || []), act.to];
-  const pts = refs.map((r) => S.point(r));
+  const color = tone(act.color || C.blue);
+  const pts = [act.from, ...(act.via || []), act.to].map((r) => S.point(r));
   const g = el('g', {}, S.layerFx);
-  const t = T(g, 0, 8, act.move, { size: 22, bold: true, mono: true, anchor: 'middle', fill: '#fff' });
-  const w = textW(t) + 30;
-  const r = el('rect', { x: -w / 2, y: -21, width: w, height: 42, rx: 21, fill: color }, g);
+  const t = T(g, 0, 7, act.move, { size: 18, mono: true, weight: 700, anchor: 'middle', fill: '#fff' });
+  const w = textW(t) + 32;
+  const r = el('rect', { x: -w / 2, y: -20, width: w, height: 40, rx: 20, fill: color, filter: 'url(#sh2)' }, g);
   g.insertBefore(r, t);
   const at = (x, y) => g.setAttribute('transform', `translate(${x},${y})`);
   at(pts[0].x, pts[0].y);
   if (!INSTANT) { g.setAttribute('opacity', 0); await fade(g, 1, 150); }
-  let stampG = null;
   for (let i = 1; i < pts.length; i++) {
     const p = pts[i - 1], q = pts[i];
-    let L = Math.hypot(q.x - p.x, q.y - p.y);
+    const L = Math.hypot(q.x - p.x, q.y - p.y);
     if (act.blocked && i === pts.length - 1) {
-      // travel part-way, hit a wall, shake, vanish
       const stop = 0.55;
-      await tween(Math.max(300, L * stop / 1.0), (k) => at(lerp(p.x, q.x, k * stop), lerp(p.y, q.y, k * stop)));
+      await tween(Math.max(300, L * stop), (k) => at(lerp(p.x, q.x, k * stop), lerp(p.y, q.y, k * stop)));
       const bx = lerp(p.x, q.x, stop), by = lerp(p.y, q.y, stop);
-      const wall = el('g', { transform: `translate(${bx + (q.x - p.x) / L * 46},${by + (q.y - p.y) / L * 46})` }, S.layerFx);
-      el('circle', { r: 22, fill: C.red }, wall); T(wall, 0, 9, '✗', { size: 26, bold: true, anchor: 'middle', fill: '#fff' });
+      const wall = el('g', { transform: `translate(${bx + (q.x - p.x) / L * 48},${by + (q.y - p.y) / L * 48})` }, S.layerFx);
+      el('circle', { r: 20, fill: C.red, stroke: '#fff', 'stroke-width': 3.5 }, wall); cross(wall, 0, 0, '#fff', 3.6);
       await tween(420, (k) => at(bx + Math.sin(k * Math.PI * 6) * 10, by));
       await fade(g, 0, 300); g.remove();
-      if (!INSTANT) { await wait(400); }
+      if (!INSTANT) await wait(400);
       await fade(wall, 0, 300); wall.remove();
       return;
     }
     await tween(Math.max(380, L / 1.05), (k) => at(lerp(p.x, q.x, k), lerp(p.y, q.y, k)));
     if (act.stamp && act.stamp.at === i) {
       await wait(150);
-      stampG = el('g', { transform: `translate(${w / 2 - 6},-30)` }, g);
-      const st = T(stampG, 0, 0, act.stamp.text, { size: 18, bold: true, mono: true, fill: C.red, anchor: 'middle' });
+      const sg = el('g', { transform: `translate(${w / 2 - 4},-30) rotate(-7)` }, g);
+      const st = T(sg, 0, 6, act.stamp.text.toUpperCase(), { size: 14, mono: true, weight: 800, fill: C.red, anchor: 'middle', spacing: '1' });
       const sw = textW(st) + 18;
-      const sr = el('rect', { x: -sw / 2, y: -20, width: sw, height: 28, rx: 5, fill: '#fff', stroke: C.red, 'stroke-width': 3, transform: 'rotate(-6)' }, stampG);
-      stampG.insertBefore(sr, st);
-      st.setAttribute('transform', 'rotate(-6)');
-      await pop(stampG, 300);
+      sg.insertBefore(el('rect', { x: -sw / 2, y: -14, width: sw, height: 28, rx: 6, fill: '#fff', stroke: C.red, 'stroke-width': 2.5 }), st);
+      await pop(sg, 300);
       await wait(250);
     }
   }
@@ -924,38 +970,39 @@ async function movePacket(S, act) {
 async function connect(S, act) {
   const [a, b] = act.connect;
   const p = S.point(a), q = S.point(b);
-  const color = act.color || C.ink;
-  const mk = color === C.ink ? 'ahk' : color === C.blue ? 'ahb' : 'ahy';
-  const path = el('path', { d: `M${p.x},${p.y} L${q.x},${q.y}`, fill: 'none', stroke: color, 'stroke-width': 5, 'marker-end': `url(#${mk})` }, S.layerLinks);
+  const color = tone(act.color || C.ink2);
+  const mk = color === C.ink2 ? 'chevk' : color === C.blue ? 'chevb' : 'chevy';
+  const path = el('path', { d: `M${p.x},${p.y} L${q.x},${q.y}`, fill: 'none', stroke: color, 'stroke-width': 3.5, 'stroke-linecap': 'round', 'marker-end': `url(#${mk})` }, S.layerLinks);
   const len = Math.hypot(q.x - p.x, q.y - p.y);
   path.setAttribute('stroke-dasharray', `${len} ${len}`);
   await tween(500, (k) => path.setAttribute('stroke-dashoffset', len * (1 - k)));
   path.removeAttribute('stroke-dasharray');
   if (act.label) {
-    const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
-    const t = T(S.layerLinks, mx + 16, my + 8, act.label, { size: 20, bold: true, italic: true, fill: color === C.ink ? '#333' : color });
+    const t = eyebrow(S.layerLinks, (p.x + q.x) / 2 + 16, (p.y + q.y) / 2 + 5, act.label, { size: 13.5, fill: color === C.ink2 ? C.muted : color });
     await fade(t, 1, 200);
   }
 }
 async function recapLine(text, ids) {
   const i = F.recap.childNodes.length;
-  const y = (ECO.recapTop || 700) + i * 50;
-  const t = T(F.recap, ECO.recapLeft || 0, y, text, { size: 30, bold: i === 0 && false });
-  t.setAttribute('opacity', 0);
-  await fade(t, 1, 300);
+  const y = (ECO.recapTop || 700) + i * 48;
+  const g = el('g', { opacity: 0 }, F.recap);
+  const m = /^(\S+)\s+(.*)$/.exec(text);
+  if (m) {
+    T(g, ECO.recapLeft || 0, y, m[1], { size: 22, mono: true, weight: 700, fill: C.blue });
+    T(g, (ECO.recapLeft || 0) + 90, y, m[2], { size: 28, weight: 600, fill: C.ink2 });
+  } else T(g, ECO.recapLeft || 0, y, text, { size: 28, weight: 600 });
+  await fade(g, 1, 300);
   await Promise.all(ids.map((id) => flashBox(id, 600)));
 }
 
 /* ---------- interior visibility + transitions ---------- */
-// Everything of the forest except the opened box fades away while inside,
-// so neighbours never bleed into the zoomed view.
 function others(id) {
   const list = [F.linkG, F.box[id].num, F.box[id].r];
   for (const k in F.box) if (k !== id) list.push(F.box[k].g);
   return list;
 }
 function showInterior(at) {
-  for (const k in F.box) F.box[k].g.setAttribute('opacity', 1);
+  for (const k in F.box) { F.box[k].g.setAttribute('opacity', 1); F.box[k].r.setAttribute('opacity', 1); }
   F.linkG.setAttribute('opacity', 1);
   for (const id in SCENES) {
     const s = SCENES[id], on = id === at;
@@ -978,8 +1025,7 @@ async function zoomInto(id) {
 async function zoomOut(id, to = 'forest') {
   const s = SCENES[id];
   const face = F.box[id].face;
-  await Promise.all([fade(s.root, 0, 300), fade(face, 1, 300), moveCam(camFor(to), 750),
-    ...others(id).map((e) => fade(e, 1, 700))]);
+  await Promise.all([fade(s.root, 0, 300), fade(face, 1, 300), moveCam(camFor(to), 750), ...others(id).map((e) => fade(e, 1, 700))]);
   s.root.setAttribute('visibility', 'hidden');
 }
 async function transition(a, b) {
@@ -995,49 +1041,57 @@ async function transition(a, b) {
 const STEPS = ECO.steps;
 const $ = (id) => document.getElementById(id);
 let cur = 0, auto = false, freeLook = false;
-function boxName(id) { const b = ECO.forest.boxes.find((x) => x.id === id); return b ? b.name : ''; }
+function boxOf(id) { return ECO.forest.boxes.find((x) => x.id === id); }
 function viewIsForest() { return freeLook || STEPS[cur].at === 'forest' || STEPS[cur].at === 'recap'; }
 function showNote(s) { const n = $('note'); n.textContent = s; n.classList.toggle('on', !!s); }
 function renderChrome(n) {
   const st = STEPS[n];
+  const b = boxOf(st.at);
+  $('eyebrow').textContent = b ? `${String(b.n).padStart(2, '0')} — ${b.name}` : st.at === 'recap' ? 'Recap' : 'The whole system';
   $('title').textContent = st.title;
   $('text').textContent = st.text;
   showNote('');
-  $('count').textContent = `Step ${n + 1} of ${STEPS.length}`;
+  $('count').textContent = `${String(n + 1).padStart(2, '0')} / ${STEPS.length}`;
   const dots = $('dots').children;
-  for (let i = 0; i < dots.length; i++) { dots[i].className = (i < n ? 'done' : i === n ? 'cur' : '') + (dots[i].dataset.gap ? ' gap' : ''); }
-  const crumb = $('crumb');
-  crumb.innerHTML = '';
-  const root = document.createElement('a'); root.textContent = 'Whole journey';
-  root.onclick = () => lookForest();
+  for (let i = 0; i < dots.length; i++) dots[i].className = (i < n ? 'done' : i === n ? 'cur' : '') + (dots[i].dataset.gap ? ' gap' : '');
+  const crumb = $('crumb'); crumb.innerHTML = '';
+  const root = document.createElement('a'); root.textContent = 'Whole system'; root.onclick = () => lookForest();
   crumb.appendChild(root);
-  if (SCENES[st.at]) { const b = ECO.forest.boxes.find((x) => x.id === st.at); crumb.append(` › ${b.n} · ${b.name}`); }
+  if (b) crumb.append(`  ›  ${b.name}`);
   renderMini(st.at);
 }
 function renderMini(at) {
   const m = $('mini'); m.innerHTML = '';
-  const order = ECO.forest.order, n = order.length, gap = 16, w = (1000 - gap * (n - 1)) / n;
+  const order = ECO.forest.order, n = order.length, pad = 50, gapX = (1000 - 2 * pad) / Math.max(1, n - 1);
+  const curIdx = order.indexOf(at);
+  el('line', { x1: pad, y1: 16, x2: pad + gapX * (n - 1), y2: 16, stroke: '#E2E8F0', 'stroke-width': 3, 'stroke-linecap': 'round' }, m);
+  if (curIdx > 0) el('line', { x1: pad, y1: 16, x2: pad + gapX * curIdx, y2: 16, stroke: '#94A3B8', 'stroke-width': 3, 'stroke-linecap': 'round' }, m);
   order.forEach((id, i) => {
-    const b = ECO.forest.boxes.find((x) => x.id === id);
-    const x = i * (w + gap);
-    const g = el('g', { class: 'pill', 'data-id': id }, m);
-    el('rect', { x, y: 8, width: w, height: 42, rx: 10, fill: id === at ? C.yellow : '#fff', stroke: C.ink, 'stroke-width': id === at ? 3 : 1.6 }, g);
-    if (b.lanes) b.lanes.forEach((_, j) => el('line', { x1: x + 8, y1: 16 + j * 6, x2: x + w - 8, y2: 16 + j * 6, stroke: '#94a3b8', 'stroke-width': 2 }, g));
-    T(g, x + w / 2, 42, `${b.n} ${b.short || b.name}`, { size: 15, anchor: 'middle', bold: id === at });
-    if (i < n - 1) el('path', { d: `M${x + w + 2},29 L${x + w + gap - 3},29`, stroke: '#9ca3af', 'stroke-width': 2.5, 'marker-end': 'url(#ah)' }, m);
+    const b = boxOf(id), x = pad + i * gapX;
+    const g = el('g', { class: 'node', 'data-id': id }, m);
+    el('rect', { x: x - 30, y: 0, width: 60, height: 56, fill: 'transparent' }, g);
+    const isCur = i === curIdx, past = curIdx >= 0 && i < curIdx;
+    if (b.lanes) {
+      const ring = el('rect', { x: x - 11, y: 6, width: 22, height: 20, rx: 6, fill: isCur ? C.ink : '#fff', stroke: isCur ? C.ink : past ? '#94A3B8' : '#CBD5E1', 'stroke-width': 2.5, class: 'dot' }, g);
+      for (let j = 0; j < 3; j++) el('line', { x1: x - 5, y1: 11 + j * 5, x2: x + 5, y2: 11 + j * 5, stroke: isCur ? '#fff' : '#94A3B8', 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+    } else {
+      el('circle', { cx: x, cy: 16, r: isCur ? 9 : 7, fill: isCur ? C.ink : past ? '#94A3B8' : '#fff', stroke: isCur ? '#CBD5E1' : past ? '#94A3B8' : '#CBD5E1', 'stroke-width': isCur ? 4 : 2.5, class: 'dot' }, g);
+    }
+    T(g, x, 46, b.short || b.name, { size: 13, weight: isCur ? 800 : 600, anchor: 'middle', fill: isCur ? C.ink : C.muted });
     g.addEventListener('click', () => jumpToBox(id));
   });
 }
 async function miniFlash(id) {
-  const g = $('mini').querySelector(`[data-id="${id}"] rect`); if (!g) return;
-  for (let i = 0; i < 3; i++) { g.setAttribute('fill', C.blue); await wait(180); g.setAttribute('fill', '#fff'); await wait(140); }
+  const d = $('mini').querySelector(`[data-id="${id}"] .dot`); if (!d) return;
+  const f = d.getAttribute('fill');
+  for (let i = 0; i < 3; i++) { d.setAttribute('fill', C.blue); await wait(180); d.setAttribute('fill', f); await wait(140); }
 }
 function buildDots() {
   const d = $('dots'); d.innerHTML = '';
   STEPS.forEach((s, i) => {
     const e = document.createElement('i');
     e.title = `${i + 1}. ${s.title}`;
-    if (i > 0 && STEPS[i - 1].at !== s.at) { e.dataset.gap = '1'; }
+    if (i > 0 && STEPS[i - 1].at !== s.at) e.dataset.gap = '1';
     e.onclick = () => go(i, false);
     d.appendChild(e);
   });
@@ -1062,12 +1116,10 @@ async function go(n, animate = true) {
   }
   showInterior(prev); setCam(camFor(prev));
   INSTANT = false;
-  try {
-    await transition(prev, STEPS[n].at);
-    if (my !== GEN) return;
-    showInterior(STEPS[n].at);
-    await runActions(STEPS[n].actions, STEPS[n].at);
-  } catch (e) { console.error(e); throw e; }
+  await transition(prev, STEPS[n].at);
+  if (my !== GEN) return;
+  showInterior(STEPS[n].at);
+  await runActions(STEPS[n].actions, STEPS[n].at);
   if (my !== GEN) return;
   if (STEPS[n].note) showNote(STEPS[n].note);
   if (auto && n < STEPS.length - 1) { await wait(1600); if (my === GEN && auto) go(n + 1, true); }
@@ -1076,27 +1128,32 @@ function jumpToBox(id) { const i = STEPS.findIndex((s) => s.at === id); if (i >=
 async function lookForest() {
   const at = STEPS[cur].at;
   if (!SCENES[at]) return;
-  GEN++; freeLook = true;
-  INSTANT = false;
+  GEN++; freeLook = true; INSTANT = false;
   await zoomOut(at);
-  $('title').textContent = 'The whole journey';
+  $('eyebrow').textContent = 'The whole system';
+  $('title').textContent = 'Pick a box';
   $('text').textContent = 'Click any box to open it, or press Next to continue where you were.';
   showNote('');
   renderMini(null);
 }
+$('deck').textContent = ECO.title;
 $('next').onclick = () => go(freeLook ? cur : cur + 1, true);
 $('back').onclick = () => go(cur - 1, false);
 $('replay').onclick = () => go(cur, true);
 $('auto').onclick = () => { auto = !auto; $('auto').classList.toggle('on', auto); if (auto) go(cur + 1, true); };
 document.addEventListener('keydown', (e) => {
+  if (e.target.closest && e.target.closest('button')) return;
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('next').click(); }
   else if (e.key === 'ArrowLeft') $('back').click();
   else if (e.key === 'r') $('replay').click();
   else if (e.key === 'Escape') lookForest();
 });
 buildDots();
-window.__deck = { go, STEPS, get cur() { return cur; }, get SCENES() { return SCENES; }, get F() { return F; } };
-go(0, true);
+// Measure text only after the embedded fonts are in, so every box fits its words.
+Promise.all([document.fonts.load('700 20px Manrope'), document.fonts.load('600 18px "JetBrains Mono"')]).catch(() => {}).then(() => {
+  window.__deck = { go, STEPS, get cur() { return cur; }, get SCENES() { return SCENES; }, get F() { return F; } };
+  go(0, true);
+});
 </script>
 </body>
 </html>

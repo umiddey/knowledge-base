@@ -25,6 +25,7 @@ Engine + tools live in `ecosystem/` next to this file:
 | `gateforge.eco.js` | full real example: 8 boxes, 34 steps, Gateforge's commit gate. |
 | `build.mjs` | `node build.mjs my.eco.js my-deck.html` builds one self-contained HTML file |
 | `check-eco.mjs` | layout + playthrough checker with screenshots |
+| `fonts/` | Manrope + JetBrains Mono (latin, variable); `build.mjs` embeds them so decks look the same offline |
 
 ## The hard rules
 
@@ -70,8 +71,13 @@ Engine + tools live in `ecosystem/` next to this file:
 10. **Say who is responsible.** Every file card says in its `who` tag who
     writes it (`by the agent`, `owner reviews`, `real help text`); actors
     are named plainly (`referee (the witness)`).
-11. **Plain words, white background, big type.** Green and red only carry
-    meaning; blue is the moving thing; yellow is the highlight.
+11. **Plain words, sleek and quiet.** The engine owns the look; don't restyle per deck.
+    Cool paper background (`#F6F8FB`), white cards with soft shadows and
+    hairline borders, one line style for every drawing (3.5 px, round joins,
+    slate ink), Manrope for words, JetBrains Mono for names/code/eyebrows.
+    Colour only carries meaning: blue = the moving thing, green = proven,
+    red = rejected, soft yellow = highlight. Deck files may use plain hex
+    colours (`#dc2626`, `#16a34a`…); the engine maps them onto the palette.
 
 ## How to build one
 
@@ -98,8 +104,9 @@ Engine + tools live in `ecosystem/` next to this file:
 ```js
 const ECO = {
   title: '…',
+  forestView: { x: 30, y: 70, w: 1550, h: 640 },   // optional camera frame for the map
   forest: {
-    boxW: 280, boxH: 140,                       // boxes are 2:1; every inside view is 1600×800
+    boxW: 260, boxH: 130,                       // boxes are 2:1; every inside view is 1600×800
     order: ['a', 'b', 'c'],                     // the trip order
     boxes: [{ id: 'a', n: 1, name: 'Freeze', short: 'Freeze', x: 90, y: 110,
               pict: [['camera', 72, 18, 0.5]] },                 // drawings from DRAW at x,y,scale

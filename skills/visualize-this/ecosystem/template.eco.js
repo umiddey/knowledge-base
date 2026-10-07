@@ -6,18 +6,18 @@ const ECO = {
   recapTop: 680,
   recapLeft: 40,
   forest: {
-    boxW: 280, boxH: 140,
+    boxW: 260, boxH: 130,
     order: ['order', 'make', 'serve'],
     boxes: [
-      { id: 'order', n: 1, name: 'Take the order', short: 'Order', x: 190, y: 290, pict: [['person', 110, 12, 0.56]] },
-      { id: 'make', n: 2, name: 'Make it', short: 'Make', x: 660, y: 290, lanes: ['barista', 'grinder'] },
-      { id: 'serve', n: 3, name: 'Serve', short: 'Serve', x: 1130, y: 290, pict: [['checklistIcon', 104, 12, 0.66]] },
+      { id: 'order', n: 1, name: 'Take the order', short: 'Order', x: 200, y: 300, pict: [['person', 99, 12, 0.52]] },
+      { id: 'make', n: 2, name: 'Make it', short: 'Make', x: 670, y: 300, lanes: ['barista', 'grinder'] },
+      { id: 'serve', n: 3, name: 'Serve', short: 'Serve', x: 1140, y: 300, pict: [['checklistIcon', 96, 12, 0.62]] },
     ],
     links: [
-      { from: 'order', to: 'make', label: 'ticket', pts: [[470, 360], [656, 360]] },
-      { from: 'make', to: 'serve', label: 'coffee', pts: [[940, 360], [1126, 360]] },
+      { from: 'order', to: 'make', label: 'ticket', pts: [[460, 365], [666, 365]] },
+      { from: 'make', to: 'serve', label: 'coffee', pts: [[930, 365], [1136, 365]] },
     ],
-    bracket: { x: 648, y: 278, w: 304, h: 164, label: 'two at the same time' },
+    bracket: { x: 654, y: 284, w: 292, h: 162, label: 'runs in parallel' },
   },
   scenes: {
     order: {
