@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>/*TITLE*/</title>
+<style>
+:root { --ink:#111; --blue:#2563eb; --green:#16a34a; --red:#dc2626; --yellow:#fde047; --muted:#6b7280; }
+* { box-sizing: border-box; }
+html, body { margin:0; height:100%; background:#fff; color:var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+#app { display:grid; grid-template-rows:auto 1fr auto; height:100vh; }
+header { display:flex; align-items:center; gap:20px; padding:10px 28px 0; }
+#crumb { font-size:19px; color:#444; white-space:nowrap; min-width:300px; }
+#crumb a { color:var(--blue); cursor:pointer; text-decoration:underline; }
+#mini { flex:1; height:58px; max-width:1100px; }
+#mini .pill { cursor:pointer; }
+#stagewrap { position:relative; min-height:0; }
+#stage { width:100%; height:100%; display:block; }
+footer { padding:4px 32px 14px; }
+#title { font-size:31px; font-weight:750; margin:0; }
+#text { font-size:23px; margin:6px 0 0; min-height:30px; max-width:1300px; }
+#note { font-size:21px; margin:8px 0 0; background:var(--yellow); display:inline-block; padding:3px 12px; border-radius:6px; opacity:0; transition:opacity .35s; }
+#note.on { opacity:1; }
+#bar { display:flex; align-items:center; gap:10px; margin-top:10px; }
+button { font:inherit; font-size:17px; padding:6px 16px; border:2px solid #111; background:#fff; border-radius:8px; cursor:pointer; }
+button:hover { background:#f3f4f6; }
+button.on { background:#111; color:#fff; }
+#count { font-size:17px; color:#444; min-width:120px; text-align:right; }
+.dots { display:flex; gap:5px; flex-wrap:wrap; flex:1; align-items:center; }
+.dots i { width:13px; height:13px; border-radius:50%; border:2px solid #111; cursor:pointer; display:block; }
+.dots i.done { background:#111; }
+.dots i.cur { background:var(--blue); border-color:var(--blue); transform:scale(1.25); }
+.dots i.gap { margin-left:12px; }
+svg text { white-space: pre; }
+.mono { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace; }
+.box { cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div id="crumb"></div>
+    <svg id="mini" viewBox="0 0 1000 58" preserveAspectRatio="xMidYMid meet"></svg>
+  </header>
+  <div id="stagewrap">
+    <svg id="stage" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="stripes" patternUnits="userSpaceOnUse" width="18" height="18"><rect width="18" height="18" fill="#fff"/><rect width="9" height="18" fill="#111"/></pattern>
+        <pattern id="barrier" patternUnits="userSpaceOnUse" width="56" height="26"><rect width="56" height="26" fill="#fff"/><rect width="28" height="26" fill="#dc2626"/></pattern>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/></marker>
+        <marker id="ahk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker>
+        <marker id="ahy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ca8a04"/></marker>
+        <marker id="ahb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+      </defs>
+      <g id="world"></g>
+    </svg>
+  </div>
+  <footer>
+    <h1 id="title"></h1>
+    <div id="text"></div>
+    <div id="note"></div>
+    <div id="bar">
+      <button id="back">← Back</button>
+      <button id="next">Next →</button>
+      <button id="replay">Replay</button>
+      <button id="auto">Auto</button>
+      <div class="dots" id="dots"></div>
+      <div id="count"></div>
+    </div>
+  </footer>
+</div>
+<script>
+/*ECO*/
+</script>
+<script>
+'use strict';
+/* ============================================================
+   Forest + trees explainer engine.
+   Content lives in ECO (bottom of file). Do not edit the engine
+   to make a new deck.
+   ============================================================ */
+const NS = 'http://www.w3.org/2000/svg';
+const MONO = 'ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace';
+const C = { ink:'#111', blue:'#2563eb', green:'#16a34a', red:'#dc2626', yellow:'#fde047', amber:'#f59e0b', muted:'#6b7280', light:'#f3f4f6' };
+const IW = 1600, IH = 800;           // inner scene size (every box interior)
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function T(p, x, y, s, o = {}) {
+  const t = el('text', { x, y, 'font-size': o.size || 22 }, p);
+  if (o.mono) t.setAttribute('font-family', MONO);
+  if (o.bold) t.setAttribute('font-weight', 700);
+  if (o.italic) t.setAttribute('font-style', 'italic');
+  if (o.anchor) t.setAttribute('text-anchor', o.anchor);
+  t.setAttribute('fill', o.fill || C.ink);
+  t.textContent = s;
+  return t;
+}
+function textW(t) { try { return t.getComputedTextLength(); } catch (e) { return t.textContent.length * 12; } }
+
+/* ---------- time ---------- */
+let GEN = 0, INSTANT = false;
+const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+const lerp = (a, b, t) => a + (b - a) * t;
+function tween(ms, fn) {
+  if (INSTANT || ms <= 0) { fn(1); return Promise.resolve(); }
+  const g = GEN;
+  return new Promise((res) => {
+    const t0 = performance.now();
+    const f = (now) => {
+      if (g !== GEN) return;   // stale chain: never resolve, so it stops for good
+      const p = Math.min(1, (now - t0) / ms);
+      fn(ease(p));
+      if (p < 1) requestAnimationFrame(f); else res();
+    };
+    requestAnimationFrame(f);
+  });
+}
+function wait(ms) { if (INSTANT) return Promise.resolve(); const g = GEN; return new Promise((r) => setTimeout(() => { if (g === GEN) r(); }, ms)); }
+function opac(e) { const v = e.getAttribute('opacity'); return v === null ? 1 : +v; }
+function fade(e, to, ms = 380) { const from = opac(e); return tween(ms, (t) => e.setAttribute('opacity', lerp(from, to, t))); }
+function pop(g, ms = 320) {
+  // scale bump around the element's own centre
+  let bb; try { bb = g.getBBox(); } catch (e) { return Promise.resolve(); }
+  const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+  const base = g.getAttribute('transform') || '';
+  return tween(ms, (t) => {
+    const s = 1 + 0.12 * Math.sin(Math.PI * t);
+    g.setAttribute('transform', `${base} translate(${cx},${cy}) scale(${s}) translate(${-cx},${-cy})`);
+  }).then(() => g.setAttribute('transform', base));
+}
+
+/* ---------- drawings (pure; local coords from 0,0) ---------- */
+const DRAW = {
+  robot(g) {
+    el('line', { x1: 65, y1: 8, x2: 65, y2: 30, stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 65, cy: 8, r: 7, fill: C.blue }, g);
+    el('rect', { x: 15, y: 30, width: 100, height: 70, rx: 16, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 45, cy: 62, r: 9, fill: C.ink }, g);
+    el('circle', { cx: 85, cy: 62, r: 9, fill: C.ink }, g);
+    el('rect', { x: 45, y: 82, width: 40, height: 6, rx: 3, fill: C.ink }, g);
+    el('rect', { x: 30, y: 106, width: 70, height: 52, rx: 10, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 65, cy: 132, r: 7, fill: C.blue }, g);
+    el('line', { x1: 30, y1: 116, x2: 8, y2: 142, stroke: C.ink, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    el('line', { x1: 100, y1: 116, x2: 122, y2: 142, stroke: C.ink, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    return { w: 130, h: 160 };
+  },
+  person(g) {
+    el('circle', { cx: 60, cy: 36, r: 26, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('path', { d: 'M12,150 Q12,76 60,76 Q108,76 108,150 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    return { w: 120, h: 150 };
+  },
+  camera(g) {
+    el('rect', { x: 50, y: 12, width: 60, height: 24, rx: 6, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('rect', { x: 8, y: 30, width: 154, height: 104, rx: 14, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 85, cy: 82, r: 33, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 85, cy: 82, r: 16, fill: C.ink }, g);
+    el('rect', { x: 126, y: 42, width: 24, height: 14, rx: 3, fill: C.yellow, stroke: C.ink, 'stroke-width': 3, class: 'bulb' }, g);
+    return { w: 170, h: 140 };
+  },
+  server(g) {
+    el('rect', { x: 0, y: 0, width: 170, height: 170, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    for (let i = 0; i < 3; i++) {
+      el('rect', { x: 16, y: 18 + i * 50, width: 138, height: 34, rx: 6, fill: C.light, stroke: C.ink, 'stroke-width': 3 }, g);
+      el('line', { x1: 30, y1: 35 + i * 50, x2: 90, y2: 35 + i * 50, stroke: C.ink, 'stroke-width': 3 }, g);
+    }
+    el('circle', { cx: 134, cy: 35, r: 9, fill: '#d1d5db', stroke: C.ink, 'stroke-width': 2, class: 'led' }, g);
+    return { w: 170, h: 170 };
+  },
+  dbIcon(g) {
+    el('path', { d: 'M0,22 L0,118 A70,20 0 0 0 140,118 L140,22', fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('ellipse', { cx: 70, cy: 22, rx: 70, ry: 20, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('path', { d: 'M0,56 A70,20 0 0 0 140,56 M0,88 A70,20 0 0 0 140,88', fill: 'none', stroke: C.ink, 'stroke-width': 3 }, g);
+    return { w: 140, h: 140 };
+  },
+  magnifier(g) {
+    el('circle', { cx: 52, cy: 52, r: 40, fill: 'rgba(37,99,235,0.08)', stroke: C.ink, 'stroke-width': 8 }, g);
+    el('line', { x1: 82, y1: 82, x2: 132, y2: 132, stroke: C.ink, 'stroke-width': 14, 'stroke-linecap': 'round' }, g);
+    return { w: 140, h: 140 };
+  },
+  doc(g) {
+    el('path', { d: 'M0,0 L70,0 L96,26 L96,120 L0,120 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    for (let i = 0; i < 4; i++) el('line', { x1: 14, y1: 42 + i * 18, x2: 82, y2: 42 + i * 18, stroke: C.ink, 'stroke-width': 3 }, g);
+    return { w: 96, h: 120 };
+  },
+  key(g) {
+    el('circle', { cx: 28, cy: 30, r: 20, fill: '#fff', stroke: C.ink, 'stroke-width': 7 }, g);
+    el('line', { x1: 48, y1: 30, x2: 128, y2: 30, stroke: C.ink, 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
+    el('line', { x1: 108, y1: 30, x2: 108, y2: 50, stroke: C.ink, 'stroke-width': 8 }, g);
+    el('line', { x1: 124, y1: 30, x2: 124, y2: 46, stroke: C.ink, 'stroke-width': 8 }, g);
+    return { w: 132, h: 60 };
+  },
+  lock(g) {
+    el('path', { d: 'M12,30 L12,20 A18,18 0 0 1 48,20 L48,30', fill: 'none', stroke: C.ink, 'stroke-width': 7 }, g);
+    el('rect', { x: 0, y: 28, width: 60, height: 44, rx: 8, fill: C.yellow, stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 30, cy: 48, r: 6, fill: C.ink }, g);
+    return { w: 60, h: 72 };
+  },
+  referee(g) {
+    el('circle', { cx: 70, cy: 34, r: 26, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('circle', { cx: 60, cy: 30, r: 3.5, fill: C.ink }, g);
+    el('circle', { cx: 80, cy: 30, r: 3.5, fill: C.ink }, g);
+    el('path', { d: 'M24,150 L24,96 Q24,66 70,66 Q116,66 116,96 L116,150 Z', fill: 'url(#stripes)', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('line', { x1: 70, y1: 46, x2: 96, y2: 56, stroke: C.ink, 'stroke-width': 3 }, g);
+    el('circle', { cx: 100, cy: 58, r: 6, fill: C.yellow, stroke: C.ink, 'stroke-width': 2.5 }, g);
+    return { w: 140, h: 150 };
+  },
+  hook(g) {
+    el('circle', { cx: 60, cy: 8, r: 8, fill: '#fff', stroke: C.ink, 'stroke-width': 5 }, g);
+    el('path', { d: 'M60,16 L60,78 A30,30 0 0 1 0,78 L0,58', fill: 'none', stroke: C.ink, 'stroke-width': 10, 'stroke-linecap': 'round' }, g);
+    el('path', { d: 'M-12,72 L0,50 L12,72', fill: C.ink, stroke: C.ink, 'stroke-width': 4, 'stroke-linejoin': 'round' }, g);
+    return { w: 90, h: 110 };
+  },
+  checklistIcon(g) {
+    el('rect', { x: 0, y: 0, width: 110, height: 120, rx: 8, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    for (let i = 0; i < 3; i++) {
+      el('rect', { x: 14, y: 16 + i * 34, width: 20, height: 20, rx: 3, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
+      el('line', { x1: 44, y1: 26 + i * 34, x2: 96, y2: 26 + i * 34, stroke: C.ink, 'stroke-width': 3 }, g);
+    }
+    el('path', { d: 'M16,26 L24,34 L38,14', fill: 'none', stroke: C.green, 'stroke-width': 5 }, g);
+    el('path', { d: 'M16,60 L24,68 L38,48', fill: 'none', stroke: C.green, 'stroke-width': 5 }, g);
+    return { w: 110, h: 120 };
+  },
+  gateIcon(g) {
+    el('rect', { x: 0, y: 30, width: 22, height: 90, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    el('rect', { x: 11, y: 40, width: 170, height: 22, fill: 'url(#barrier)', stroke: C.ink, 'stroke-width': 3 }, g);
+    el('rect', { x: 170, y: 62, width: 14, height: 58, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
+    return { w: 190, h: 120 };
+  },
+  folder(g, w = 220, h = 150) {
+    el('path', { d: `M0,18 L0,${h} L${w},${h} L${w},30 L${w * 0.45},30 L${w * 0.38},8 L8,8 Q0,8 0,18 Z`, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, g);
+    return { w, h };
+  },
+};
+function drawAt(parent, name, x, y, s) {
+  const g = el('g', { transform: `translate(${x},${y}) scale(${s})` }, parent);
+  DRAW[name](g);
+  return g;
+}
+
+/* ---------- actors (inside a box) ---------- */
+function mkActor(S, o, w, h) {
+  const g = el('g', { transform: `translate(${o.x},${o.y})`, opacity: o.on ? 1 : 0 }, S.layerActors);
+  const a = {
+    id: o.id, type: o.type, g, x: o.x, y: o.y, w, h, points: {},
+    anchor(s = 'c') {
+      if (a.points[s]) return { x: a.x + a.points[s].x, y: a.y + a.points[s].y };
+      const { x, y } = a;
+      if (s === 'l') return { x, y: y + a.h / 2 };
+      if (s === 'r') return { x: x + a.w, y: y + a.h / 2 };
+      if (s === 't') return { x: x + a.w / 2, y };
+      if (s === 'b') return { x: x + a.w / 2, y: y + a.h };
+      return { x: x + a.w / 2, y: y + a.h / 2 };
+    },
+    lineAnchor(i, s) { return a.anchor(s); },
+  };
+  return a;
+}
+function labelUnder(a, text, y, size = 23) {
+  const lines = String(text).split('\n');
+  lines.forEach((ln, i) => T(a.g, a.w / 2, y + i * (size + 4), ln, { size, bold: i === 0, anchor: 'middle' }));
+  return y + (lines.length - 1) * (size + 4) + 8;
+}
+const ACTORS = {
+  robot(S, o) { const a = mkActor(S, o, 130, 0); DRAW.robot(a.g); a.h = labelUnder(a, o.label || 'the agent', 188); return a; },
+  person(S, o) { const a = mkActor(S, o, 120, 0); DRAW.person(a.g); a.h = labelUnder(a, o.label || 'the owner', 180); return a; },
+  referee(S, o) { const a = mkActor(S, o, 140, 0); DRAW.referee(a.g); a.h = labelUnder(a, o.label || 'referee', 176, 21); return a; },
+  camera(S, o) {
+    const a = mkActor(S, o, 170, 140); DRAW.camera(a.g);
+    a.flash = async (ref) => {
+      const t = S.actor(ref);
+      const r = el('rect', { x: t.x - 16, y: t.y - 16, width: t.w + 32, height: t.h + 32, rx: 16, fill: C.yellow, opacity: 0 }, S.layerFx);
+      const bulb = a.g.querySelector('.bulb');
+      await tween(140, (k) => { r.setAttribute('opacity', 0.9 * k); bulb.setAttribute('fill', '#fff'); });
+      await tween(520, (k) => r.setAttribute('opacity', 0.9 * (1 - k)));
+      bulb.setAttribute('fill', C.yellow); r.remove();
+    };
+    return a;
+  },
+  server(S, o) {
+    const a = mkActor(S, o, 170, 0); DRAW.server(a.g); a.h = labelUnder(a, o.label || 'app server', 200);
+    const led = a.g.querySelector('.led');
+    a.up = () => tween(300, (k) => led.setAttribute('fill', k > 0.5 ? C.green : '#d1d5db'));
+    return a;
+  },
+  hook(S, o) {
+    const a = mkActor(S, o, 170, 0);
+    const ig = el('g', { transform: 'translate(55,0)' }, a.g); DRAW.hook(ig);
+    a.h = labelUnder(a, o.label || 'hook', 172);
+    a.points.grab = { x: 85, y: 126 };
+    a.grab = () => pop(ig);
+    return a;
+  },
+  magnifier(S, o) {
+    const a = mkActor(S, o, 140, 140); DRAW.magnifier(a.g);
+    a.moveTo = async (ref) => {
+      const t = S.actor(ref);
+      const fx = a.x, fy = a.y, tx = t.x + t.w - 120, ty = t.y + t.h / 2 - 60;
+      await tween(600, (k) => { a.x = lerp(fx, tx, k); a.y = lerp(fy, ty, k); a.g.setAttribute('transform', `translate(${a.x},${a.y})`); });
+      // sweep across the card once
+      const sx = a.x;
+      await tween(500, (k) => { a.x = sx - Math.sin(Math.PI * k) * Math.min(260, t.w * 0.45); a.g.setAttribute('transform', `translate(${a.x},${a.y})`); });
+    };
+    return a;
+  },
+  file(S, o) {
+    const w = o.w || 560, lh = 36, n = Math.max(o.lines.length, o.max || 0), head = 50;
+    const h = head + 10 + n * lh + 10;
+    const a = mkActor(S, o, w, h);
+    el('rect', { x: 0, y: 0, width: w, height: h, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    el('path', { d: `M0,12 Q0,0 12,0 L${w - 12},0 Q${w},0 ${w},12 L${w},${head} L0,${head} Z`, fill: C.light, stroke: C.ink, 'stroke-width': 3 }, a.g);
+    T(a.g, 16, 33, o.name, { size: 21, bold: true, mono: true });
+    if (o.who) T(a.g, w - 14, 32, o.who, { size: 17, italic: true, anchor: 'end', fill: '#555', }).classList.add('who');
+    const hl = el('g', {}, a.g);
+    const texts = [];
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 16, head + 10 + i * lh + 25, (o.typed ? '' : (o.lines[i] || '')), { size: 21, mono: true }));
+    a.lineAnchor = (i, s = 'r') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + 10 + i * lh + lh / 2 });
+    const bars = {};
+    const bar = (i, fill) => {
+      if (!bars[i]) bars[i] = el('rect', { x: 4, y: head + 10 + i * lh + 1, width: w - 8, height: lh - 2, rx: 5, fill, opacity: 0 }, hl);
+      bars[i].setAttribute('fill', fill);
+      return bars[i];
+    };
+    a.hi = (i) => fade(bar(i, C.yellow), 0.85, 300);
+    a.unhi = (i) => (bars[i] ? fade(bars[i], 0, 200) : Promise.resolve());
+    a.bad = (i) => fade(bar(i, '#fecaca'), 1, 300);
+    a.setLine = async (i, s, fill) => { texts[i].textContent = s; if (fill) texts[i].setAttribute('fill', fill); await pop(texts[i], 250); };
+    a.type = async () => {
+      for (let i = 0; i < o.lines.length; i++) {
+        const s = o.lines[i];
+        if (INSTANT) { texts[i].textContent = s; continue; }
+        const step = Math.max(1, Math.ceil(s.length / 18));
+        for (let k = 0; k <= s.length; k += step) { texts[i].textContent = s.slice(0, k); await wait(22); }
+        texts[i].textContent = s;
+      }
+    };
+    return a;
+  },
+  terminal(S, o) {
+    const w = o.w || 640, lh = 34, n = o.rows || 2, h = 20 + n * lh + 14;
+    const a = mkActor(S, o, w, h);
+    el('rect', { x: 0, y: 0, width: w, height: h, rx: 10, fill: '#f8fafc', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    const texts = []; let next = 0;
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, 20 + i * lh + 22, '', { size: 22, mono: true }));
+    a.type = async (s) => {
+      const t = texts[next++];
+      if (INSTANT) { t.textContent = s; return; }
+      for (let k = 0; k <= s.length; k++) { t.textContent = s.slice(0, k); await wait(26); }
+    };
+    a.print = async (s, fill) => { const t = texts[next++]; t.textContent = s; if (fill) t.setAttribute('fill', fill); await fade(t, 1, 200); };
+    return a;
+  },
+  chip(S, o) {
+    const a = mkActor(S, o, 0, 50);
+    const r = el('rect', { x: 0, y: 0, height: 50, rx: 25, fill: o.fill || '#fff', stroke: o.color || C.ink, 'stroke-width': 3 }, a.g);
+    const t = T(a.g, 0, 33, o.text, { size: 21, mono: true, bold: true, fill: o.color || C.ink });
+    let whoT = null;
+    if (o.who) { whoT = T(a.g, 8, -10, o.who, { size: 17, italic: true, fill: '#555' }); whoT.classList.add('who'); }
+    const fit = () => {
+      const tw = textW(t);
+      a.w = o.w || tw + 40;
+      r.setAttribute('width', a.w);
+      t.setAttribute('x', o.w ? (a.w - tw) / 2 : 20);
+    };
+    fit();
+    a.set = async (s, fill) => { t.textContent = s; if (fill) { t.setAttribute('fill', fill); r.setAttribute('stroke', fill); } fit(); await pop(a.g, 260); };
+    a.pop = () => pop(a.g);
+    a.strike = async () => {
+      const tw = textW(t), x0 = +t.getAttribute('x');
+      const ln = el('line', { x1: x0, y1: 26, x2: x0, y2: 26, stroke: C.red, 'stroke-width': 4 }, a.g);
+      await tween(450, (k) => ln.setAttribute('x2', x0 + tw * k));
+      await fade(a.g, 0.45, 300);
+    };
+    return a;
+  },
+  key(S, o) {
+    const a = mkActor(S, o, 0, 0);
+    const ig = el('g', { transform: 'translate(0,0)' }, a.g); DRAW.key(ig);
+    const lt = T(a.g, 148, 26, o.label || 'key', { size: 20, bold: true });
+    const ft = o.fp ? T(a.g, 148, 54, o.fp, { size: 21, mono: true }) : null;
+    a.w = 148 + Math.max(textW(lt), ft ? textW(ft) : 0) + 4;
+    a.h = 64;
+    a.points.k = { x: 66, y: 30 };
+    return a;
+  },
+  folder(S, o) {
+    const fw = o.fw || 200, fh = o.fh || 130;
+    const a = mkActor(S, o, fw, 0);
+    DRAW.folder(a.g, fw, fh);
+    const files = el('g', {}, a.g);
+    for (let i = 0; i < (o.files || 3); i++) {
+      const fg = el('g', { transform: `translate(${28 + i * 50},${46}) scale(0.5)` }, files); DRAW.doc(fg);
+    }
+    const lockG = el('g', { transform: `translate(${fw - 46},${fh - 52}) scale(0.75)`, opacity: 0 }, a.g); DRAW.lock(lockG);
+    const pen = el('g', { opacity: 0 }, a.g);
+    el('path', { d: `M${fw - 70},${36} l46,-26 l10,14 l-46,26 z`, fill: C.amber, stroke: C.ink, 'stroke-width': 3 }, pen);
+    let y = labelUnder(a, o.label || 'folder', fh + 30);
+    const fpT = T(a.g, fw / 2, y + 22, o.fp || '', { size: 21, mono: true, anchor: 'middle' });
+    a.h = o.fp !== undefined ? y + 30 : y;
+    a.lock = async () => { await fade(lockG, 1, 250); await pop(lockG); };
+    a.edit = async () => { await fade(pen, 1, 200); await tween(500, (k) => pen.setAttribute('transform', `translate(${-30 * Math.sin(k * Math.PI * 2)},0)`)); };
+    a.pulse = () => pop(a.g, 420);
+    a.setFp = async (s, fill) => { fpT.textContent = s; fpT.setAttribute('fill', fill || C.ink); await pop(fpT, 260); };
+    return a;
+  },
+  db(S, o) {
+    const w = o.w || 300, rh = 38, rows = o.rows.map((r) => r.slice());
+    const n = rows.length, top = 26, body0 = 64;
+    const bottom = body0 + n * rh + 12;
+    const a = mkActor(S, o, w, 0);
+    el('path', { d: `M0,${top} L0,${bottom} A${w / 2},20 0 0 0 ${w},${bottom} L${w},${top}`, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
+    el('ellipse', { cx: w / 2, cy: top, rx: w / 2, ry: 20, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
+    const rowG = el('g', {}, a.g);
+    const items = rows.map((r, i) => {
+      const g = el('g', { transform: `translate(0,${body0 + i * rh})` }, rowG);
+      const bg = el('rect', { x: 14, y: 0, width: w - 28, height: rh - 4, rx: 5, fill: C.yellow, opacity: 0 }, g);
+      const t = T(g, w / 2, 26, `${r[0]} │ ${r[1]}`, { size: 22, mono: true, anchor: 'middle' });
+      return { id: String(r[0]), g, bg, t, i, gone: false };
+    });
+    a.h = labelUnder(a, o.label || 'database', bottom + 50, 21);
+    const idx = (id) => items.find((it) => it.id === String(id));
+    a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 14 : w - 14), y: a.y + body0 + i * rh + rh / 2 - 2 });
+    a.hiRow = async (id, fill) => { const it = idx(id); it.bg.setAttribute('fill', fill ? (fill === C.red ? '#fecaca' : fill) : C.yellow); await fade(it.bg, 0.9, 300); };
+    a.removeRow = async (id) => {
+      const it = idx(id); if (!it || it.gone) return;
+      it.bg.setAttribute('fill', '#fecaca');
+      await fade(it.bg, 1, 250);
+      await wait(250);
+      await fade(it.g, 0, 400);
+      it.gone = true;
+      const later = items.filter((x) => x.i > it.i && !x.gone);
+      await tween(350, (k) => later.forEach((x) => {
+        const shift = items.filter((z) => z.gone && z.i < x.i).length;
+        x.g.setAttribute('transform', `translate(0,${body0 + (x.i - shift + (1 - k)) * rh})`);
+      }));
+    };
+    a.restore = async () => {
+      items.forEach((it) => { it.gone = false; it.g.setAttribute('transform', `translate(0,${body0 + it.i * rh})`); it.bg.setAttribute('opacity', 0); });
+      await Promise.all(items.map((it) => fade(it.g, 1, 300)));
+    };
+    // back to a state without animation (used after a "what if" detour)
+    a.drop = (id) => {
+      const it = idx(id); it.gone = true; it.g.setAttribute('opacity', 0); it.bg.setAttribute('opacity', 0);
+      items.filter((x) => x.i > it.i).forEach((x) => x.g.setAttribute('transform', `translate(0,${body0 + (x.i - 1) * rh})`));
+    };
+    a.unhi = () => items.forEach((it) => it.bg.setAttribute('opacity', 0));
+    return a;
+  },
+  browser(S, o) {
+    const w = o.w || 520, bar = 44, rh = 38, rows = o.rows;
+    const h = bar + 20 + rows.length * rh + 14;
+    const a = mkActor(S, o, w, h);
+    el('rect', { x: 0, y: 0, width: w, height: h, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    el('path', { d: `M0,12 Q0,0 12,0 L${w - 12},0 Q${w},0 ${w},12 L${w},${bar} L0,${bar} Z`, fill: C.light, stroke: C.ink, 'stroke-width': 3 }, a.g);
+    [0, 1, 2].forEach((i) => el('circle', { cx: 22 + i * 22, cy: 22, r: 7, fill: '#fff', stroke: C.ink, 'stroke-width': 2 }, a.g));
+    el('rect', { x: 94, y: 9, width: w - 110, height: 26, rx: 13, fill: '#fff', stroke: '#9ca3af', 'stroke-width': 2 }, a.g);
+    T(a.g, 110, 29, o.url || '/', { size: 18, mono: true, fill: '#333' });
+    const rowG = el('g', {}, a.g);
+    const items = rows.map((r, i) => {
+      const g = el('g', { transform: `translate(0,${bar + 14 + i * rh})` }, rowG);
+      const bg = el('rect', { x: 10, y: 0, width: w - 20, height: rh - 4, rx: 5, fill: '#fecaca', opacity: 0 }, g);
+      T(g, 26, 26, `${r[0]}   ${r[1]}`, { size: 22, mono: true });
+      const btn = el('rect', { x: w - 128, y: 2, width: 106, height: rh - 8, rx: 6, fill: '#fff', stroke: C.red, 'stroke-width': 2.5 }, g);
+      T(g, w - 75, 25, 'Delete', { size: 18, bold: true, anchor: 'middle', fill: C.red });
+      return { id: String(r[0]), g, bg, btn, i, gone: false };
+    });
+    const cursor = el('path', { d: 'M0,0 L0,30 L8,23 L14,36 L20,33 L14,21 L24,21 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 2.5, opacity: 0 }, a.g);
+    const mock = el('g', { opacity: 0 }, a.g);
+    el('rect', { x: 16, y: h - 6, width: 300, height: 40, rx: 8, fill: '#fff7ed', stroke: C.amber, 'stroke-width': 3 }, mock);
+    T(mock, 30, h + 21, 'page.route(…) → 204', { size: 19, mono: true, bold: true, fill: '#9a3412' });
+    a.points.mock = { x: 166, y: h + 14 };
+    const idx = (id) => items.find((it) => it.id === String(id));
+    a.lineAnchor = (i, s = 'b') => {
+      const bx = a.x + w - 75, by = a.y + bar + 14 + i * rh;
+      if (s === 'b') return { x: bx, y: by + rh - 4 };
+      if (s === 'l') return { x: a.x, y: by + rh / 2 };
+      return { x: a.x + w, y: by + rh / 2 };
+    };
+    a.click = async (id) => {
+      const it = idx(id);
+      const tx = w - 70, ty = bar + 14 + it.i * rh + 12;
+      cursor.setAttribute('opacity', 1);
+      await tween(550, (k) => cursor.setAttribute('transform', `translate(${lerp(w - 30, tx, k)},${lerp(h - 10, ty, k)})`));
+      it.btn.setAttribute('fill', '#fecaca');
+      await wait(220);
+      it.btn.setAttribute('fill', '#fff');
+      await fade(cursor, 0, 250);
+    };
+    a.removeRow = async (id) => {
+      const it = idx(id); if (!it || it.gone) return;
+      await fade(it.bg, 1, 200);
+      await fade(it.g, 0, 350);
+      it.gone = true;
+      const later = items.filter((x) => x.i > it.i && !x.gone);
+      await tween(300, (k) => later.forEach((x) => x.g.setAttribute('transform', `translate(0,${bar + 14 + (x.i - 1 + (1 - k)) * rh})`)));
+    };
+    a.restore = async () => {
+      items.forEach((it) => { it.gone = false; it.g.setAttribute('transform', `translate(0,${bar + 14 + it.i * rh})`); it.bg.setAttribute('opacity', 0); });
+      await Promise.all(items.map((it) => fade(it.g, 1, 300)));
+    };
+    a.mock = async () => { await fade(mock, 1, 300); await pop(mock); };
+    a.unmock = () => fade(mock, 0, 300);
+    return a;
+  },
+  proxy(S, o) {
+    const w = 220, a = mkActor(S, o, w, 0);
+    el('rect', { x: 0, y: 26, width: 28, height: 92, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
+    el('rect', { x: w - 28, y: 26, width: 28, height: 92, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
+    el('rect', { x: 0, y: 0, width: w, height: 30, rx: 6, fill: C.ink }, a.g);
+    T(a.g, w / 2, 22, 'proxy', { size: 19, bold: true, anchor: 'middle', fill: '#fff' });
+    a.points.c = { x: w / 2, y: 70 };
+    a.h = labelUnder(a, o.label || "referee's checkpoint", 146, 20);
+    return a;
+  },
+  clipboard(S, o) {
+    const w = o.w || 400, lh = 34, n = o.rows || 4, h = 56 + n * lh + 14;
+    const a = mkActor(S, o, w, h);
+    el('rect', { x: 0, y: 10, width: w, height: h - 10, rx: 10, fill: '#fffdf5', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    el('rect', { x: w / 2 - 50, y: 0, width: 100, height: 24, rx: 6, fill: '#9ca3af', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    T(a.g, 16, 48, o.title || "referee's notes", { size: 19, bold: true });
+    const texts = []; let next = 0;
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 16, 56 + i * lh + 26, '', { size: 18, mono: true }));
+    a.record = async (s, fill) => {
+      const t = texts[next++]; if (!t) return;
+      t.textContent = s; t.setAttribute('fill', fill || C.ink); t.setAttribute('opacity', 0);
+      await fade(t, 1, 300);
+    };
+    return a;
+  },
+  receipt(S, o) {
+    const w = o.w || 210, h = o.h || 230, a = mkActor(S, o, w, h);
+    el('path', { d: `M0,0 L${w - 30},0 L${w},30 L${w},${h} L0,${h} Z`, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    T(a.g, 14, 36, 'receipt.json', { size: 20, bold: true, mono: true });
+    for (let i = 0; i < 5; i++) el('rect', { x: 14, y: 58 + i * 24, width: (i % 2 ? 120 : 170) - (i === 4 ? 60 : 0), height: 9, rx: 4, fill: '#d1d5db' }, a.g);
+    const seal = el('g', { opacity: 0 }, a.g);
+    el('circle', { cx: w - 52, cy: h - 50, r: 36, fill: C.red, stroke: '#7f1d1d', 'stroke-width': 3 }, seal);
+    T(seal, w - 52, h - 44, 'signed', { size: 17, bold: true, anchor: 'middle', fill: '#fff' });
+    if (o.who) { const wt = T(a.g, w / 2, h + 26, o.who, { size: 18, italic: true, anchor: 'middle', fill: '#555' }); wt.classList.add('who'); a.h = h + 34; }
+    a.seal = async () => {
+      seal.setAttribute('opacity', 1);
+      const cx = w - 52, cy = h - 50;
+      await tween(380, (k) => seal.setAttribute('transform', `translate(${cx},${cy}) scale(${lerp(2.2, 1, k)}) translate(${-cx},${-cy})`));
+    };
+    return a;
+  },
+  gate(S, o) {
+    const a = mkActor(S, o, 360, 190);
+    el('rect', { x: 0, y: 40, width: 34, height: 150, fill: '#fff', stroke: C.ink, 'stroke-width': 4 }, a.g);
+    el('rect', { x: 300, y: 100, width: 20, height: 90, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    const arm = el('g', {}, a.g);
+    el('rect', { x: 17, y: 62, width: 320, height: 28, fill: 'url(#barrier)', stroke: C.ink, 'stroke-width': 3 }, arm);
+    el('circle', { cx: 17, cy: 76, r: 9, fill: C.ink }, a.g);
+    let ang = 0;
+    const rot = (to) => { const from = ang; return tween(650, (k) => { ang = lerp(from, to, k); arm.setAttribute('transform', `rotate(${ang},17,76)`); }); };
+    a.open = () => rot(-78);
+    a.close = () => rot(0);
+    a.points.c = { x: 180, y: 140 };
+    return a;
+  },
+  checklist(S, o) {
+    const w = o.w || 560, rh = 68, n = Math.max((o.items || []).length, o.max || 1), head = 48;
+    const h = head + n * rh + 10;
+    const a = mkActor(S, o, w, h);
+    el('rect', { x: 0, y: 0, width: w, height: h, rx: 12, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    T(a.g, 18, 32, o.title || 'list', { size: 21, bold: true });
+    el('line', { x1: 0, y1: head, x2: w, y2: head, stroke: C.ink, 'stroke-width': 2 }, a.g);
+    const rows = [];
+    const mkRow = (i, text) => {
+      const g = el('g', { transform: `translate(0,${head + i * rh})` }, a.g);
+      const bg = el('rect', { x: 6, y: 6, width: w - 12, height: rh - 10, rx: 6, fill: C.yellow, opacity: 0 }, g);
+      el('rect', { x: 16, y: 16, width: 28, height: 28, rx: 4, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, g);
+      const t = T(g, 58, 38, text, { size: 20, mono: true });
+      const tag = T(g, 58, 60, '', { size: 16, bold: true });
+      const mark = el('g', {}, g);
+      return { g, bg, t, tag, mark };
+    };
+    (o.items || []).forEach((s, i) => rows.push(mkRow(i, s)));
+    a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + i * rh + rh / 2 - 4 });
+    a.add = async (s) => { const r = mkRow(rows.length, s); r.g.setAttribute('opacity', 0); rows.push(r); await fade(r.g, 1, 300); };
+    a.hi = (i) => fade(rows[i].bg, 0.8, 300);
+    a.tick = async (i) => { rows[i].mark.innerHTML = ''; const p = el('path', { d: 'M18,30 L28,40 L46,14', fill: 'none', stroke: C.green, 'stroke-width': 6, 'stroke-linecap': 'round' }, rows[i].mark); await pop(p); };
+    a.cross = async (i) => { rows[i].mark.innerHTML = ''; const p = el('path', { d: 'M20,20 L40,40 M40,20 L20,40', fill: 'none', stroke: C.red, 'stroke-width': 6, 'stroke-linecap': 'round' }, rows[i].mark); await pop(p); };
+    a.tag = async (i, s, fill) => { rows[i].tag.textContent = s; rows[i].tag.setAttribute('fill', fill || C.ink); await pop(rows[i].tag, 260); };
+    return a;
+  },
+  bar(S, o) {
+    const w = o.w || 520, a = mkActor(S, o, w, 64);
+    T(a.g, 0, 22, o.label || 'working', { size: 20, bold: true });
+    el('rect', { x: 0, y: 34, width: w, height: 26, rx: 13, fill: '#fff', stroke: C.ink, 'stroke-width': 3 }, a.g);
+    const f = el('rect', { x: 3, y: 37, width: 0, height: 20, rx: 10, fill: C.blue }, a.g);
+    a.fill = () => tween(900, (k) => f.setAttribute('width', (w - 6) * k));
+    return a;
+  },
+  label(S, o) {
+    const a = mkActor(S, o, 0, 0);
+    const t = T(a.g, 0, o.size || 60, o.text, { size: o.size || 60, bold: true, fill: o.color || C.ink });
+    a.w = Math.max(20, textW(t)); a.h = (o.size || 60) + 12;
+    a.set = async (s, fill) => { t.textContent = s; if (fill) t.setAttribute('fill', fill); await pop(a.g, 260); };
+    return a;
+  },
+};
+
+/* ---------- scene (inside of one box) ---------- */
+class Scene {
+  constructor(box, spec, parent) {
+    this.box = box; this.spec = spec; this.actors = {};
+    const s = box.w / IW;
+    this.root = el('g', { transform: `translate(${box.x},${box.y}) scale(${s})`, visibility: 'hidden', opacity: 0 }, parent);
+    el('rect', { x: 0, y: 0, width: IW, height: IH, rx: 18 / s * 0.6, fill: '#fff' }, this.root);
+    this.layerBg = el('g', {}, this.root);
+    this.layerLinks = el('g', {}, this.root);
+    this.layerActors = el('g', {}, this.root);
+    this.layerFx = el('g', {}, this.root);
+    this.ports = { in: [], out: null };
+    this.drawLanes();
+    this.drawPorts();
+    for (const a of spec.actors || []) {
+      const make = ACTORS[a.type];
+      if (!make) throw new Error(`unknown actor type ${a.type}`);
+      this.actors[a.id] = make(this, a);
+    }
+  }
+  actor(id) { const a = this.actors[id]; if (!a) throw new Error(`no actor ${id} in ${this.box.id}`); return a; }
+  drawLanes() {
+    for (const L of this.spec.lanes || []) {
+      const g = el('g', {}, this.layerBg);
+      const r = el('rect', { x: 196, y: L.y, width: 1208, height: L.h, rx: 14, fill: '#fafafa', stroke: '#cbd5e1', 'stroke-width': 3, 'stroke-dasharray': '10 8' }, g);
+      T(g, 212, L.y + 30, L.label, { size: 20, bold: true, fill: C.muted });
+      L.rect = r;
+    }
+  }
+  drawPorts() {
+    const P = this.spec.ports || {};
+    const port = (x, y, art, sub, dir, solid) => {
+      const g = el('g', { transform: `translate(${x},${y})` }, this.layerBg);
+      const w = 160, h = 96;
+      const d = dir === 'in'
+        ? `M0,0 L${w - 22},0 L${w},${h / 2} L${w - 22},${h} L0,${h} Z`
+        : `M0,0 L${w - 22},0 L${w},${h / 2} L${w - 22},${h} L0,${h} L18,${h / 2} Z`;
+      const shape = el('path', { d, fill: solid ? '#eff6ff' : '#fff', stroke: solid ? C.blue : '#9ca3af', 'stroke-width': 3, 'stroke-dasharray': solid ? '' : '8 6' }, g);
+      const lines = art.split('\n');
+      lines.forEach((ln, i) => T(g, dir === 'in' ? 70 : 84, h / 2 + 7 - (lines.length - 1) * 12 + i * 24, ln, { size: 20, bold: true, anchor: 'middle' }));
+      T(g, w / 2, -12, sub, { size: 17, anchor: 'middle', fill: C.muted });
+      return { g, shape, x, y, w, h };
+    };
+    (P.in || []).forEach((p) => {
+      const y = (p.y !== undefined ? p.y : IH / 2) - 48;
+      this.ports.in.push(port(16, y, p.art, `from ${p.from}`, 'in', true));
+    });
+    if (P.out) {
+      const y = (P.out.y !== undefined ? P.out.y : IH / 2) - 48;
+      this.ports.out = port(IW - 176, y, P.out.art, `to ${P.out.to}`, 'out', false);
+    }
+  }
+  async setOut(state) {
+    const p = this.ports.out; if (!p) return;
+    const ok = state !== 'bad';
+    p.shape.setAttribute('stroke-dasharray', '');
+    p.shape.setAttribute('stroke', ok ? C.green : C.red);
+    p.shape.setAttribute('fill', ok ? '#f0fdf4' : '#fef2f2');
+    await pop(p.g);
+  }
+  point(ref) {
+    if (ref === 'OUT') { const p = this.ports.out; return { x: p.x + 20, y: p.y + p.h / 2 }; }
+    const m = /^IN(\d?)$/.exec(ref);
+    if (m) { const p = this.ports.in[+(m[1] || 0)]; return { x: p.x + p.w - 10, y: p.y + p.h / 2 }; }
+    const mm = /^([\w-]+)(?::(\d+))?(?:\.(\w+))?$/.exec(ref);
+    if (!mm) throw new Error(`bad ref ${ref}`);
+    const a = this.actor(mm[1]);
+    if (mm[2] !== undefined) return a.lineAnchor(+mm[2], mm[3]);
+    return a.anchor(mm[3] || 'c');
+  }
+}
+
+/* ---------- world: forest + scenes ---------- */
+const stage = document.getElementById('stage');
+const world = document.getElementById('world');
+let F = null;          // forest objects
+let SCENES = {};
+let cam = { x: 0, y: 0, w: IW, h: IH };
+function setCam(c) { cam = c; stage.setAttribute('viewBox', `${c.x} ${c.y} ${c.w} ${c.h}`); }
+function camFor(at) {
+  if (at === 'forest') return { x: 0, y: 0, w: IW, h: IH };
+  if (at === 'recap') return ECO.recapView || { x: -200, y: 20, w: 2000, h: 1000 };
+  const b = F.box[at]; const pad = b.w * 0.012;
+  return { x: b.x - pad, y: b.y - pad, w: b.w + 2 * pad, h: b.h + 2 * pad };
+}
+function moveCam(to, ms) {
+  const from = { ...cam };
+  const fcx = from.x + from.w / 2, fcy = from.y + from.h / 2, tcx = to.x + to.w / 2, tcy = to.y + to.h / 2;
+  return tween(ms, (k) => {
+    const w = from.w * Math.pow(to.w / from.w, k), h = from.h * Math.pow(to.h / from.h, k);
+    // keep the zoom feeling natural: centre follows the size change
+    const q = Math.abs(to.w - from.w) < 1 ? k : (from.w - w) / (from.w - to.w);
+    const cx = lerp(fcx, tcx, q), cy = lerp(fcy, tcy, q);
+    setCam({ x: cx - w / 2, y: cy - h / 2, w, h });
+  });
+}
+
+function buildWorld() {
+  world.innerHTML = '';
+  F = { box: {}, links: [], g: el('g', {}, world) };
+  const fg = F.g;
+  const linkG = el('g', {}, fg), boxG = el('g', {}, fg);
+  F.linkG = linkG;
+  F.fx = el('g', {}, world);
+  F.recap = el('g', {}, world);
+  for (const L of ECO.forest.links) {
+    const d = 'M' + L.pts.map((p) => p.join(',')).join(' L');
+    const path = el('path', { d, fill: 'none', stroke: '#9ca3af', 'stroke-width': 6, 'stroke-dasharray': L.dashed ? '12 10' : '', 'marker-end': 'url(#ah)', 'stroke-linejoin': 'round' }, linkG);
+    if (L.label && !L.hideLabel) {
+      const [lx, ly] = L.labelAt || mid(L.pts);
+      const lines = L.label.split('\n');
+      lines.forEach((ln, i) => T(linkG, lx, ly - (lines.length - 1 - i) * 21, ln, { size: 18, anchor: 'middle', fill: '#4b5563', bold: true }));
+    }
+    F.links.push({ ...L, path });
+  }
+  for (const B of ECO.forest.boxes) {
+    const b = { ...B, w: ECO.forest.boxW, h: ECO.forest.boxH };
+    const g = el('g', { class: 'box' }, boxG);
+    const r = el('rect', { x: b.x, y: b.y, width: b.w, height: b.h, rx: 18, fill: '#fff', stroke: C.ink, 'stroke-width': 3, 'vector-effect': 'non-scaling-stroke' }, g);
+    const face = el('g', {}, g);
+    if (B.lanes) {
+      B.lanes.forEach((ln, i) => {
+        el('rect', { x: b.x + 22, y: b.y + 12 + i * 30, width: b.w - 44, height: 24, rx: 6, fill: '#fafafa', stroke: '#94a3b8', 'stroke-width': 2, 'stroke-dasharray': '6 4' }, face);
+        T(face, b.x + b.w / 2, b.y + 30 + i * 30, ln, { size: 16, anchor: 'middle', bold: true, fill: '#334155' });
+      });
+    } else {
+      for (const p of B.pict || []) drawAt(face, p[0], b.x + p[1], b.y + p[2], p[3]);
+    }
+    T(face, b.x + b.w / 2, b.y + b.h - 16, B.name, { size: 24, bold: true, anchor: 'middle' });
+    const num = el('g', {}, g);
+    el('circle', { cx: b.x + 4, cy: b.y + 4, r: 17, fill: C.ink }, num);
+    T(num, b.x + 4, b.y + 10, String(B.n), { size: 18, bold: true, anchor: 'middle', fill: '#fff' });
+    const badge = el('g', { opacity: 0 }, g);
+    el('circle', { cx: b.x + b.w - 4, cy: b.y + 4, r: 18, fill: C.green }, badge);
+    const bt = T(badge, b.x + b.w - 4, b.y + 12, '✓', { size: 22, bold: true, anchor: 'middle', fill: '#fff' });
+    g.addEventListener('click', () => { if (viewIsForest()) jumpToBox(B.id); });
+    Object.assign(b, { g, r, face, badge, bt, num });
+    F.box[B.id] = b;
+  }
+  if (ECO.forest.bracket) {
+    const k = ECO.forest.bracket;
+    el('rect', { x: k.x, y: k.y, width: k.w, height: k.h, rx: 22, fill: 'none', stroke: C.blue, 'stroke-width': 3, 'stroke-dasharray': '10 8' }, linkG);
+    T(linkG, k.x + k.w / 2, k.y + k.h + 26, k.label, { size: 18, bold: true, anchor: 'middle', fill: C.blue });
+  }
+  SCENES = {};
+  const sceneG = el('g', {}, world);
+  for (const id in ECO.scenes) SCENES[id] = new Scene(F.box[id], ECO.scenes[id], sceneG);
+  world.appendChild(F.fx); world.appendChild(F.recap);
+}
+function mid(pts) {
+  // label position: middle of the longest horizontal segment, a little above it
+  let best = null, len = -1;
+  for (let i = 1; i < pts.length; i++) {
+    const [x1, y1] = pts[i - 1], [x2, y2] = pts[i];
+    const l = Math.hypot(x2 - x1, y2 - y1);
+    if (y1 === y2 && l > len) { len = l; best = [(x1 + x2) / 2, y1 - 14]; }
+  }
+  return best || [(pts[0][0] + pts[1][0]) / 2, pts[0][1] - 14];
+}
+function setBoxState(id, st) {
+  const b = F.box[id];
+  if (st === 'ok') { b.badge.setAttribute('opacity', 1); b.r.setAttribute('stroke', C.green); }
+  if (st === 'bad') { b.badge.setAttribute('opacity', 1); b.badge.firstChild.setAttribute('fill', C.red); b.bt.textContent = '✗'; b.r.setAttribute('stroke', C.red); }
+  if (st === 'idle') { b.badge.setAttribute('opacity', 0); b.r.setAttribute('stroke', C.ink); }
+}
+async function flashBox(id, ms = 500) {
+  const b = F.box[id];
+  b.r.setAttribute('fill', C.yellow);
+  await tween(ms, (k) => b.r.setAttribute('fill-opacity', 1 - 0.0 * k));
+  b.r.setAttribute('fill', '#fff');
+}
+
+/* forest token */
+function mkToken(label, color = C.blue) {
+  const g = el('g', {}, F.fx);
+  el('circle', { r: 14, fill: color, stroke: '#fff', 'stroke-width': 3 }, g);
+  const lg = el('g', {}, g);
+  const t = T(lg, 0, -30, label || '', { size: 19, bold: true, anchor: 'middle', fill: '#fff' });
+  const w = label ? textW(t) + 24 : 0;
+  const r = el('rect', { x: -w / 2, y: -52, width: w, height: 30, rx: 15, fill: color }, lg);
+  lg.insertBefore(r, t);
+  if (!label) lg.setAttribute('opacity', 0);
+  return {
+    g,
+    at(x, y) { g.setAttribute('transform', `translate(${x},${y})`); },
+    label(s) { t.textContent = s; const w2 = textW(t) + 24; r.setAttribute('x', -w2 / 2); r.setAttribute('width', w2); lg.setAttribute('opacity', s ? 1 : 0); },
+  };
+}
+async function along(tok, pts, speed = 1.1) {
+  const segs = [];
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); total += l; }
+  const ms = Math.max(450, total / speed);
+  await tween(ms, (k) => {
+    let d = k * total, i = 0;
+    while (i < segs.length - 1 && d > segs[i]) { d -= segs[i]; i++; }
+    const f = segs[i] ? d / segs[i] : 0;
+    tok.at(lerp(pts[i][0], pts[i + 1][0], f), lerp(pts[i][1], pts[i + 1][1], f));
+  });
+}
+function linkBetween(a, b) { return F.links.find((l) => l.from === a && l.to === b && !l.dashed); }
+async function forestHop(a, b) {
+  const L = linkBetween(a, b); if (!L) return;
+  const tok = mkToken(L.label ? L.label.replace('\n', ' ') : '');
+  tok.at(...L.pts[0]);
+  await along(tok, L.pts);
+  tok.g.remove();
+}
+async function journey(opts = {}) {
+  const order = ECO.forest.order;
+  for (let i = 0; i < order.length; i++) {
+    const id = order[i], b = F.box[id];
+    if (b.lanes) {
+      const toks = b.lanes.map(() => mkToken(''));
+      await Promise.all(toks.map((t, j) => along(t, [[b.x + 24, b.y + 24 + j * 30], [b.x + b.w - 24, b.y + 24 + j * 30]], 0.32)));
+      toks.forEach((t) => t.g.remove());
+    } else {
+      await flashBox(id, opts.tick ? 250 : 350);
+    }
+    if (opts.tick) { setBoxState(id, 'ok'); await pop(F.box[id].g, 220); }
+    if (i < order.length - 1) await forestHop(id, order[i + 1]);
+  }
+}
+
+/* ---------- action runner ---------- */
+let REPLAYING = false;
+async function runActions(list, at) {
+  const S = SCENES[at] || null;
+  for (const act of list) {
+    await runAction(act, S, at);
+  }
+}
+function need(S, what) { if (!S) throw new Error(`"${what}" needs a box scene, step is at forest`); return S; }
+async function runAction(act, S, at) {
+  if (act.parallel) { await Promise.all(act.parallel.map((lane) => runActions(lane, at))); return; }
+  if (act.show !== undefined) { const ids = [].concat(act.show); await Promise.all(ids.map((id) => fade(need(S, 'show').actor(id).g, 1, 380))); return; }
+  if (act.hide !== undefined) { const ids = [].concat(act.hide); await Promise.all(ids.map((id) => fade(need(S, 'hide').actor(id).g, 0, 300))); return; }
+  if (act.call) { const [id, m, ...args] = act.call; const a = need(S, 'call').actor(id); if (typeof a[m] !== 'function') throw new Error(`${id} has no method ${m}`); await a[m](...args); return; }
+  if (act.move !== undefined) { await movePacket(need(S, 'move'), act); return; }
+  if (act.connect) { await connect(need(S, 'connect'), act); return; }
+  if (act.unconnect) { const s = need(S, 'unconnect'); await fade(s.layerLinks, 0, 250); s.layerLinks.innerHTML = ''; s.layerLinks.setAttribute('opacity', 1); return; }
+  if (act.mark) { await mark(need(S, 'mark').actor(act.mark[0]), act.mark[1]); return; }
+  if (act.out !== undefined) { await need(S, 'out').setOut(act.out === true ? 'ok' : act.out); return; }
+  if (act.lane) { await laneFlash(need(S, 'lane'), act.lane); return; }
+  if (act.note !== undefined) { if (!REPLAYING) showNote(act.note); return; }
+  if (act.wait) { await wait(act.wait); return; }
+  if (act.mini) { if (!REPLAYING) await miniFlash(act.mini); return; }
+  if (act.journey) { await journey(act.journey); return; }
+  if (act.boxesIn) { await boxesIn(); return; }
+  if (act.boxState) { setBoxState(act.boxState[0], act.boxState[1]); return; }
+  if (act.line) { await recapLine(act.line[0], act.line[1] || []); return; }
+  throw new Error('unknown action ' + JSON.stringify(act));
+}
+async function boxesIn() {
+  const bs = ECO.forest.order.map((id) => F.box[id]);
+  bs.forEach((b) => b.g.setAttribute('opacity', 0));
+  for (const b of bs) { await fade(b.g, 1, 160); }
+}
+async function laneFlash(S, id) {
+  const L = (S.spec.lanes || []).find((l) => l.id === id); if (!L) throw new Error('no lane ' + id);
+  const r = L.rect;
+  r.setAttribute('stroke', C.blue); r.setAttribute('fill', '#eff6ff');
+  await wait(450);
+  r.setAttribute('fill', '#fafafa'); r.setAttribute('stroke', '#93c5fd');
+}
+async function mark(a, kind) {
+  const old = a.g.querySelector('.mark'); if (old) old.remove();
+  const g = el('g', { class: 'mark', transform: `translate(${a.w + 4},${-4})` }, a.g);
+  el('circle', { r: 24, fill: kind === 'ok' ? C.green : C.red, stroke: '#fff', 'stroke-width': 3 }, g);
+  T(g, 0, 10, kind === 'ok' ? '✓' : '✗', { size: 28, bold: true, anchor: 'middle', fill: '#fff' });
+  await pop(g, 300);
+}
+function autoSide(p, q) { return p; }
+async function movePacket(S, act) {
+  const color = act.color || C.blue;
+  const refs = [act.from, ...(act.via || []), act.to];
+  const pts = refs.map((r) => S.point(r));
+  const g = el('g', {}, S.layerFx);
+  const t = T(g, 0, 8, act.move, { size: 22, bold: true, mono: true, anchor: 'middle', fill: '#fff' });
+  const w = textW(t) + 30;
+  const r = el('rect', { x: -w / 2, y: -21, width: w, height: 42, rx: 21, fill: color }, g);
+  g.insertBefore(r, t);
+  const at = (x, y) => g.setAttribute('transform', `translate(${x},${y})`);
+  at(pts[0].x, pts[0].y);
+  if (!INSTANT) { g.setAttribute('opacity', 0); await fade(g, 1, 150); }
+  let stampG = null;
+  for (let i = 1; i < pts.length; i++) {
+    const p = pts[i - 1], q = pts[i];
+    let L = Math.hypot(q.x - p.x, q.y - p.y);
+    if (act.blocked && i === pts.length - 1) {
+      // travel part-way, hit a wall, shake, vanish
+      const stop = 0.55;
+      await tween(Math.max(300, L * stop / 1.0), (k) => at(lerp(p.x, q.x, k * stop), lerp(p.y, q.y, k * stop)));
+      const bx = lerp(p.x, q.x, stop), by = lerp(p.y, q.y, stop);
+      const wall = el('g', { transform: `translate(${bx + (q.x - p.x) / L * 46},${by + (q.y - p.y) / L * 46})` }, S.layerFx);
+      el('circle', { r: 22, fill: C.red }, wall); T(wall, 0, 9, '✗', { size: 26, bold: true, anchor: 'middle', fill: '#fff' });
+      await tween(420, (k) => at(bx + Math.sin(k * Math.PI * 6) * 10, by));
+      await fade(g, 0, 300); g.remove();
+      if (!INSTANT) { await wait(400); }
+      await fade(wall, 0, 300); wall.remove();
+      return;
+    }
+    await tween(Math.max(380, L / 1.05), (k) => at(lerp(p.x, q.x, k), lerp(p.y, q.y, k)));
+    if (act.stamp && act.stamp.at === i) {
+      await wait(150);
+      stampG = el('g', { transform: `translate(${w / 2 - 6},-30)` }, g);
+      const st = T(stampG, 0, 0, act.stamp.text, { size: 18, bold: true, mono: true, fill: C.red, anchor: 'middle' });
+      const sw = textW(st) + 18;
+      const sr = el('rect', { x: -sw / 2, y: -20, width: sw, height: 28, rx: 5, fill: '#fff', stroke: C.red, 'stroke-width': 3, transform: 'rotate(-6)' }, stampG);
+      stampG.insertBefore(sr, st);
+      st.setAttribute('transform', 'rotate(-6)');
+      await pop(stampG, 300);
+      await wait(250);
+    }
+  }
+  if (act.keep) return;
+  await fade(g, 0, 250);
+  g.remove();
+}
+async function connect(S, act) {
+  const [a, b] = act.connect;
+  const p = S.point(a), q = S.point(b);
+  const color = act.color || C.ink;
+  const mk = color === C.ink ? 'ahk' : color === C.blue ? 'ahb' : 'ahy';
+  const path = el('path', { d: `M${p.x},${p.y} L${q.x},${q.y}`, fill: 'none', stroke: color, 'stroke-width': 5, 'marker-end': `url(#${mk})` }, S.layerLinks);
+  const len = Math.hypot(q.x - p.x, q.y - p.y);
+  path.setAttribute('stroke-dasharray', `${len} ${len}`);
+  await tween(500, (k) => path.setAttribute('stroke-dashoffset', len * (1 - k)));
+  path.removeAttribute('stroke-dasharray');
+  if (act.label) {
+    const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+    const t = T(S.layerLinks, mx + 16, my + 8, act.label, { size: 20, bold: true, italic: true, fill: color === C.ink ? '#333' : color });
+    await fade(t, 1, 200);
+  }
+}
+async function recapLine(text, ids) {
+  const i = F.recap.childNodes.length;
+  const y = (ECO.recapTop || 700) + i * 50;
+  const t = T(F.recap, ECO.recapLeft || 0, y, text, { size: 30, bold: i === 0 && false });
+  t.setAttribute('opacity', 0);
+  await fade(t, 1, 300);
+  await Promise.all(ids.map((id) => flashBox(id, 600)));
+}
+
+/* ---------- interior visibility + transitions ---------- */
+// Everything of the forest except the opened box fades away while inside,
+// so neighbours never bleed into the zoomed view.
+function others(id) {
+  const list = [F.linkG, F.box[id].num, F.box[id].r];
+  for (const k in F.box) if (k !== id) list.push(F.box[k].g);
+  return list;
+}
+function showInterior(at) {
+  for (const k in F.box) F.box[k].g.setAttribute('opacity', 1);
+  F.linkG.setAttribute('opacity', 1);
+  for (const id in SCENES) {
+    const s = SCENES[id], on = id === at;
+    s.root.setAttribute('visibility', on ? 'visible' : 'hidden');
+    s.root.setAttribute('opacity', on ? 1 : 0);
+    F.box[id].face.setAttribute('opacity', on ? 0 : 1);
+    F.box[id].num.setAttribute('opacity', 1);
+  }
+  if (SCENES[at]) others(at).forEach((e) => e.setAttribute('opacity', 0));
+}
+async function zoomInto(id) {
+  const s = SCENES[id];
+  s.root.setAttribute('visibility', 'visible');
+  const face = F.box[id].face;
+  const p1 = moveCam(camFor(id), 850);
+  const p0 = Promise.all(others(id).map((e) => fade(e, 0, 600)));
+  await wait(450);
+  await Promise.all([p0, p1, fade(s.root, 1, 400), fade(face, 0, 300)]);
+}
+async function zoomOut(id, to = 'forest') {
+  const s = SCENES[id];
+  const face = F.box[id].face;
+  await Promise.all([fade(s.root, 0, 300), fade(face, 1, 300), moveCam(camFor(to), 750),
+    ...others(id).map((e) => fade(e, 1, 700))]);
+  s.root.setAttribute('visibility', 'hidden');
+}
+async function transition(a, b) {
+  if (a === b) return;
+  const isBox = (x) => !!SCENES[x];
+  if (isBox(a)) await zoomOut(a, isBox(b) ? 'forest' : b);
+  else if (!isBox(b)) { await moveCam(camFor(b), 700); return; }
+  if (isBox(a) && isBox(b)) await forestHop(a, b);
+  if (isBox(b)) { if (!isBox(a) && a !== 'forest') await moveCam(camFor('forest'), 500); await zoomInto(b); }
+}
+
+/* ---------- UI ---------- */
+const STEPS = ECO.steps;
+const $ = (id) => document.getElementById(id);
+let cur = 0, auto = false, freeLook = false;
+function boxName(id) { const b = ECO.forest.boxes.find((x) => x.id === id); return b ? b.name : ''; }
+function viewIsForest() { return freeLook || STEPS[cur].at === 'forest' || STEPS[cur].at === 'recap'; }
+function showNote(s) { const n = $('note'); n.textContent = s; n.classList.toggle('on', !!s); }
+function renderChrome(n) {
+  const st = STEPS[n];
+  $('title').textContent = st.title;
+  $('text').textContent = st.text;
+  showNote('');
+  $('count').textContent = `Step ${n + 1} of ${STEPS.length}`;
+  const dots = $('dots').children;
+  for (let i = 0; i < dots.length; i++) { dots[i].className = (i < n ? 'done' : i === n ? 'cur' : '') + (dots[i].dataset.gap ? ' gap' : ''); }
+  const crumb = $('crumb');
+  crumb.innerHTML = '';
+  const root = document.createElement('a'); root.textContent = 'Whole journey';
+  root.onclick = () => lookForest();
+  crumb.appendChild(root);
+  if (SCENES[st.at]) { const b = ECO.forest.boxes.find((x) => x.id === st.at); crumb.append(` › ${b.n} · ${b.name}`); }
+  renderMini(st.at);
+}
+function renderMini(at) {
+  const m = $('mini'); m.innerHTML = '';
+  const order = ECO.forest.order, n = order.length, gap = 16, w = (1000 - gap * (n - 1)) / n;
+  order.forEach((id, i) => {
+    const b = ECO.forest.boxes.find((x) => x.id === id);
+    const x = i * (w + gap);
+    const g = el('g', { class: 'pill', 'data-id': id }, m);
+    el('rect', { x, y: 8, width: w, height: 42, rx: 10, fill: id === at ? C.yellow : '#fff', stroke: C.ink, 'stroke-width': id === at ? 3 : 1.6 }, g);
+    if (b.lanes) b.lanes.forEach((_, j) => el('line', { x1: x + 8, y1: 16 + j * 6, x2: x + w - 8, y2: 16 + j * 6, stroke: '#94a3b8', 'stroke-width': 2 }, g));
+    T(g, x + w / 2, 42, `${b.n} ${b.short || b.name}`, { size: 15, anchor: 'middle', bold: id === at });
+    if (i < n - 1) el('path', { d: `M${x + w + 2},29 L${x + w + gap - 3},29`, stroke: '#9ca3af', 'stroke-width': 2.5, 'marker-end': 'url(#ah)' }, m);
+    g.addEventListener('click', () => jumpToBox(id));
+  });
+}
+async function miniFlash(id) {
+  const g = $('mini').querySelector(`[data-id="${id}"] rect`); if (!g) return;
+  for (let i = 0; i < 3; i++) { g.setAttribute('fill', C.blue); await wait(180); g.setAttribute('fill', '#fff'); await wait(140); }
+}
+function buildDots() {
+  const d = $('dots'); d.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const e = document.createElement('i');
+    e.title = `${i + 1}. ${s.title}`;
+    if (i > 0 && STEPS[i - 1].at !== s.at) { e.dataset.gap = '1'; }
+    e.onclick = () => go(i, false);
+    d.appendChild(e);
+  });
+}
+async function go(n, animate = true) {
+  n = Math.max(0, Math.min(STEPS.length - 1, n));
+  GEN++; const my = GEN;
+  freeLook = false;
+  cur = n;
+  buildWorld();
+  INSTANT = true; REPLAYING = true;
+  for (let i = 0; i < n; i++) { await runActions(STEPS[i].actions, STEPS[i].at); if (my !== GEN) return; }
+  REPLAYING = false;
+  const prev = n > 0 ? STEPS[n - 1].at : 'forest';
+  renderChrome(n);
+  if (!animate) {
+    await runActions(STEPS[n].actions, STEPS[n].at);
+    showInterior(STEPS[n].at); setCam(camFor(STEPS[n].at));
+    INSTANT = false;
+    if (STEPS[n].note) showNote(STEPS[n].note);
+    return;
+  }
+  showInterior(prev); setCam(camFor(prev));
+  INSTANT = false;
+  try {
+    await transition(prev, STEPS[n].at);
+    if (my !== GEN) return;
+    showInterior(STEPS[n].at);
+    await runActions(STEPS[n].actions, STEPS[n].at);
+  } catch (e) { console.error(e); throw e; }
+  if (my !== GEN) return;
+  if (STEPS[n].note) showNote(STEPS[n].note);
+  if (auto && n < STEPS.length - 1) { await wait(1600); if (my === GEN && auto) go(n + 1, true); }
+}
+function jumpToBox(id) { const i = STEPS.findIndex((s) => s.at === id); if (i >= 0) go(i, true); }
+async function lookForest() {
+  const at = STEPS[cur].at;
+  if (!SCENES[at]) return;
+  GEN++; freeLook = true;
+  INSTANT = false;
+  await zoomOut(at);
+  $('title').textContent = 'The whole journey';
+  $('text').textContent = 'Click any box to open it, or press Next to continue where you were.';
+  showNote('');
+  renderMini(null);
+}
+$('next').onclick = () => go(freeLook ? cur : cur + 1, true);
+$('back').onclick = () => go(cur - 1, false);
+$('replay').onclick = () => go(cur, true);
+$('auto').onclick = () => { auto = !auto; $('auto').classList.toggle('on', auto); if (auto) go(cur + 1, true); };
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('next').click(); }
+  else if (e.key === 'ArrowLeft') $('back').click();
+  else if (e.key === 'r') $('replay').click();
+  else if (e.key === 'Escape') lookForest();
+});
+buildDots();
+window.__deck = { go, STEPS, get cur() { return cur; }, get SCENES() { return SCENES; }, get F() { return F; } };
+go(0, true);
+</script>
+</body>
+</html>

@@ -1,191 +1,156 @@
 ---
 name: visualize-this
-description: Build a step-by-step animated HTML explainer — one idea per step, 1–3 boxes or file cards, a moving dot, plain words, real file contents linked line to line. Use when the user wants something explained, presented, or "shown how it works end to end" as an animation or HTML presentation.
+description: Use for animated HTML explainers of a system or workflow: a zoomable map of black boxes (sequential and parallel) where each box opens into its own step-by-step animation.
 ---
 
-# Visualize This — one step at a time
+# Visualize This: the forest and the trees
 
-The user wants to UNDERSTAND, not to see everything. Build a linear story:
-step 0 → 1 → 2 → … → end. Each step is one idea, shown with the fewest items
-possible, animated so the eye follows one moving thing.
+The user wants to UNDERSTAND a system, and that takes two levels at once:
 
-**Gold reference (the user called it "close to perfect"):**
-`gold-reference/gateforge-ecosystem.html` (next to this file), 36 steps.
-When unsure how a step should look, open it and copy the pattern.
+- **The forest**: the whole system as 4–10 black boxes. You can see what runs one
+  after another, what runs at the same time, and what flows between them.
+- **The trees**: click a box (or let the tour reach it) and the camera zooms
+  inside. Its parts animate one idea per step. The left edge shows what arrived
+  and from which box, and the right edge shows what leaves and to which box.
+
+The old one-level deck explained each small idea well but never connected the
+ideas to the whole. Every rule below serves that connection.
+
+Engine + tools live in `ecosystem/` next to this file:
+
+| File | What it is |
+|---|---|
+| `engine.html` | the engine (camera, forest, actors, steps, controls). Don't edit it per deck. |
+| `template.eco.js` | smallest complete deck (3 boxes, one 2-lane parallel box). Copy this. |
+| `gateforge.eco.js` | full real example: 8 boxes, 34 steps, Gateforge's commit gate. |
+| `build.mjs` | `node build.mjs my.eco.js my-deck.html` builds one self-contained HTML file |
+| `check-eco.mjs` | layout + playthrough checker with screenshots |
 
 ## The hard rules
 
-1. **One idea per step.** If a step needs "and", split it.
-2. **At most 3 items per step.** Usually 2. Never a map, never a diagram of
-   the whole system, never every component at once. The whole picture is
-   built by walking through steps, not by drawing it.
-3. **Every step = count + title + ONE sentence + items + animation + optional
-   one-line punchline.** Nothing else on screen.
-4. **Plain words.** No jargon on screen without a plain name first
-   ("referee (the witness)"). Real values beat placeholders: `pen`, `order 42`,
-   `GET /api/orders/42`, not `<value>`.
-5. **One moving thing at a time.** A dot travels from A to B with a short
-   label. Then an item changes text, a line lights up, or an item turns
-   green ✓ / red ✗.
-6. **Show the failure next to the success.** Same items, wrong value, red.
-   ("pen = pen ✓" step, then "pen ≠ PEN ✗" step.)
-7. **End with "The whole journey"**: 4–7 numbered lines appearing one by one,
-   no items.
-8. **Light, clean, big.** White background, black outlines, large fonts,
-   green/red only for meaning, blue for the moving dot, yellow for a
-   highlighted line.
-9. **Never skip the in-between.** For every arrow, the viewer will ask:
-   *who sets this up, how do they find each other, where does the data
-   live, who computes the check?* Give each answer its own step. Example:
-   "who starts the referee", "how the test finds it (one import line)",
-   "where the receipt is saved", "who computes the fingerprint at push".
-   Missing these made the user ask follow-ups.
-10. **Say who is responsible on screen.** Plain boxes name it in the text;
-    file cards name it in the header (`written by init`, `owner only`,
-    `by the agent`, `generated · not committed`).
-11. **Simple must still be true.** A simplified arrow that misrepresents the
-    real path is a bug. Before drawing "A → B → C", check in the code that
-    traffic really goes that way (e.g. the referee drove its OWN browser;
-    the test did not route through it).
-12. **Show the real files.** If the system runs on files (config, rules,
-    tests, generated output, receipts), each file gets its own card with its
-    real, shortened content, and links are drawn from the exact line in one
-    file to the exact line it refers to in another. This is what turned a
-    good deck into the "close to perfect" one.
+1. **Map first, then zoom.** Step 1 shows the whole forest. Step 2 sends one
+   token through every box once, splitting at parallel boxes and joining again.
+   Only then open box 1. The last steps return to the forest, replay the trip
+   with every box ticking green, then show the recap.
+2. **Boxes = black boxes, links = what flows.** Each forest link carries a
+   named artifact (`staged files`, `must-prove list`, `sealed receipt`). A
+   dashed link is a data dependency that skips a box. Boxes that truly run
+   at the same time are drawn as lanes inside one box, inside a bracket
+   labelled "… at the same time".
+3. **Every inside view is plugged into the forest.** IN port(s) on the left
+   name the artifact and the box it came from; the OUT port on the right
+   names what leaves and where it goes. The first action of a box usually
+   moves the IN artifact onto the first actor; the last action fills the OUT
+   port (`{ out: true }`) and moves the result into it. Moving between boxes
+   zooms out, sends the artifact along the real link, then zooms in.
+   The mini-map stays on screen the whole time and shows where you are.
+4. **Visual means drawn things change state.** Text sliding around does
+   not count. A database row turns red and collapses, a barrier arm rises,
+   a request packet is stamped at a checkpoint, a lock snaps onto a folder,
+   a checkbox ticks. Use the actors; add a new actor to the engine when a
+   concept needs its own drawing.
+5. **Parallel must really be parallel.** Use the `parallel` action so lanes
+   animate at the same moment; show what passes between lanes (a packet
+   from the runner lane through the referee lane into the app lane).
+6. **One idea per step, one sentence per step.** Inside a box there's no hard
+   item limit, but every actor on screen must serve this box's story. Hide
+   actors the story is done with.
+7. **One running example from start to finish.** The same id, value and name
+   everywhere (`DELETE /api/orders/42`, row `42 | pen`,
+   `tenant.orders:persistence:delete`). Say "Remember this name" when it is
+   introduced, and point back when it returns (`{ mini: 'freeze' }` blinks
+   the box where it came from).
+8. **Show the failure next to the success.** Use the same actors with a wrong
+   value, in red: mocked call that never reaches the proxy, changed
+   fingerprint, claim without evidence.
+9. **Simple must still be true.** Before drawing "A → B", check the code.
+   Sequential in the code means sequential on screen: don't invent
+   parallelism. Every file card's distinctive string must be grep-verified;
+   label made-up example code `example app` and cut-down files `shortened`.
+10. **Say who is responsible.** Every file card says in its `who` tag who
+    writes it (`by the agent`, `owner reviews`, `real help text`); actors
+    are named plainly (`referee (the witness)`).
+11. **Plain words, white background, big type.** Green and red only carry
+    meaning; blue is the moving thing; yellow is the highlight.
 
-What failed before (the user rejected it hard): a dark dashboard with ~37
-boxes, every arrow drawn, side panels with terminal + zoom + info cards, and
-scenes that lit up paths on the same crowded map. "Everything at once" is
-never the answer, however accurate it is.
+## How to build one
 
-Also rejected ("significantly worse and more convoluted", reverted): a
-54-step rewrite that added a 6-stop journey strip on every slide, map
-opener slides with "So far / Now / Comes out", and a final file map. More
-structure did not make the big picture clearer. Keep the approved 36-step
-shape; to connect ideas, improve individual steps, don't add navigation.
-
-## What made the gold deck work
-
-- **One running example, start to finish.** One table (`orders`), one value
-  (`pen`), one id (`42`), one obligation name
-  (`tenant.orders:persistence:create`). Every card and dot uses the same
-  values, so the viewer recognises them when they come back.
-- **Follow one name across files.** The strongest steps track one string
-  from file to file: the rule's `persistence:create` → the obligation
-  `tenant.orders:persistence:create` → the test annotation with that exact
-  string → the adapter's `resourceId: 'tenant.orders'`. Say it in a note:
-  "Remember it — the test will use the same name."
-- **Files appear when the story needs them,** not in a "here are all the
-  files" block. The main config appears at setup, the adapter just before
-  the referee reads with it, `receipt.json` when the run succeeds, the push
-  hook at push.
-- **Things that are computed, not stored,** still get a card, labelled
-  honestly: `who: 'computed, not a file'`.
-- **Say what each file is NOT, too.** "This link is a claim. The proof comes
-  later." "Read-only. It can only look, never change." One short note
-  removes a wrong idea before it forms.
-- **Mix cards and plain boxes.** Actors (agent, owner, app, referee, CI
-  server) stay plain boxes; files are cards. A dot from a box to a card
-  line ("owner → `"plane": "tenant"`") shows who wrote which line.
-
-## Card step patterns (copy these)
-
-| Pattern | Items | Actions | Use for |
-|---|---|---|---|
-| **Tour one file** | 1 card, `w: 620–760` | `show`, then `hi` + `note` per important line (2–4 lines) | Main config, agent rules, hook script |
-| **Points to** | 2 cards `l` `r` | `dot: ['a:0', 'b:0', 'points to']`, then `hi` the line that matters | Config naming another file |
-| **Who wrote this line** | box `l` + card `r` | `dot: ['owner', 'f:3', 'tenant']` | Owner answers, agent writes code |
-| **Transform** | 3 cards `L` `C` `R` | `dot` input line → rule line, rule line → output line (2–3 dots) | Rule + code → obligations |
-| **File → action** | card + box | `dot: ['a:4', 'app', 'GET /api/orders/42']`, return dot into a card line | Adapter read, runtime recipe |
-| **Match / mismatch** | box + card | dot with computed value into the card line, then `mark` ok/bad | Hash vs receipt, stale receipt |
-
-## How to build it
-
-1. **Learn the real thing first.** Read the code / run the tool so every
-   step is true. For each file card, get the content from the source
-   (`git show <branch>:<path>`, a scratch `init` run, or the template string
-   in the code). Shorten it, never invent it. Example values (hashes,
-   dates) may be made up; say "shortened" in `who`.
-2. **Write the story as a list of steps before any HTML.** Typical arc:
-   - the problem (what goes wrong without it)
-   - the idea in one line
-   - setup (what you install/create) + "File:" tour of the main config
-   - the happy path, one hop per step, with each file's card when it enters
-   - the failure path(s), one per step
-   - what can't be cheated, and why
-   - who does what (two boxes, short lists)
-   - the whole journey recap
-   25–40 steps is normal for a full system with files. More short steps beat
-   fewer dense ones.
-3. **Copy `template.html`** (next to this file) and replace only the `STEPS`
-   array and `<title>`. The engine, layout and controls are proven; don't
-   redesign them.
-4. **Verify card text against the source**: `git grep -F` a distinctive
-   string from every card (e.g. `"CLI engine not found"`, `defineHttpAdapter`,
-   `justificationUrl`). Zero hits = wrong card.
-5. **Run the checker** (next to this file):
+1. **Learn the real system.** Read the code and run it. Write down the boxes,
+   the artifact on each link, what's truly parallel, and one running example.
+2. **Write the story before code**: forest overview → trip → box by box
+   (2–9 steps each) → trip again with ticks → recap. 25–40 steps is normal.
+3. Copy `ecosystem/template.eco.js`, fill in `forest`, `scenes`, `steps`.
+   Build: `node ecosystem/build.mjs my.eco.js my-deck.html`.
+4. Check:
    ```bash
-   PLAYWRIGHT=<repo>/node_modules/playwright/index.mjs node check.mjs deck.html
-   PLAYWRIGHT=… node check.mjs deck.html --play --shots /tmp/shots 3,11,26
+   PW=/path/to/node_modules/playwright/index.mjs
+   PLAYWRIGHT=$PW node ecosystem/check-eco.mjs my-deck.html               # layout, seconds
+   PLAYWRIGHT=$PW node ecosystem/check-eco.mjs my-deck.html --play        # every animation, minutes; run in background
+   PLAYWRIGHT=$PW node ecosystem/check-eco.mjs my-deck.html --shots /tmp/s 1,5,9 --mid
    ```
-   First run = layout only (seconds): text overflow, file name vs "who"
-   collision, items touching, >3 items, page errors. Fix overflow by
-   shortening lines, never by shrinking fonts. Second run plays every step
-   (~5 min for 36 steps; run it in the background) and screenshots a few.
-   **Look at the screenshots**: the checker can't see stacked dot labels or
-   a dot that lands on the wrong line.
-6. Delete scratch files; open the deck for the user (`setsid xdg-open deck.html`).
+   **Look at the screenshots** (end state and `--mid`): the checker can't see
+   a packet landing on the wrong line or a confusing leftover from a
+   "what if" step.
+5. Open it: `setsid xdg-open my-deck.html`.
 
-## The STEPS format (template.html)
+## ECO format (cheat sheet)
 
 ```js
-{ title: 'Rule → "must prove" list',
-  text: 'The rule matches the table. Out come 4 obligations: things that must be proven.',
-  boxes: {
-    m: { slot: 'L', file: 'app/models.py', who: 'your code', lines: ['class Order(Base):', '  __tablename__ = "orders"'] },
-    p: { slot: 'C', file: 'policies.yml', who: 'the rule', lines: ['- id: user-facing-persistence', '  when:', '    exposure: user-facing', '  require:', '    - persistence:create'] },
-    o: { slot: 'R', file: 'obligations', who: 'computed, not a file', lines: ['tenant.orders:persistence:create'] },
+const ECO = {
+  title: '…',
+  forest: {
+    boxW: 280, boxH: 140,                       // boxes are 2:1; every inside view is 1600×800
+    order: ['a', 'b', 'c'],                     // the trip order
+    boxes: [{ id: 'a', n: 1, name: 'Freeze', short: 'Freeze', x: 90, y: 110,
+              pict: [['camera', 72, 18, 0.5]] },                 // drawings from DRAW at x,y,scale
+            { id: 'b', n: 2, name: 'Test run', x: 470, y: 110, lanes: ['runner', 'referee', 'app'] }],
+    links: [{ from: 'a', to: 'b', label: 'snapshot', pts: [[370, 180], [466, 180]] },
+            { from: 'a', to: 'c', label: 'app running', dashed: true, pts: [...], labelAt: [x, y] }],
+    bracket: { x, y, w, h, label: 'three at the same time' },
   },
-  actions: [
-    { show: 'm' }, { show: 'p' },
-    { dot: ['m:1', 'p:2', 'a user table'] },   // line 1 of m → line 2 of p; both turn yellow
-    { show: 'o' },
-    { dot: ['p:4', 'o:0', 'create'] },
-    { note: 'Remember this name — the test will use the same one.' },
-  ] }
+  scenes: { b: {
+    ports: { in: [{ art: 'must-prove\nlist', from: 'Read the code', y: 150 }], out: { art: 'sealed\nreceipt', to: 'Grade' } },
+    lanes: [{ id: 'runner', label: 'TEST RUNNER', y: 15, h: 245 }, …],
+    actors: [{ id: 'db', type: 'db', x: 1050, y: 540, rows: [['42', 'pen']] }, …],
+  } },
+  steps: [{ at: 'forest' | 'recap' | '<box id>', title, text, note?, actions: [...] }],
+};
 ```
 
-- Item slots: 3 items → `L` `C` `R`; 2 items → `l` `r`; 1 item → `C`.
-- Plain box: `[slot, label, sub]`. Keep `sub` to ≤5 short lines (`\n` splits).
-- File card: `{ slot, file, who, lines: [...], w? }`. ≤10 lines.
-  Line width limits: ~36 chars in a 3-card step, ~50 in a 2-card step,
-  ~70 for a single card with `w: 660`. Long `who` text moves under the card
-  automatically; keep it short anyway.
-- Refs: `'id'` = the item; `'id:3'` = line 3 (0-based) of card `id`.
-- Actions:
-  - `show: id` fades an item in.
-  - `dot: [from, to, label, colour?]` moves a dot; line refs highlight both ends.
-    Colour `'#dc2626'` = wrong/rejected, `'#16a34a'` = accepted.
-  - `hi: 'id:n'` highlights one card line.
-  - `set: [id, sub]` changes a plain box's text.
-  - `mark: [id, 'ok'|'bad']` adds a green ✓ / red ✗.
-  - `note: text` shows the punchline under the stage.
-  - `line: text` adds a recap line (use with `boxes: {}`).
-- Dot labels sit above (left→right) or below (right→left) the tallest item.
-  A new dot in the same gap and direction replaces the old label, so two
-  dots the same way never stack.
-- Controls already built: Next / Back / Replay / Auto, → ← Space `r` keys,
-  clickable progress dots (hover shows the step title), "Step N of M".
+Actors (`type`): `robot`, `person`, `referee`, `camera` (`flash(id)`),
+`server` (`up`), `hook` (`grab`), `magnifier` (`moveTo(id)`),
+`file` (`hi(i)`, `bad(i)`, `setLine`, `type` with `typed: true`),
+`terminal` (`type`, `print`), `chip` (`set`, `pop`, `strike`), `key`,
+`folder` (`lock`, `edit`, `pulse`, `setFp`), `db` (`hiRow`, `removeRow`,
+`restore`, `drop`, `unhi`), `browser` (`click(id)`, `removeRow`, `restore`,
+`mock`, `unmock`), `proxy`, `clipboard` (`record`), `receipt` (`seal`),
+`gate` (`open`, `close`), `checklist` (`add`, `hi`, `tick`, `cross`, `tag`),
+`bar` (`fill`), `label` (`set`).
+
+Refs: `'id'` centre, `'id.l|r|t|b'` sides, `'id:2'` line/row 2 of a card,
+list, db or browser, `'id.grab' / 'browser.mock' / 'proxy.c' / 'key.k'`
+named points, `'IN'`, `'IN1'`, `'OUT'` ports.
+
+Actions: `show`, `hide`, `call: [id, method, ...args]`,
+`move: 'text', from, to, via?: [refs], color?, keep?, blocked?, stamp?: { at: viaIndex, text }`,
+`connect: [refA, refB], label?, color?`, `unconnect`, `mark: [id, 'ok'|'bad']`,
+`out: true|'bad'`, `lane: id`, `parallel: [[...], [...]]`, `wait: ms`, `note`,
+`mini: boxId`; forest-level: `boxesIn`, `journey: { tick? }`, `boxState`,
+`line: [text, [boxIds]]` (recap).
+
+Jumping to a step replays all earlier steps instantly, so a "what if" detour
+must put things back (`restore`, `drop`, `unmock`) before the story goes on.
 
 ## Checklist before handing over
 
-- [ ] No step has more than 3 items.
-- [ ] Every step's sentence is one sentence a non-expert can read aloud.
-- [ ] One running example (same names/values) from start to finish.
-- [ ] Every file that matters has a card, shown when the story reaches it,
-      with who writes it in the header.
-- [ ] Every cross-file link is a line-to-line dot, and it matches the code.
-- [ ] Card text grep-verified against the source.
-- [ ] The happy path and at least one failure are both shown.
-- [ ] The last step is the numbered recap.
-- [ ] `check.mjs` layout run clean; `--play` run clean; screenshots looked at.
+- [ ] Steps 1–2 show the forest and the whole trip; the deck ends with trip + recap.
+- [ ] Every box has IN/OUT ports naming the neighbour boxes, and the OUT fills at the end.
+- [ ] Parallel parts use lanes and the `parallel` action; nothing parallel is invented.
+- [ ] Each step has one sentence and visible state changes (not just text).
+- [ ] One running example everywhere; a failure shown next to each key success.
+- [ ] Card text grep-verified; example/shortened content labelled.
+- [ ] `check-eco.mjs` layout and `--play` clean; screenshots (incl. `--mid`) looked at.
+
+The older single-level deck (`template.html`, `check.mjs`, `gold-reference/`)
+is still here for a single linear flow with no system around it. Use it only
+when the user asks for that.
