@@ -51,8 +51,8 @@ const ECO = {
       actors: [
         { id: 'staged', type: 'folder', x: 300, y: 250, label: 'staged files\n(the Git index)' },
         { id: 'cam', type: 'camera', x: 620, y: 50 },
-        { id: 'snap', type: 'folder', x: 620, y: 290, label: 'snapshot' },
-        { id: 'scratch', type: 'folder', x: 1000, y: 290, label: 'scratch folder\n(separate copy)' },
+        { id: 'snap', type: 'file', x: 610, y: 290, w: 340, name: 'Frozen version', lines: ['Git tree ID: 9c2e…', 'Not another folder'] },
+        { id: 'scratch', type: 'folder', x: 1050, y: 290, label: 'scratch checkout\n(files to run)' },
         { id: 'robot', type: 'robot', x: 285, y: 545, label: 'the agent' },
       ],
     },
@@ -74,7 +74,7 @@ const ECO = {
         { id: 'recipe', type: 'file', x: 220, y: 40, w: 620, name: '.gateforge/runtime.yml', who: 'owner reviews · shortened',
           lines: ['prepare:', "  commands: [['./scripts/install.sh']]", 'services_up:', "  commands: [['./scripts/start-stack.sh']]", 'healthcheck:', "  commands: [['./scripts/health.sh']]"] },
         { id: 'bar', type: 'bar', x: 220, y: 362, w: 620, label: 'prepare: installing' },
-        { id: 'snap', type: 'folder', x: 320, y: 470, label: 'snapshot' },
+        { id: 'snap', type: 'folder', x: 320, y: 470, label: 'scratch checkout' },
         { id: 'server', type: 'server', x: 990, y: 50, label: 'app server' },
         { id: 'db', type: 'db', x: 950, y: 330, label: 'database', rows: [['41', 'cup'], ['42', 'pen'], ['43', 'ink']] },
       ],
@@ -132,9 +132,9 @@ const ECO = {
     gate: {
       ports: { in: [{ art: 'verdicts', from: 'Grade' }], out: { art: 'commit\nlands', to: 'main' } },
       actors: [
-        { id: 'snap', type: 'folder', x: 260, y: 50, label: 'snapshot\n(from Freeze)', fp: '' },
-        { id: 'eq', type: 'label', x: 518, y: 96, text: '=', size: 80 },
-        { id: 'now', type: 'folder', x: 640, y: 50, label: 'staged now\n(your repo)', fp: '' },
+        { id: 'snap', type: 'file', x: 230, y: 80, w: 340, name: 'Saved at Freeze', lines: ['Git tree ID: 9c2e…'] },
+        { id: 'eq', type: 'label', x: 610, y: 96, text: '=', size: 80 },
+        { id: 'now', type: 'folder', x: 740, y: 50, label: 'staged now\n(your repo)', fp: '' },
         { id: 'restage', type: 'chip', x: 240, y: 320, color: '#dc2626', text: 'Restage the intended bytes and run the pre-commit gate again.' },
         { id: 'gate', type: 'gate', x: 960, y: 380 },
         { id: 'term', type: 'terminal', x: 240, y: 560, w: 640, rows: 3 },
@@ -168,16 +168,16 @@ const ECO = {
       actions: [{ out: true }, { move: 'staged files', from: 'hook.r', to: 'OUT' }] },
 
     /* ---------- 2 freeze ---------- */
-    { at: 'freeze', title: 'Freeze: take a snapshot',
-      text: 'Gateforge photographs exactly the bytes that are staged, nothing more and nothing less.',
+    { at: 'freeze', title: 'Freeze: record the staged version',
+      text: 'Gateforge records a Git tree ID for the exact staged version; this snapshot is not another folder.',
       actions: [{ show: 'staged' }, { move: 'staged files', from: 'IN', to: 'staged.l' }, { show: 'cam' },
-        { call: ['cam', 'flash', 'staged'] }, { show: 'snap' }, { move: 'photo', from: 'staged.r', to: 'snap.l' }, { call: ['snap', 'lock'] }] },
-    { at: 'freeze', title: 'The snapshot gets its own folder',
-      text: 'The snapshot is copied to a separate folder, so the agent can keep editing without touching what gets tested.',
-      actions: [{ show: 'scratch' }, { move: 'copy', from: 'snap.r', to: 'scratch.l' }, { call: ['scratch', 'lock'] }, { show: 'robot' },
+        { call: ['cam', 'flash', 'staged'] }, { show: 'snap' }, { move: 'tree ID', from: 'staged.r', to: 'snap.l' }, { call: ['snap', 'hi', 0] }] },
+    { at: 'freeze', title: 'Write that version into a scratch folder',
+      text: 'Git writes the frozen version into one temporary checkout, where the app and tests run independently of your edits.',
+      actions: [{ show: 'scratch' }, { move: 'checkout', from: 'snap.r', to: 'scratch.l' }, { call: ['scratch', 'pulse'] }, { show: 'robot' },
         { parallel: [[{ move: 'more edits', from: 'robot.t', to: 'staged.b', color: '#f59e0b' }, { call: ['staged', 'edit'] }], [{ wait: 500 }, { call: ['scratch', 'pulse'] }]] },
         { out: true }, { move: 'snapshot', from: 'scratch.r', to: 'OUT' }],
-      note: 'Remember this snapshot: box 8 checks it again.' },
+      note: 'One recorded version, one runnable checkout. Box 8 compares the saved tree ID with what is staged then.' },
 
     /* ---------- 3 owner ---------- */
     { at: 'owner', title: "Owner's OK: what could go wrong",
@@ -300,8 +300,8 @@ const ECO = {
 
     /* ---------- 8 gate ---------- */
     { at: 'gate', title: 'Last check: same bytes?',
-      text: 'Before saying yes, Gateforge checks that what is staged now is still exactly the snapshot from box 2.',
-      actions: [{ mini: 'freeze' }, { show: 'snap' }, { call: ['snap', 'setFp', 'tree 9c2e…'] }, { show: 'now' }, { call: ['now', 'setFp', 'tree 9c2e…'] },
+      text: 'Before saying yes, Gateforge compares the current staged Git tree ID with the one recorded in box 2.',
+      actions: [{ mini: 'freeze' }, { show: 'snap' }, { call: ['snap', 'hi', 0] }, { show: 'now' }, { call: ['now', 'setFp', 'tree 9c2e…'] },
         { show: 'eq' }, { mark: ['now', 'ok'] }] },
     { at: 'gate', title: 'If the files changed meanwhile',
       text: 'If anything was restaged during the run, the fingerprints differ and the gate refuses.',

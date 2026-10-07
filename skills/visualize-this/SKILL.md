@@ -68,6 +68,8 @@ Engine + tools live in `ecosystem/` next to this file:
    Sequential in the code means sequential on screen: don't invent
    parallelism. Every file card's distinctive string must be grep-verified;
    label made-up example code `example app` and cut-down files `shortened`.
+   Distinguish a recorded identity from physical files: a Git tree ID is a
+   version record, not a folder. Draw a separate folder only for an actual checkout.
 10. **Say who is responsible.** Every file card says in its `who` tag who
     writes it (`by the agent`, `owner reviews`, `real help text`); actors
     are named plainly (`referee (the witness)`).
