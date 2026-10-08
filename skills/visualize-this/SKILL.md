@@ -25,7 +25,7 @@ Engine + tools live in `ecosystem/` next to this file:
 | `gateforge.eco.js` | full real example: 8 boxes, 34 steps, Gateforge's commit gate. |
 | `build.mjs` | `node build.mjs my.eco.js my-deck.html` builds one self-contained HTML file |
 | `check-eco.mjs` | layout + playthrough checker with screenshots |
-| `fonts/` | Manrope + JetBrains Mono (latin, variable); `build.mjs` embeds them so decks look the same offline |
+| `fonts/` | Inter + JetBrains Mono (latin, variable); `build.mjs` embeds only the families the engine names, so decks look the same offline |
 
 ## The hard rules
 
@@ -73,13 +73,17 @@ Engine + tools live in `ecosystem/` next to this file:
 10. **Say who is responsible.** Every file card says in its `who` tag who
     writes it (`by the agent`, `owner reviews`, `real help text`); actors
     are named plainly (`referee (the witness)`).
-11. **Plain words, sleek and quiet.** The engine owns the look; don't restyle per deck.
-    Cool paper background (`#F6F8FB`), white cards with soft shadows and
-    hairline borders, one line style for every drawing (3.5 px, round joins,
-    slate ink), Manrope for words, JetBrains Mono for names/code/eyebrows.
-    Colour only carries meaning: blue = the moving thing, green = proven,
-    red = rejected, soft yellow = highlight. Deck files may use plain hex
-    colours (`#dc2626`, `#16a34a`…); the engine maps them onto the palette.
+11. **Elegant and quiet.** The engine owns the look; don't restyle per deck.
+    Paper `#F7F8FA`, white cards with layered soft shadows and 1–1.5 px
+    hairline borders, one 2.5 px line weight for every drawing with soft
+    fills, rounded radii (cards 16, panels 20–28, pills fully round).
+    Inter for words; JetBrains Mono only for real code (paths, calls, ids,
+    hashes — the engine's `looksCode()` picks the face for chips, packets
+    and list items automatically). Small labels are spaced Inter capitals.
+    Colour only carries meaning: indigo `#4F46E5` = the moving thing and
+    "where you are", green = proven, red = rejected, soft yellow = highlight.
+    Deck files may use plain hex colours (`#dc2626`, `#16a34a`, `#2563eb`…);
+    the engine maps them onto the palette. Motion stays subtle (4.5 % pop).
 
 ## How to build one
 

@@ -7,46 +7,51 @@
 <style>
 /*FONTS*/
 :root {
-  --paper:#F6F8FB; --card:#FFFFFF; --ink:#0F172A; --ink2:#1E293B; --body:#334155; --muted:#64748B; --faint:#94A3B8;
-  --line:#D5DCE6; --soft:#EEF2F7; --blue:#2563EB; --green:#059669; --red:#E11D48; --hl:#FFE58A;
-  --sans: Manrope, "Inter", "Adwaita Sans", "Noto Sans", system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+  --paper:#F7F8FA; --card:#FFFFFF; --ink:#0B1220; --ink2:#1F2937; --body:#475569; --muted:#6B7280; --faint:#9CA3AF;
+  --line:#E5E7EB; --soft:#F3F4F6; --accent:#4F46E5; --green:#059669; --red:#E11D48; --hl:#FDEBA0;
+  --sans: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
 }
 * { box-sizing:border-box; }
-html, body { margin:0; height:100%; background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; }
+html, body { margin:0; height:100%; background:var(--paper); color:var(--ink); font-family:var(--sans); font-feature-settings:"cv11"; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
 #app { display:grid; grid-template-rows:auto 1fr auto; height:100vh; }
-header { display:grid; grid-template-columns:minmax(260px,auto) 1fr; align-items:center; gap:32px; padding:14px 32px 4px; }
-#deck { font-weight:700; font-size:16px; letter-spacing:-0.01em; }
-#crumb { font-size:14px; color:var(--muted); margin-top:3px; white-space:nowrap; }
-#crumb a { color:var(--blue); cursor:pointer; text-decoration:none; font-weight:600; }
-#crumb a:hover { text-decoration:underline; }
-#mini { width:100%; height:56px; }
+header { display:grid; grid-template-columns:minmax(280px,auto) 1fr; align-items:center; gap:40px; padding:18px 40px 6px; }
+#deck { font-weight:600; font-size:15px; letter-spacing:-0.01em; color:var(--ink); }
+#crumb { font-size:13px; color:var(--faint); margin-top:4px; white-space:nowrap; }
+#crumb a { color:var(--accent); cursor:pointer; text-decoration:none; font-weight:500; }
+#crumb a:hover { text-decoration:underline; text-underline-offset:3px; }
+#mini { width:100%; height:52px; }
 #mini .node { cursor:pointer; }
 #stagewrap { position:relative; min-height:0; }
 #stage { width:100%; height:100%; display:block; }
 #stage .box { cursor:pointer; }
-#stage .box:hover .frame { stroke:var(--ink); }
+#stage .box .frame { transition:stroke .2s; }
+#stage .box:hover .frame { stroke:#C7CCF5; }
 svg text { white-space:pre; }
-#stage, #mini { font-family:var(--sans); }
-footer { padding:6px 40px 18px; }
-#eyebrow { font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-#title { font-size:30px; font-weight:800; letter-spacing:-0.02em; margin:4px 0 0; }
-#text { font-size:20px; line-height:1.4; color:var(--body); margin:6px 0 0; max-width:1250px; min-height:28px; }
-#note { display:inline-block; margin-top:10px; font-size:17px; font-weight:600; color:#3F3200; background:#FFF6CC; border-left:4px solid #FACC15; border-radius:8px; padding:5px 14px; opacity:0; transform:translateY(4px); transition:opacity .35s, transform .35s; }
+#stage, #mini { font-family:var(--sans); font-feature-settings:"cv11"; }
+footer { padding:4px 44px 22px; }
+#eyebrow { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+#title { font-size:30px; font-weight:700; letter-spacing:-0.028em; line-height:1.15; margin:8px 0 0; color:var(--ink); }
+#text { font-size:18.5px; line-height:1.5; color:var(--body); margin:6px 0 0; max-width:1180px; min-height:28px; letter-spacing:-0.005em; }
+#note { display:inline-flex; align-items:center; gap:10px; margin-top:12px; font-size:15.5px; font-weight:500; color:#5B4708; background:#FFF8E1; border:1px solid #F7E3A1; border-radius:999px; padding:6px 16px 6px 12px; opacity:0; transform:translateY(6px); transition:opacity .45s cubic-bezier(.2,.7,.2,1), transform .45s cubic-bezier(.2,.7,.2,1); }
+#note::before { content:""; width:7px; height:7px; border-radius:50%; background:#E0A800; flex:none; }
 #note.on { opacity:1; transform:none; }
-#bar { display:flex; align-items:center; gap:10px; margin-top:14px; }
-button { font:inherit; font-size:15px; font-weight:600; height:38px; padding:0 16px; border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; cursor:pointer; }
-button:hover { border-color:var(--ink); }
-button:focus-visible { outline:3px solid #93C5FD; outline-offset:2px; }
-button.primary { background:var(--ink); color:#fff; border-color:var(--ink); }
-button.on { background:#EEF4FF; border-color:var(--blue); color:var(--blue); }
-.prog { display:flex; align-items:center; gap:3px; flex:1; margin:0 10px; }
-.prog i { flex:1 1 0; height:6px; border-radius:3px; background:#E2E8F0; cursor:pointer; transition:background .2s; }
+#bar { display:flex; align-items:center; gap:8px; margin-top:16px; }
+button { font:inherit; font-size:14px; font-weight:500; height:36px; padding:0 14px; display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); background:#fff; color:var(--ink2); border-radius:10px; cursor:pointer; box-shadow:0 1px 2px rgba(16,24,40,.05); transition:border-color .15s, background .15s, box-shadow .15s; }
+button svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+button.icon { padding:0 11px; }
+button:hover { border-color:#D1D5DB; background:#FAFAFB; }
+button:focus-visible { outline:2px solid #A5B4FC; outline-offset:2px; }
+button.primary { background:var(--ink); color:#fff; border-color:var(--ink); box-shadow:0 1px 2px rgba(16,24,40,.12), inset 0 1px 0 rgba(255,255,255,.08); }
+button.primary:hover { background:#1F2937; }
+button.on { background:#EEF0FF; border-color:#C7CCF5; color:var(--accent); }
+.prog { display:flex; align-items:center; gap:3px; flex:1; margin:0 14px; }
+.prog i { flex:1 1 0; height:4px; border-radius:2px; background:#E5E7EB; cursor:pointer; transition:background .25s, height .25s; }
 .prog i:hover { background:var(--faint); }
-.prog i.done { background:#94A3B8; }
-.prog i.cur { background:var(--blue); height:8px; }
-.prog i.gap { margin-left:9px; }
-#count { font-family:var(--mono); font-size:13px; color:var(--muted); min-width:72px; text-align:right; }
+.prog i.done { background:#A5ADBA; }
+.prog i.cur { background:var(--accent); height:6px; border-radius:3px; }
+.prog i.gap { margin-left:10px; }
+#count { font-size:13px; font-weight:500; color:var(--faint); min-width:64px; text-align:right; font-variant-numeric:tabular-nums; }
 @media (prefers-reduced-motion: reduce) { #note { transition:none; } }
 </style>
 </head>
@@ -59,15 +64,15 @@ button.on { background:#EEF4FF; border-color:var(--blue); color:var(--blue); }
   <div id="stagewrap">
     <svg id="stage" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#0F172A" flood-opacity="0.08"/></filter>
-        <filter id="sh2" x="-20%" y="-30%" width="140%" height="180%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0F172A" flood-opacity="0.16"/></filter>
-        <pattern id="stripes" patternUnits="userSpaceOnUse" width="18" height="18"><rect width="18" height="18" fill="#fff"/><rect width="9" height="18" fill="#1E293B"/></pattern>
-        <pattern id="barrier" patternUnits="userSpaceOnUse" width="56" height="26"><rect width="56" height="26" fill="#fff"/><rect width="28" height="26" fill="#E11D48"/></pattern>
-        <marker id="chev" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#9AA8BB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></marker>
-        <marker id="chevk" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#1E293B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
-        <marker id="chevy" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#CA8A04" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
-        <marker id="chevb" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" orient="auto-start-reverse"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker>
-        <marker id="mini-ah" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="5" markerHeight="5" orient="auto"><path d="M2,1.5 L9.5,6 L2,10.5" fill="none" stroke="#CBD5E1" stroke-width="2.4"/></marker>
+        <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#101828" flood-opacity="0.05"/><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#101828" flood-opacity="0.06"/></filter>
+        <filter id="sh2" x="-20%" y="-30%" width="140%" height="190%"><feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#101828" flood-opacity="0.08"/><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#101828" flood-opacity="0.10"/></filter>
+        <pattern id="stripes" patternUnits="userSpaceOnUse" width="16" height="16"><rect width="16" height="16" fill="#fff"/><rect width="8" height="16" fill="#334155"/></pattern>
+        <pattern id="barrier" patternUnits="userSpaceOnUse" width="52" height="24"><rect width="52" height="24" fill="#fff"/><rect width="26" height="24" fill="#E11D48"/></pattern>
+        <linearGradient id="tint" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F7F8FB"/></linearGradient>
+        <marker id="chev" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto-start-reverse"><path d="M3,2 L9,6 L3,10" fill="none" stroke="#AEB6C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="chevk" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" orient="auto-start-reverse"><path d="M3,2 L9,6 L3,10" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="chevy" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" orient="auto-start-reverse"><path d="M3,2 L9,6 L3,10" fill="none" stroke="#C08A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="chevb" viewBox="0 0 12 12" refX="9" refY="6" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" orient="auto-start-reverse"><path d="M3,2 L9,6 L3,10" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></marker>
       </defs>
       <g id="world"></g>
     </svg>
@@ -78,10 +83,10 @@ button.on { background:#EEF4FF; border-color:var(--blue); color:var(--blue); }
     <div id="text"></div>
     <div id="note"></div>
     <div id="bar">
-      <button id="back" aria-label="Previous step">←</button>
-      <button id="next" class="primary">Next →</button>
-      <button id="replay">↻ Replay</button>
-      <button id="auto">▶ Auto</button>
+      <button id="back" class="icon" aria-label="Previous step"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
+      <button id="next" class="primary">Next<svg viewBox="0 0 16 16"><path d="M3.5 8h9M8.5 4l4 4-4 4"/></svg></button>
+      <button id="replay"><svg viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v3h-3"/></svg>Replay</button>
+      <button id="auto"><svg viewBox="0 0 16 16"><path d="M5 3.5v9l7.5-4.5z" fill="currentColor"/></svg>Auto</button>
       <div class="prog" id="dots"></div>
       <div id="count"></div>
     </div>
@@ -98,13 +103,13 @@ button.on { background:#EEF4FF; border-color:var(--blue); color:var(--blue); }
    to make a new deck.
    ============================================================ */
 const NS = 'http://www.w3.org/2000/svg';
-const MONO = '"JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace';
+const MONO = '"JetBrains Mono", ui-monospace, monospace';
 const C = {
-  ink: '#0F172A', ink2: '#1E293B', body: '#334155', muted: '#64748B', faint: '#94A3B8', line: '#D5DCE6', soft: '#EEF2F7', fill: '#F1F5F9',
-  blue: '#2563EB', blueSoft: '#EFF6FF', blueLine: '#93C5FD', green: '#059669', greenSoft: '#ECFDF5', red: '#E11D48', redSoft: '#FFF1F2',
-  yellow: '#FACC15', hl: '#FFE58A', amber: '#F59E0B',
+  ink: '#0B1220', ink2: '#334155', body: '#475569', muted: '#6B7280', faint: '#9CA3AF', line: '#E5E7EB', soft: '#F3F4F6', fill: '#F3F4F8',
+  blue: '#4F46E5', blueSoft: '#EEF0FF', blueLine: '#C7CCF5', green: '#059669', greenSoft: '#ECFDF5', red: '#E11D48', redSoft: '#FFF1F3',
+  yellow: '#F5C542', hl: '#FDEBA0', amber: '#F59E0B', text: '#111827',
 };
-const SW = 3.5;                      // stroke width of every drawing
+const SW = 2.5;                      // stroke width of every drawing (one weight everywhere)
 const IW = 1600, IH = 800;           // inner scene size (every box interior)
 function el(tag, attrs, parent) {
   const e = document.createElementNS(NS, tag);
@@ -114,16 +119,20 @@ function el(tag, attrs, parent) {
 }
 function T(p, x, y, s, o = {}) {
   const t = el('text', { x, y, 'font-size': o.size || 20 }, p);
+  const size = o.size || 20;
   if (o.mono) t.setAttribute('font-family', MONO);
-  t.setAttribute('font-weight', o.weight || (o.bold ? 700 : o.mono ? 500 : 500));
+  t.setAttribute('font-weight', o.weight || (o.bold ? 650 : 500));
   if (o.italic) t.setAttribute('font-style', 'italic');
   if (o.anchor) t.setAttribute('text-anchor', o.anchor);
   if (o.spacing) t.setAttribute('letter-spacing', o.spacing);
-  t.setAttribute('fill', o.fill || C.ink);
+  else if (!o.mono && size >= 17) t.setAttribute('letter-spacing', (-0.012 * size).toFixed(2));
+  t.setAttribute('fill', o.fill || C.text);
   t.textContent = o.upper ? String(s).toUpperCase() : s;
   return t;
 }
-const eyebrow = (p, x, y, s, o = {}) => T(p, x, y, s, { size: o.size || 13, mono: true, weight: 600, spacing: '1.2', upper: true, fill: o.fill || C.faint, anchor: o.anchor });
+const eyebrow = (p, x, y, s, o = {}) => T(p, x, y, s, { size: o.size || 12.5, weight: 600, spacing: String(((o.size || 12.5) * 0.11).toFixed(2)), upper: true, fill: o.fill || C.faint, anchor: o.anchor });
+// Code-looking strings (paths, calls, ids, hashes) keep the mono face; plain words use Inter.
+const looksCode = (s) => /[\/{}()…_]|\w\.\w|\w:\w|^\$/.test(String(s));
 function textW(t) { try { return t.getComputedTextLength(); } catch (e) { return t.textContent.length * 12; } }
 const S_ = (extra = {}) => ({ fill: '#fff', stroke: C.ink2, 'stroke-width': SW, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', ...extra });
 
@@ -153,115 +162,116 @@ function pop(g, ms = 320) {
   const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
   const base = g.getAttribute('transform') || '';
   return tween(ms, (t) => {
-    const s = 1 + 0.1 * Math.sin(Math.PI * t);
+    const s = 1 + 0.045 * Math.sin(Math.PI * t);
     g.setAttribute('transform', `${base} translate(${cx},${cy}) scale(${s}) translate(${-cx},${-cy})`);
   }).then(() => g.setAttribute('transform', base));
 }
 function check(p, x, y, color = '#fff', w = 4) { return el('path', { d: `M${x - 9},${y} L${x - 3},${y + 6} L${x + 9},${y - 7}`, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, p); }
 function cross(p, x, y, color = '#fff', w = 4) { return el('path', { d: `M${x - 7},${y - 7} L${x + 7},${y + 7} M${x + 7},${y - 7} L${x - 7},${y + 7}`, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'round' }, p); }
 
-/* ---------- drawings (pure; local coords from 0,0; one line style) ---------- */
+/* ---------- drawings (pure; local coords from 0,0; one line weight, soft fills) ---------- */
 const DRAW = {
   robot(g) {
-    el('line', { x1: 65, y1: 12, x2: 65, y2: 30, stroke: C.ink2, 'stroke-width': SW, 'stroke-linecap': 'round' }, g);
-    el('circle', { cx: 65, cy: 10, r: 6.5, fill: C.blue }, g);
-    el('rect', S_({ x: 18, y: 30, width: 94, height: 68, rx: 22, fill: C.fill }), g);
-    el('rect', { x: 31, y: 46, width: 68, height: 34, rx: 13, fill: C.ink2 }, g);
-    el('circle', { cx: 51, cy: 63, r: 6, fill: '#60A5FA' }, g);
-    el('circle', { cx: 79, cy: 63, r: 6, fill: '#60A5FA' }, g);
-    el('rect', S_({ x: 36, y: 106, width: 58, height: 48, rx: 15 }), g);
-    el('rect', { x: 55, y: 122, width: 20, height: 8, rx: 4, fill: C.blue }, g);
-    el('path', S_({ d: 'M36,116 Q16,122 12,144 M94,116 Q114,122 118,144', fill: 'none' }), g);
+    el('line', { x1: 65, y1: 14, x2: 65, y2: 30, stroke: C.ink2, 'stroke-width': SW, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: 65, cy: 11, r: 6, fill: C.blue }, g);
+    el('rect', S_({ x: 18, y: 30, width: 94, height: 68, rx: 24, fill: '#fff' }), g);
+    el('rect', { x: 30, y: 45, width: 70, height: 36, rx: 16, fill: '#1E2235' }, g);
+    el('circle', { cx: 51, cy: 63, r: 5.5, fill: '#A5B4FC' }, g);
+    el('circle', { cx: 79, cy: 63, r: 5.5, fill: '#A5B4FC' }, g);
+    el('rect', S_({ x: 36, y: 106, width: 58, height: 46, rx: 16, fill: C.fill }), g);
+    el('rect', { x: 56, y: 122, width: 18, height: 6, rx: 3, fill: C.blue }, g);
+    el('path', S_({ d: 'M36,118 Q18,124 14,144 M94,118 Q112,124 116,144', fill: 'none' }), g);
     return { w: 130, h: 160 };
   },
   person(g) {
-    el('circle', S_({ cx: 60, cy: 36, r: 25, fill: C.fill }), g);
-    el('path', S_({ d: 'M14,148 L14,122 Q14,80 60,80 Q106,80 106,122 L106,148 Z' }), g);
-    el('path', S_({ d: 'M46,82 L60,100 L74,82', fill: 'none' }), g);
+    el('circle', S_({ cx: 60, cy: 36, r: 24, fill: '#fff' }), g);
+    el('path', S_({ d: 'M14,148 L14,124 Q14,80 60,80 Q106,80 106,124 L106,148 Z', fill: C.fill }), g);
+    el('path', S_({ d: 'M47,82 L60,98 L73,82', fill: 'none' }), g);
     return { w: 120, h: 150 };
   },
   referee(g) {
-    el('circle', S_({ cx: 70, cy: 34, r: 25, fill: C.fill }), g);
-    el('circle', { cx: 61, cy: 32, r: 3.2, fill: C.ink2 }, g);
-    el('circle', { cx: 79, cy: 32, r: 3.2, fill: C.ink2 }, g);
+    el('circle', S_({ cx: 70, cy: 34, r: 24, fill: '#fff' }), g);
+    el('circle', { cx: 62, cy: 33, r: 2.6, fill: C.ink2 }, g);
+    el('circle', { cx: 78, cy: 33, r: 2.6, fill: C.ink2 }, g);
     el('path', S_({ d: 'M24,148 L24,104 Q24,70 70,70 Q116,70 116,104 L116,148 Z', fill: 'url(#stripes)' }), g);
-    el('path', { d: 'M70,46 Q86,58 98,58', fill: 'none', stroke: C.ink2, 'stroke-width': 2.5 }, g);
-    el('circle', { cx: 102, cy: 59, r: 6.5, fill: C.yellow, stroke: C.ink2, 'stroke-width': 2.5 }, g);
+    el('path', { d: 'M70,46 Q86,58 97,58', fill: 'none', stroke: C.ink2, 'stroke-width': 2 }, g);
+    el('circle', { cx: 102, cy: 59, r: 6, fill: C.yellow, stroke: C.ink2, 'stroke-width': 2 }, g);
     return { w: 140, h: 150 };
   },
   camera(g) {
-    el('rect', S_({ x: 50, y: 16, width: 52, height: 26, rx: 8, fill: C.fill }), g);
-    el('rect', S_({ x: 10, y: 34, width: 150, height: 98, rx: 20 }), g);
-    el('circle', S_({ cx: 85, cy: 83, r: 32, fill: C.fill }), g);
-    el('circle', { cx: 85, cy: 83, r: 15, fill: C.ink2 }, g);
-    el('circle', { cx: 79, cy: 77, r: 4, fill: '#fff' }, g);
-    el('rect', { x: 128, y: 48, width: 20, height: 12, rx: 3, fill: C.yellow, stroke: C.ink2, 'stroke-width': 2.5, class: 'bulb' }, g);
+    el('rect', S_({ x: 52, y: 18, width: 50, height: 24, rx: 8, fill: C.fill }), g);
+    el('rect', S_({ x: 10, y: 34, width: 150, height: 98, rx: 22 }), g);
+    el('circle', S_({ cx: 85, cy: 83, r: 31, fill: C.fill }), g);
+    el('circle', { cx: 85, cy: 83, r: 16, fill: '#1E2235' }, g);
+    el('circle', { cx: 79, cy: 77, r: 4, fill: '#fff', opacity: 0.9 }, g);
+    el('rect', { x: 128, y: 48, width: 18, height: 10, rx: 3, fill: C.yellow, stroke: C.ink2, 'stroke-width': 2, class: 'bulb' }, g);
     return { w: 170, h: 140 };
   },
   server(g) {
-    el('rect', S_({ x: 2, y: 2, width: 166, height: 166, rx: 20 }), g);
+    el('rect', S_({ x: 2, y: 2, width: 166, height: 166, rx: 22 }), g);
     for (let i = 0; i < 3; i++) {
-      el('rect', { x: 18, y: 20 + i * 48, width: 134, height: 34, rx: 9, fill: C.fill, stroke: C.ink2, 'stroke-width': 2.5 }, g);
-      el('line', { x1: 34, y1: 37 + i * 48, x2: 84, y2: 37 + i * 48, stroke: C.faint, 'stroke-width': 3.5, 'stroke-linecap': 'round' }, g);
+      el('rect', { x: 18, y: 20 + i * 48, width: 134, height: 34, rx: 10, fill: C.fill, stroke: C.ink2, 'stroke-width': 2 }, g);
+      el('line', { x1: 34, y1: 37 + i * 48, x2: 82, y2: 37 + i * 48, stroke: '#C3C8D2', 'stroke-width': 3, 'stroke-linecap': 'round' }, g);
     }
-    el('circle', { cx: 134, cy: 37, r: 7, fill: '#CBD5E1', class: 'led' }, g);
+    el('circle', { cx: 134, cy: 37, r: 6, fill: '#D1D5DB', class: 'led' }, g);
     return { w: 170, h: 170 };
   },
   dbIcon(g) {
     el('path', S_({ d: 'M4,24 L4,116 A66,20 0 0 0 136,116 L136,24' }), g);
     el('ellipse', S_({ cx: 70, cy: 24, rx: 66, ry: 20, fill: C.fill }), g);
-    el('path', { d: 'M4,56 A66,20 0 0 0 136,56 M4,88 A66,20 0 0 0 136,88', fill: 'none', stroke: C.ink2, 'stroke-width': 2.5 }, g);
+    el('path', { d: 'M4,56 A66,20 0 0 0 136,56 M4,88 A66,20 0 0 0 136,88', fill: 'none', stroke: C.ink2, 'stroke-width': 2 }, g);
     return { w: 140, h: 140 };
   },
   magnifier(g) {
-    el('circle', { cx: 54, cy: 54, r: 38, fill: 'rgba(37,99,235,0.10)', stroke: C.ink2, 'stroke-width': 7 }, g);
-    el('path', { d: 'M34,40 A24,24 0 0 1 52,30', fill: 'none', stroke: '#fff', 'stroke-width': 5, 'stroke-linecap': 'round' }, g);
-    el('line', { x1: 82, y1: 82, x2: 128, y2: 128, stroke: C.ink2, 'stroke-width': 13, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: 54, cy: 54, r: 38, fill: 'rgba(79,70,229,0.07)', stroke: C.ink2, 'stroke-width': 5 }, g);
+    el('path', { d: 'M34,42 A24,24 0 0 1 50,30', fill: 'none', stroke: '#fff', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    el('line', { x1: 82, y1: 82, x2: 126, y2: 126, stroke: C.ink2, 'stroke-width': 10, 'stroke-linecap': 'round' }, g);
     return { w: 140, h: 140 };
   },
   doc(g) {
     el('path', S_({ d: 'M4,4 L66,4 L94,32 L94,118 L4,118 Z' }), g);
     el('path', S_({ d: 'M66,4 L66,32 L94,32', fill: C.fill }), g);
-    for (let i = 0; i < 4; i++) el('line', { x1: 18, y1: 50 + i * 16, x2: i === 3 ? 56 : 80, y2: 50 + i * 16, stroke: C.faint, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+    for (let i = 0; i < 4; i++) el('line', { x1: 18, y1: 52 + i * 16, x2: i === 3 ? 54 : 78, y2: 52 + i * 16, stroke: '#C3C8D2', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, g);
     return { w: 98, h: 122 };
   },
   key(g) {
-    el('circle', { cx: 28, cy: 30, r: 19, fill: C.yellow, stroke: C.ink2, 'stroke-width': 6 }, g);
-    el('circle', { cx: 28, cy: 30, r: 6, fill: '#fff', stroke: C.ink2, 'stroke-width': 3 }, g);
-    el('path', { d: 'M47,30 L128,30 M108,30 L108,48 M124,30 L124,44', fill: 'none', stroke: C.ink2, 'stroke-width': 8, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: 28, cy: 30, r: 18, fill: C.yellow, stroke: C.ink2, 'stroke-width': 3.5 }, g);
+    el('circle', { cx: 28, cy: 30, r: 5.5, fill: '#fff', stroke: C.ink2, 'stroke-width': 2.5 }, g);
+    el('path', { d: 'M46,30 L126,30 M108,30 L108,46 M122,30 L122,42', fill: 'none', stroke: C.ink2, 'stroke-width': 5.5, 'stroke-linecap': 'round' }, g);
     return { w: 134, h: 60 };
   },
   lock(g) {
-    el('path', { d: 'M14,32 L14,22 A16,16 0 0 1 46,22 L46,32', fill: 'none', stroke: C.ink2, 'stroke-width': 7, 'stroke-linecap': 'round' }, g);
-    el('rect', { x: 2, y: 30, width: 56, height: 42, rx: 11, fill: C.yellow, stroke: C.ink2, 'stroke-width': SW }, g);
-    el('circle', { cx: 30, cy: 48, r: 5, fill: C.ink2 }, g);
-    el('rect', { x: 28, y: 50, width: 4, height: 11, rx: 2, fill: C.ink2 }, g);
+    el('path', { d: 'M15,32 L15,22 A15,15 0 0 1 45,22 L45,32', fill: 'none', stroke: C.ink2, 'stroke-width': 4.5, 'stroke-linecap': 'round' }, g);
+    el('rect', { x: 3, y: 30, width: 54, height: 41, rx: 12, fill: C.yellow, stroke: C.ink2, 'stroke-width': SW }, g);
+    el('circle', { cx: 30, cy: 47, r: 4.5, fill: C.ink2 }, g);
+    el('rect', { x: 28.5, y: 49, width: 3, height: 10, rx: 1.5, fill: C.ink2 }, g);
     return { w: 60, h: 74 };
   },
   hook(g) {
-    el('circle', { cx: 60, cy: 8, r: 8, fill: '#fff', stroke: C.ink2, 'stroke-width': 5 }, g);
-    el('path', { d: 'M60,16 L60,78 A30,30 0 0 1 0,78 L0,58', fill: 'none', stroke: C.ink2, 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
-    el('path', { d: 'M-11,72 L0,50 L11,72 Z', fill: C.ink2, stroke: C.ink2, 'stroke-width': 3, 'stroke-linejoin': 'round' }, g);
+    el('circle', { cx: 60, cy: 8, r: 7, fill: '#fff', stroke: C.ink2, 'stroke-width': 3.5 }, g);
+    el('path', { d: 'M60,15 L60,78 A30,30 0 0 1 0,78 L0,58', fill: 'none', stroke: C.ink2, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    el('path', { d: 'M-10,70 L0,50 L10,70 Z', fill: C.ink2, stroke: C.ink2, 'stroke-width': 2.5, 'stroke-linejoin': 'round' }, g);
     return { w: 90, h: 110 };
   },
   checklistIcon(g) {
-    el('rect', S_({ x: 2, y: 2, width: 106, height: 118, rx: 16 }), g);
+    el('rect', S_({ x: 2, y: 2, width: 106, height: 118, rx: 18 }), g);
     for (let i = 0; i < 3; i++) {
-      el('rect', { x: 16, y: 18 + i * 32, width: 20, height: 20, rx: 6, fill: i < 2 ? C.greenSoft : '#fff', stroke: i < 2 ? C.green : C.faint, 'stroke-width': 3 }, g);
-      el('line', { x1: 48, y1: 28 + i * 32, x2: 92, y2: 28 + i * 32, stroke: C.faint, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+      el('rect', { x: 17, y: 19 + i * 32, width: 19, height: 19, rx: 6, fill: i < 2 ? C.green : '#fff', stroke: i < 2 ? C.green : '#C3C8D2', 'stroke-width': 2 }, g);
+      el('line', { x1: 48, y1: 28.5 + i * 32, x2: 92, y2: 28.5 + i * 32, stroke: '#C3C8D2', 'stroke-width': 3.5, 'stroke-linecap': 'round' }, g);
     }
-    check(g, 26, 28, C.green, 3.5); check(g, 26, 60, C.green, 3.5);
+    check(g, 26.5, 28.5, '#fff', 2.6); check(g, 26.5, 60.5, '#fff', 2.6);
     return { w: 110, h: 122 };
   },
   gateIcon(g) {
-    el('rect', S_({ x: 2, y: 30, width: 22, height: 90, rx: 6 }), g);
-    el('rect', { x: 13, y: 40, width: 172, height: 22, rx: 6, fill: 'url(#barrier)', stroke: C.ink2, 'stroke-width': 3 }, g);
-    el('rect', S_({ x: 170, y: 64, width: 14, height: 56, rx: 4 }), g);
-    el('circle', { cx: 13, cy: 51, r: 6, fill: C.ink2 }, g);
+    el('rect', S_({ x: 2, y: 30, width: 22, height: 90, rx: 7, fill: C.fill }), g);
+    el('rect', { x: 13, y: 40, width: 172, height: 20, rx: 7, fill: 'url(#barrier)', stroke: C.ink2, 'stroke-width': 2 }, g);
+    el('rect', S_({ x: 170, y: 62, width: 14, height: 58, rx: 5, fill: C.fill }), g);
+    el('circle', { cx: 13, cy: 50, r: 5, fill: C.ink2 }, g);
     return { w: 190, h: 122 };
   },
   folder(g, w = 220, h = 150) {
-    el('path', S_({ d: `M4,22 Q4,10 16,10 L${w * 0.36},10 L${w * 0.44},28 L${w - 16},28 Q${w - 4},28 ${w - 4},40 L${w - 4},${h - 12} Q${w - 4},${h} ${w - 16},${h} L16,${h} Q4,${h} 4,${h - 12} Z`, fill: C.fill }), g);
+    el('path', S_({ d: `M4,24 Q4,10 18,10 L${w * 0.34},10 Q${w * 0.38},10 ${w * 0.41},16 L${w * 0.45},24 L${w - 18},24 Q${w - 4},24 ${w - 4},38 L${w - 4},${h - 14} Q${w - 4},${h} ${w - 18},${h} L18,${h} Q4,${h} 4,${h - 14} Z`, fill: '#E8EBF2' }), g);
+    el('path', S_({ d: `M4,46 Q4,36 16,36 L${w - 16},36 Q${w - 4},36 ${w - 4},46 L${w - 4},${h - 14} Q${w - 4},${h} ${w - 18},${h} L18,${h} Q4,${h} 4,${h - 14} Z`, fill: 'url(#tint)' }), g);
     return { w, h };
   },
 };
@@ -289,19 +299,19 @@ function mkActor(S, o, w, h) {
   };
   return a;
 }
-function labelUnder(a, text, y, size = 20) {
+function labelUnder(a, text, y, size = 18.5) {
   const lines = String(text).split('\n');
-  lines.forEach((ln, i) => T(a.g, a.w / 2, y + i * (size + 3), ln, i === 0
-    ? { size, weight: 700, anchor: 'middle' }
-    : { size: size - 3, weight: 500, anchor: 'middle', fill: C.muted }));
-  return y + (lines.length - 1) * (size + 3) + 8;
+  lines.forEach((ln, i) => T(a.g, a.w / 2, y + i * (size + 4), ln, i === 0
+    ? { size, weight: 600, anchor: 'middle' }
+    : { size: size - 3.5, weight: 450, anchor: 'middle', fill: C.muted }));
+  return y + (lines.length - 1) * (size + 4) + 8;
 }
 function card(g, w, h, extra = {}) {
-  return el('rect', { x: 0, y: 0, width: w, height: h, rx: 14, fill: '#fff', stroke: C.line, 'stroke-width': 2, filter: 'url(#sh)', ...extra }, g);
+  return el('rect', { x: 0, y: 0, width: w, height: h, rx: 16, fill: '#fff', stroke: '#E6E8EC', 'stroke-width': 1.5, filter: 'url(#sh)', ...extra }, g);
 }
-function cardHead(g, w, head, fill = '#F8FAFC') {
-  el('path', { d: `M2,14 Q2,2 14,2 L${w - 14},2 Q${w - 2},2 ${w - 2},14 L${w - 2},${head} L2,${head} Z`, fill }, g);
-  el('line', { x1: 0, y1: head, x2: w, y2: head, stroke: '#E2E8F0', 'stroke-width': 2 }, g);
+function cardHead(g, w, head, fill = '#FAFAFB') {
+  el('path', { d: `M1.5,16 Q1.5,1.5 16,1.5 L${w - 16},1.5 Q${w - 1.5},1.5 ${w - 1.5},16 L${w - 1.5},${head} L1.5,${head} Z`, fill }, g);
+  el('line', { x1: 0, y1: head, x2: w, y2: head, stroke: '#EEF0F3', 'stroke-width': 1.5 }, g);
 }
 const ACTORS = {
   robot(S, o) { const a = mkActor(S, o, 130, 0); DRAW.robot(a.g); a.h = labelUnder(a, o.label || 'the agent', 188); return a; },
@@ -349,21 +359,21 @@ const ACTORS = {
     const h = head + 10 + n * lh + 12;
     const a = mkActor(S, o, w, h);
     card(a.g, w, h); cardHead(a.g, w, head);
-    T(a.g, 18, 32, o.name, { size: 18.5, mono: true, weight: 700 });
+    T(a.g, 18, 32, o.name, { size: 16.5, mono: looksCode(o.name), weight: 600 });
     if (o.who) eyebrow(a.g, w - 16, 31, o.who, { anchor: 'end', size: 12.5 }).classList.add('who');
     const hl = el('g', {}, a.g);
     const texts = [];
-    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, head + 10 + i * lh + 25, (o.typed ? '' : (o.lines[i] || '')), { size: 19, mono: true, fill: C.ink2 }));
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, head + 10 + i * lh + 25, (o.typed ? '' : (o.lines[i] || '')), { size: 17.5, mono: true, fill: '#374151' }));
     a.lineAnchor = (i, s = 'r') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + 10 + i * lh + lh / 2 });
     const bars = {};
     const bar = (i, fill) => {
-      if (!bars[i]) bars[i] = el('rect', { x: 6, y: head + 10 + i * lh + 2, width: w - 12, height: lh - 4, rx: 7, fill, opacity: 0 }, hl);
+      if (!bars[i]) bars[i] = el('rect', { x: 8, y: head + 10 + i * lh + 3, width: w - 16, height: lh - 6, rx: 8, fill, opacity: 0 }, hl);
       bars[i].setAttribute('fill', fill);
       return bars[i];
     };
-    a.hi = (i) => fade(bar(i, C.hl), 0.75, 300);
+    a.hi = (i) => fade(bar(i, C.hl), 0.7, 350);
     a.unhi = (i) => (bars[i] ? fade(bars[i], 0, 200) : Promise.resolve());
-    a.bad = (i) => fade(bar(i, '#FECDD3'), 1, 300);
+    a.bad = (i) => fade(bar(i, '#FFD5DD'), 1, 350);
     a.setLine = async (i, s, fill) => { texts[i].textContent = s; if (fill) texts[i].setAttribute('fill', fill); await pop(texts[i], 250); };
     a.type = async () => {
       for (let i = 0; i < o.lines.length; i++) {
@@ -379,9 +389,9 @@ const ACTORS = {
   terminal(S, o) {
     const w = o.w || 640, lh = 34, n = o.rows || 2, h = 22 + n * lh + 14;
     const a = mkActor(S, o, w, h);
-    card(a.g, w, h, { fill: C.ink, stroke: C.ink });
+    card(a.g, w, h, { fill: '#0F1424', stroke: '#0F1424', rx: 14 });
     const texts = []; let next = 0;
-    for (let i = 0; i < n; i++) texts.push(T(a.g, 22, 22 + i * lh + 22, '', { size: 20, mono: true, fill: '#E2E8F0' }));
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 22, 22 + i * lh + 22, '', { size: 18.5, mono: true, fill: '#E5E7EB' }));
     const tone = (f) => (f === C.red ? '#FB7185' : f === C.green ? '#34D399' : f || '#E2E8F0');
     a.type = async (s) => {
       const t = texts[next++];
@@ -394,8 +404,8 @@ const ACTORS = {
   chip(S, o) {
     const a = mkActor(S, o, 0, 48);
     const col = o.color ? tone(o.color) : null;
-    const r = el('rect', { x: 0, y: 0, height: 48, rx: 24, fill: col === C.red ? C.redSoft : '#fff', stroke: col || C.line, 'stroke-width': 2, filter: 'url(#sh2)' }, a.g);
-    const t = T(a.g, 0, 31, o.text, { size: 18, mono: true, weight: 600, fill: col || C.ink });
+    const r = el('rect', { x: 0, y: 0, height: 48, rx: 24, fill: col === C.red ? C.redSoft : '#fff', stroke: col === C.red ? '#FBC4CF' : col || '#E6E8EC', 'stroke-width': 1.5, filter: 'url(#sh2)' }, a.g);
+    const t = T(a.g, 0, 30.5, o.text, { size: 16.5, mono: looksCode(o.text), weight: 550, fill: col || C.text });
     if (o.who) eyebrow(a.g, 6, -11, o.who, { size: 12.5 }).classList.add('who');
     const fit = () => {
       const tw = textW(t);
@@ -406,13 +416,14 @@ const ACTORS = {
     fit();
     a.set = async (s, fill) => {
       t.textContent = s;
-      if (fill) { t.setAttribute('fill', fill); r.setAttribute('stroke', fill === C.ink || fill === '#111' ? C.line : fill); r.setAttribute('fill', fill === C.red ? C.redSoft : '#fff'); }
+      t.setAttribute('font-family', looksCode(s) ? MONO : 'Inter');
+      if (fill) { t.setAttribute('fill', fill === '#111' || fill === C.ink ? C.text : fill); r.setAttribute('stroke', fill === C.ink || fill === '#111' ? '#E6E8EC' : fill === C.red ? '#FBC4CF' : fill); r.setAttribute('fill', fill === C.red ? C.redSoft : '#fff'); }
       fit(); await pop(a.g, 260);
     };
     a.pop = () => pop(a.g);
     a.strike = async () => {
       const tw = textW(t), x0 = +t.getAttribute('x');
-      const ln = el('line', { x1: x0, y1: 25, x2: x0, y2: 25, stroke: C.red, 'stroke-width': 3.5, 'stroke-linecap': 'round' }, a.g);
+      const ln = el('line', { x1: x0, y1: 25, x2: x0, y2: 25, stroke: C.red, 'stroke-width': 2.5, 'stroke-linecap': 'round' }, a.g);
       await tween(450, (k) => ln.setAttribute('x2', x0 + tw * k));
       await fade(a.g, 0.5, 300);
     };
@@ -421,8 +432,8 @@ const ACTORS = {
   key(S, o) {
     const a = mkActor(S, o, 0, 0);
     DRAW.key(el('g', {}, a.g));
-    const lt = T(a.g, 150, 26, o.label || 'key', { size: 18, weight: 700 });
-    const ft = o.fp ? T(a.g, 150, 52, o.fp, { size: 18, mono: true, fill: C.body }) : null;
+    const lt = T(a.g, 150, 26, o.label || 'key', { size: 17, weight: 600 });
+    const ft = o.fp ? T(a.g, 150, 52, o.fp, { size: 16.5, mono: true, fill: C.body }) : null;
     a.w = 150 + Math.max(textW(lt), ft ? textW(ft) : 0) + 4;
     a.h = 64;
     a.points.k = { x: 66, y: 30 };
@@ -436,9 +447,9 @@ const ACTORS = {
     for (let i = 0; i < (o.files || 3); i++) DRAW.doc(el('g', { transform: `translate(${30 + i * 48},${44}) scale(0.48)` }, files));
     const lockG = el('g', { transform: `translate(${fw - 44},${fh - 50}) scale(0.72)`, opacity: 0 }, a.g); DRAW.lock(lockG);
     const pen = el('g', { opacity: 0 }, a.g);
-    el('path', { d: `M${fw - 72},${38} l44,-25 l10,15 l-44,25 z`, fill: C.amber, stroke: C.ink2, 'stroke-width': 3, 'stroke-linejoin': 'round' }, pen);
+    el('path', { d: `M${fw - 72},${38} l44,-25 l10,15 l-44,25 z`, fill: C.amber, stroke: C.ink2, 'stroke-width': 2, 'stroke-linejoin': 'round' }, pen);
     const y = labelUnder(a, o.label || 'folder', fh + 30);
-    const fpT = T(a.g, fw / 2, y + 22, o.fp || '', { size: 18, mono: true, anchor: 'middle', fill: C.body });
+    const fpT = T(a.g, fw / 2, y + 22, o.fp || '', { size: 16.5, mono: true, anchor: 'middle', fill: C.body });
     a.h = o.fp !== undefined ? y + 30 : y;
     a.lock = async () => { await fade(lockG, 1, 250); await pop(lockG); };
     a.edit = async () => { await fade(pen, 1, 200); await tween(500, (k) => pen.setAttribute('transform', `translate(${-30 * Math.sin(k * Math.PI * 2)},0)`)); };
@@ -456,19 +467,19 @@ const ACTORS = {
     const rowG = el('g', {}, a.g);
     const items = rows.map((r, i) => {
       const g = el('g', { transform: `translate(0,${body0 + i * rh})` }, rowG);
-      const bg = el('rect', { x: 16, y: 0, width: w - 32, height: rh - 4, rx: 7, fill: C.hl, opacity: 0 }, g);
-      T(g, w / 2 - 14, 25, r[0], { size: 20, mono: true, weight: 600, anchor: 'end', fill: C.muted });
-      el('line', { x1: w / 2, y1: 6, x2: w / 2, y2: rh - 10, stroke: C.line, 'stroke-width': 2 }, g);
-      T(g, w / 2 + 14, 25, r[1], { size: 20, mono: true, fill: C.ink2 });
+      const bg = el('rect', { x: 18, y: 1, width: w - 36, height: rh - 6, rx: 8, fill: C.hl, opacity: 0 }, g);
+      T(g, w / 2 - 14, 25, r[0], { size: 18.5, weight: 500, anchor: 'end', fill: C.faint });
+      el('line', { x1: w / 2, y1: 8, x2: w / 2, y2: rh - 12, stroke: '#E6E8EC', 'stroke-width': 1.5 }, g);
+      T(g, w / 2 + 14, 25, r[1], { size: 18.5, weight: 550, fill: C.text });
       return { id: String(r[0]), g, bg, i, gone: false };
     });
     a.h = labelUnder(a, o.label || 'database', bottom + 44);
     const idx = (id) => items.find((it) => it.id === String(id));
     a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 16 : w - 16), y: a.y + body0 + i * rh + rh / 2 - 2 });
-    a.hiRow = async (id, fill) => { const it = idx(id); it.bg.setAttribute('fill', fill === C.red || fill === '#dc2626' ? '#FECDD3' : (fill || C.hl)); await fade(it.bg, 0.9, 300); };
+    a.hiRow = async (id, fill) => { const it = idx(id); it.bg.setAttribute('fill', fill === C.red || fill === '#dc2626' ? '#FFD5DD' : (fill || C.hl)); await fade(it.bg, 0.9, 300); };
     a.removeRow = async (id) => {
       const it = idx(id); if (!it || it.gone) return;
-      it.bg.setAttribute('fill', '#FECDD3');
+      it.bg.setAttribute('fill', '#FFD5DD');
       await fade(it.bg, 1, 250);
       await wait(250);
       await fade(it.g, 0, 400);
@@ -495,23 +506,23 @@ const ACTORS = {
     const h = bar + 20 + rows.length * rh + 14;
     const a = mkActor(S, o, w, h);
     card(a.g, w, h); cardHead(a.g, w, bar);
-    ['#F87171', '#FBBF24', '#34D399'].forEach((c, i) => el('circle', { cx: 24 + i * 20, cy: 23, r: 6, fill: c }, a.g));
-    el('rect', { x: 92, y: 10, width: w - 108, height: 26, rx: 13, fill: '#fff', stroke: '#E2E8F0', 'stroke-width': 2 }, a.g);
-    T(a.g, 108, 28, o.url || '/', { size: 15, mono: true, fill: C.muted });
+    ['#FF6B6B', '#FFC145', '#3DD68C'].forEach((c, i) => el('circle', { cx: 24 + i * 18, cy: 23, r: 5.5, fill: c }, a.g));
+    el('rect', { x: 88, y: 11, width: w - 104, height: 24, rx: 12, fill: '#fff', stroke: '#E6E8EC', 'stroke-width': 1.5 }, a.g);
+    T(a.g, 104, 28, o.url || '/', { size: 14, mono: true, fill: C.muted });
     const rowG = el('g', {}, a.g);
     const items = rows.map((r, i) => {
       const g = el('g', { transform: `translate(0,${bar + 14 + i * rh})` }, rowG);
-      const bg = el('rect', { x: 10, y: 0, width: w - 20, height: rh - 4, rx: 7, fill: '#FECDD3', opacity: 0 }, g);
-      T(g, 26, 25, r[0], { size: 20, mono: true, weight: 600, fill: C.muted });
-      T(g, 74, 25, r[1], { size: 20, mono: true, fill: C.ink2 });
-      const btn = el('rect', { x: w - 126, y: 3, width: 104, height: rh - 10, rx: 8, fill: C.redSoft, stroke: '#FDA4AF', 'stroke-width': 2 }, g);
-      T(g, w - 74, 23, 'Delete', { size: 15, weight: 700, anchor: 'middle', fill: C.red });
+      const bg = el('rect', { x: 10, y: 0, width: w - 20, height: rh - 4, rx: 8, fill: '#FFE1E6', opacity: 0 }, g);
+      T(g, 26, 25, r[0], { size: 18.5, weight: 500, fill: C.faint });
+      T(g, 70, 25, r[1], { size: 18.5, weight: 550, fill: C.text });
+      const btn = el('rect', { x: w - 122, y: 4, width: 100, height: rh - 12, rx: 8, fill: '#fff', stroke: '#F7C3CD', 'stroke-width': 1.5 }, g);
+      T(g, w - 72, 23, 'Delete', { size: 14, weight: 600, anchor: 'middle', fill: C.red });
       return { id: String(r[0]), g, bg, btn, i, gone: false };
     });
-    const cursor = el('path', { d: 'M0,0 L0,30 L8,23 L14,36 L20,33 L14,21 L24,21 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 2.5, 'stroke-linejoin': 'round', opacity: 0 }, a.g);
+    const cursor = el('path', { d: 'M0,0 L0,30 L8,23 L14,36 L20,33 L14,21 L24,21 Z', fill: '#fff', stroke: C.ink, 'stroke-width': 2, 'stroke-linejoin': 'round', opacity: 0, filter: 'url(#sh2)' }, a.g);
     const mock = el('g', { opacity: 0 }, a.g);
-    el('rect', { x: 16, y: h - 8, width: 300, height: 40, rx: 10, fill: '#FFFBEB', stroke: C.amber, 'stroke-width': 2.5, filter: 'url(#sh2)' }, mock);
-    T(mock, 32, h + 18, 'page.route(…) → 204', { size: 17, mono: true, weight: 700, fill: '#92400E' });
+    el('rect', { x: 16, y: h - 8, width: 300, height: 40, rx: 12, fill: '#FFF8E6', stroke: '#F3CF7A', 'stroke-width': 1.5, filter: 'url(#sh2)' }, mock);
+    T(mock, 32, h + 18, 'page.route(…) → 204', { size: 16, mono: true, weight: 600, fill: '#8A5A00' });
     a.points.mock = { x: 166, y: h + 12 };
     const idx = (id) => items.find((it) => it.id === String(id));
     a.lineAnchor = (i, s = 'b') => {
@@ -525,9 +536,9 @@ const ACTORS = {
       const tx = w - 68, ty = bar + 14 + it.i * rh + 12;
       cursor.setAttribute('opacity', 1);
       await tween(550, (k) => cursor.setAttribute('transform', `translate(${lerp(w - 30, tx, k)},${lerp(h - 10, ty, k)})`));
-      it.btn.setAttribute('fill', '#FECDD3');
+      it.btn.setAttribute('fill', '#FFE1E6');
       await wait(220);
-      it.btn.setAttribute('fill', C.redSoft);
+      it.btn.setAttribute('fill', '#fff');
       await fade(cursor, 0, 250);
     };
     a.removeRow = async (id) => {
@@ -548,22 +559,22 @@ const ACTORS = {
   },
   proxy(S, o) {
     const w = 220, a = mkActor(S, o, w, 0);
-    el('rect', S_({ x: 6, y: 26, width: 26, height: 92, rx: 7, fill: C.fill }), a.g);
-    el('rect', S_({ x: w - 32, y: 26, width: 26, height: 92, rx: 7, fill: C.fill }), a.g);
-    el('rect', { x: 0, y: 0, width: w, height: 32, rx: 9, fill: C.ink2 }, a.g);
-    T(a.g, w / 2, 22, 'PROXY', { size: 14, mono: true, weight: 700, anchor: 'middle', fill: '#fff', spacing: '2' });
+    el('rect', S_({ x: 8, y: 26, width: 24, height: 92, rx: 8, fill: C.fill }), a.g);
+    el('rect', S_({ x: w - 32, y: 26, width: 24, height: 92, rx: 8, fill: C.fill }), a.g);
+    el('rect', { x: 0, y: 0, width: w, height: 32, rx: 10, fill: '#1E2235' }, a.g);
+    T(a.g, w / 2, 21.5, 'PROXY', { size: 12.5, weight: 650, anchor: 'middle', fill: '#fff', spacing: '2.4' });
     a.points.c = { x: w / 2, y: 72 };
-    a.h = labelUnder(a, o.label || "referee's checkpoint", 148, 19);
+    a.h = labelUnder(a, o.label || "referee's checkpoint", 148, 17.5);
     return a;
   },
   clipboard(S, o) {
     const w = o.w || 400, lh = 34, n = o.rows || 4, h = 58 + n * lh + 14;
     const a = mkActor(S, o, w, h);
-    card(a.g, w, h, { y: 10, height: h - 10, fill: '#FFFDF6', stroke: '#E7DFC6' });
-    el('rect', { x: w / 2 - 46, y: 0, width: 92, height: 22, rx: 7, fill: '#CBD5E1', stroke: C.ink2, 'stroke-width': 2.5 }, a.g);
-    T(a.g, 18, 50, o.title || "referee's notes", { size: 18, weight: 700 });
+    card(a.g, w, h, { y: 10, height: h - 10, fill: '#FFFCF3', stroke: '#EFE6CB' });
+    el('rect', { x: w / 2 - 42, y: 1, width: 84, height: 18, rx: 9, fill: '#DCE0E7', stroke: C.ink2, 'stroke-width': 2 }, a.g);
+    T(a.g, 18, 50, o.title || "referee's notes", { size: 17, weight: 650 });
     const texts = []; let next = 0;
-    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, 58 + i * lh + 26, '', { size: 17, mono: true }));
+    for (let i = 0; i < n; i++) texts.push(T(a.g, 18, 58 + i * lh + 26, '', { size: 16, mono: true }));
     a.record = async (s, fill) => {
       const t = texts[next++]; if (!t) return;
       t.textContent = s; t.setAttribute('fill', fill === '#16a34a' ? C.green : fill === '#dc2626' ? C.red : (fill || C.ink2)); t.setAttribute('opacity', 0);
@@ -573,14 +584,14 @@ const ACTORS = {
   },
   receipt(S, o) {
     const w = o.w || 210, h = o.h || 230, a = mkActor(S, o, w, h);
-    el('path', { d: `M2,2 L${w - 32},2 L${w - 2},32 L${w - 2},${h - 2} L2,${h - 2} Z`, fill: '#fff', stroke: C.line, 'stroke-width': 2, 'stroke-linejoin': 'round', filter: 'url(#sh)' }, a.g);
-    el('path', { d: `M${w - 32},2 L${w - 32},32 L${w - 2},32`, fill: C.fill, stroke: C.line, 'stroke-width': 2, 'stroke-linejoin': 'round' }, a.g);
-    T(a.g, 16, 38, 'receipt.json', { size: 17, mono: true, weight: 700 });
-    for (let i = 0; i < 5; i++) el('rect', { x: 16, y: 60 + i * 24, width: (i % 2 ? 118 : 168) - (i === 4 ? 60 : 0), height: 9, rx: 4.5, fill: '#E2E8F0' }, a.g);
+    el('path', { d: `M2,2 L${w - 32},2 L${w - 2},32 L${w - 2},${h - 2} L2,${h - 2} Z`, fill: '#fff', stroke: '#E6E8EC', 'stroke-width': 1.5, 'stroke-linejoin': 'round', filter: 'url(#sh)' }, a.g);
+    el('path', { d: `M${w - 32},2 L${w - 32},32 L${w - 2},32`, fill: C.fill, stroke: '#E6E8EC', 'stroke-width': 1.5, 'stroke-linejoin': 'round' }, a.g);
+    T(a.g, 16, 38, 'receipt.json', { size: 15.5, mono: true, weight: 600 });
+    for (let i = 0; i < 5; i++) el('rect', { x: 16, y: 60 + i * 24, width: (i % 2 ? 118 : 168) - (i === 4 ? 60 : 0), height: 8, rx: 4, fill: '#ECEEF2' }, a.g);
     const seal = el('g', { opacity: 0 }, a.g);
     el('circle', { cx: w - 54, cy: h - 52, r: 36, fill: C.red }, seal);
     el('circle', { cx: w - 54, cy: h - 52, r: 29, fill: 'none', stroke: '#fff', 'stroke-width': 2, 'stroke-dasharray': '4 4', opacity: 0.7 }, seal);
-    T(seal, w - 54, h - 47, 'SIGNED', { size: 13, weight: 800, anchor: 'middle', fill: '#fff', spacing: '1' });
+    T(seal, w - 54, h - 47.5, 'SIGNED', { size: 12, weight: 700, anchor: 'middle', fill: '#fff', spacing: '1.6' });
     a.seal = async () => {
       seal.setAttribute('opacity', 1);
       const cx = w - 54, cy = h - 52;
@@ -590,11 +601,11 @@ const ACTORS = {
   },
   gate(S, o) {
     const a = mkActor(S, o, 360, 190);
-    el('rect', S_({ x: 2, y: 40, width: 32, height: 148, rx: 8, fill: C.fill }), a.g);
-    el('rect', S_({ x: 300, y: 100, width: 20, height: 88, rx: 6 }), a.g);
+    el('rect', S_({ x: 4, y: 40, width: 30, height: 148, rx: 10, fill: C.fill }), a.g);
+    el('rect', S_({ x: 300, y: 100, width: 20, height: 88, rx: 7, fill: C.fill }), a.g);
     const arm = el('g', {}, a.g);
-    el('rect', { x: 17, y: 63, width: 320, height: 26, rx: 8, fill: 'url(#barrier)', stroke: C.ink2, 'stroke-width': 3 }, arm);
-    el('circle', { cx: 18, cy: 76, r: 9, fill: C.ink2 }, a.g);
+    el('rect', { x: 17, y: 64, width: 320, height: 24, rx: 9, fill: 'url(#barrier)', stroke: C.ink2, 'stroke-width': 2 }, arm);
+    el('circle', { cx: 18, cy: 76, r: 7.5, fill: C.ink2 }, a.g);
     let ang = 0;
     const rot = (to) => { const from = ang; return tween(650, (k) => { ang = lerp(from, to, k); arm.setAttribute('transform', `rotate(${ang},18,76)`); }); };
     a.open = () => rot(-78);
@@ -607,14 +618,14 @@ const ACTORS = {
     const h = head + n * rh + 10;
     const a = mkActor(S, o, w, h);
     card(a.g, w, h); cardHead(a.g, w, head);
-    T(a.g, 18, 32, o.title || 'list', { size: 18, weight: 700 });
+    T(a.g, 18, 32, o.title || 'list', { size: 16.5, weight: 650 });
     const rows = [];
     const mkRow = (i, text) => {
       const g = el('g', { transform: `translate(0,${head + i * rh})` }, a.g);
-      const bg = el('rect', { x: 8, y: 8, width: w - 16, height: rh - 12, rx: 9, fill: C.hl, opacity: 0 }, g);
-      const box = el('rect', { x: 18, y: 18, width: 26, height: 26, rx: 7, fill: '#fff', stroke: C.faint, 'stroke-width': 2.5 }, g);
-      const t = T(g, 58, 37, text, { size: 18.5, mono: true, fill: C.ink2 });
-      const tag = T(g, 58, 59, '', { size: 13, mono: true, weight: 700, spacing: '0.6' });
+      const bg = el('rect', { x: 8, y: 8, width: w - 16, height: rh - 12, rx: 10, fill: C.hl, opacity: 0 }, g);
+      const box = el('rect', { x: 19, y: 19, width: 24, height: 24, rx: 7, fill: '#fff', stroke: '#C9CED6', 'stroke-width': 1.5 }, g);
+      const t = T(g, 58, 37, text, { size: 17, mono: looksCode(text), weight: looksCode(text) ? 500 : 550, fill: C.text });
+      const tag = T(g, 58, 58, '', { size: 11.5, weight: 650, spacing: '1.1' });
       const mark = el('g', {}, g);
       return { g, bg, box, t, tag, mark };
     };
@@ -622,8 +633,8 @@ const ACTORS = {
     a.lineAnchor = (i, s = 'l') => ({ x: a.x + (s === 'l' ? 0 : w), y: a.y + head + i * rh + rh / 2 - 2 });
     a.add = async (s) => { const r = mkRow(rows.length, s); r.g.setAttribute('opacity', 0); rows.push(r); await fade(r.g, 1, 300); };
     a.hi = (i) => fade(rows[i].bg, 0.7, 300);
-    a.tick = async (i) => { const r = rows[i]; r.mark.innerHTML = ''; r.box.setAttribute('fill', C.green); r.box.setAttribute('stroke', C.green); await pop(check(r.mark, 31, 31, '#fff', 3.5)); };
-    a.cross = async (i) => { const r = rows[i]; r.mark.innerHTML = ''; r.box.setAttribute('fill', C.red); r.box.setAttribute('stroke', C.red); await pop(cross(r.mark, 31, 31, '#fff', 3.5)); };
+    a.tick = async (i) => { const r = rows[i]; r.mark.innerHTML = ''; r.box.setAttribute('fill', C.green); r.box.setAttribute('stroke', C.green); await pop(check(r.mark, 31, 31, '#fff', 2.8)); };
+    a.cross = async (i) => { const r = rows[i]; r.mark.innerHTML = ''; r.box.setAttribute('fill', C.red); r.box.setAttribute('stroke', C.red); await pop(cross(r.mark, 31, 31, '#fff', 2.8)); };
     a.tag = async (i, s, fill) => {
       const col = fill === '#16a34a' ? C.green : fill === '#dc2626' ? C.red : fill === '#2563eb' ? C.blue : (fill || C.ink);
       rows[i].tag.textContent = s.toUpperCase(); rows[i].tag.setAttribute('fill', col); await pop(rows[i].tag, 260);
@@ -632,17 +643,17 @@ const ACTORS = {
   },
   bar(S, o) {
     const w = o.w || 520, a = mkActor(S, o, w, 64);
-    T(a.g, 0, 20, o.label || 'working', { size: 17, weight: 700, fill: C.body });
-    el('rect', { x: 0, y: 34, width: w, height: 18, rx: 9, fill: '#E2E8F0' }, a.g);
-    const f = el('rect', { x: 0, y: 34, width: 0, height: 18, rx: 9, fill: C.blue }, a.g);
+    T(a.g, 0, 20, o.label || 'working', { size: 15.5, weight: 600, fill: C.body });
+    el('rect', { x: 0, y: 38, width: w, height: 8, rx: 4, fill: '#ECEEF2' }, a.g);
+    const f = el('rect', { x: 0, y: 38, width: 0, height: 8, rx: 4, fill: C.blue }, a.g);
     a.fill = () => tween(900, (k) => f.setAttribute('width', w * k));
     return a;
   },
   label(S, o) {
     const a = mkActor(S, o, 0, 0);
-    const t = T(a.g, 0, o.size || 60, o.text, { size: o.size || 60, weight: 800, fill: o.color || C.ink2 });
+    const t = T(a.g, 0, o.size || 60, o.text, { size: o.size || 60, weight: 500, fill: o.color || C.faint });
     a.w = Math.max(20, textW(t)); a.h = (o.size || 60) + 12;
-    a.set = async (s, fill) => { t.textContent = s; t.setAttribute('fill', fill === '#dc2626' ? C.red : fill === '#111' ? C.ink2 : (fill || C.ink2)); await pop(a.g, 260); };
+    a.set = async (s, fill) => { t.textContent = s; t.setAttribute('fill', fill === '#dc2626' || fill === C.red ? C.red : fill === '#111' || fill === C.ink2 ? C.faint : (fill || C.faint)); await pop(a.g, 260); };
     return a;
   },
 };
@@ -653,7 +664,7 @@ class Scene {
     this.box = box; this.spec = spec; this.actors = {};
     const s = box.w / IW;
     this.root = el('g', { transform: `translate(${box.x},${box.y}) scale(${s})`, visibility: 'hidden', opacity: 0 }, parent);
-    el('rect', { x: 0, y: 0, width: IW, height: IH, rx: 34, fill: '#fff', stroke: '#E2E8F0', 'stroke-width': 3 }, this.root);
+    el('rect', { x: 0, y: 0, width: IW, height: IH, rx: 28, fill: '#fff', stroke: '#E6E8EC', 'stroke-width': 2, filter: 'url(#sh)' }, this.root);
     this.layerBg = el('g', {}, this.root);
     this.layerLinks = el('g', {}, this.root);
     this.layerActors = el('g', {}, this.root);
@@ -671,8 +682,8 @@ class Scene {
   drawLanes() {
     for (const L of this.spec.lanes || []) {
       const g = el('g', {}, this.layerBg);
-      L.rect = el('rect', { x: 196, y: L.y, width: 1208, height: L.h, rx: 22, fill: '#F8FAFC', stroke: '#E2E8F0', 'stroke-width': 2 }, g);
-      eyebrow(g, 218, L.y + 30, L.label, { size: 14, fill: C.muted });
+      L.rect = el('rect', { x: 196, y: L.y, width: 1208, height: L.h, rx: 20, fill: '#FAFAFC', stroke: '#EDEFF3', 'stroke-width': 1.5 }, g);
+      eyebrow(g, 220, L.y + 30, L.label, { size: 12.5, fill: C.muted });
     }
   }
   drawPorts() {
@@ -680,15 +691,14 @@ class Scene {
     const port = (x, y, art, sub, dir, solid) => {
       const g = el('g', { transform: `translate(${x},${y})` }, this.layerBg);
       const w = 160, h = 92;
-      const d = dir === 'in'
-        ? `M14,0 L${w - 30},0 Q${w - 22},0 ${w - 17},7 L${w},${h / 2} L${w - 17},${h - 7} Q${w - 22},${h} ${w - 30},${h} L14,${h} Q0,${h} 0,${h - 14} L0,14 Q0,0 14,0 Z`
-        : `M10,0 L${w - 30},0 Q${w - 22},0 ${w - 17},7 L${w},${h / 2} L${w - 17},${h - 7} Q${w - 22},${h} ${w - 30},${h} L10,${h} Q2,${h} 6,${h - 8} L20,${h / 2} L6,8 Q2,0 10,0 Z`;
-      const shape = el('path', { d, fill: solid ? C.blueSoft : '#fff', stroke: solid ? C.blueLine : '#CBD5E1', 'stroke-width': 2.5, 'stroke-dasharray': solid ? '' : '7 6', 'stroke-linejoin': 'round' }, g);
+      const d = `M18,0 L${w - 18},0 Q${w},0 ${w},18 L${w},${h - 18} Q${w},${h} ${w - 18},${h} L18,${h} Q0,${h} 0,${h - 18} L0,18 Q0,0 18,0 Z`;
+      const shape = el('path', { d, fill: solid ? C.blueSoft : '#fff', stroke: solid ? '#DADDFB' : '#D7DBE2', 'stroke-width': 1.5, 'stroke-dasharray': solid ? '' : '5 5' }, g);
+      const chev = el('path', { d: `M${w - 24},${h / 2 - 6} L${w - 18},${h / 2} L${w - 24},${h / 2 + 6}`, fill: 'none', stroke: solid ? C.blue : C.faint, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, g);
       const lines = art.split('\n');
-      const tx = dir === 'in' ? 72 : 86;
-      const tt = lines.map((ln, i) => T(g, tx, h / 2 + 7 - (lines.length - 1) * 11 + i * 22, ln, { size: 18, weight: 800, anchor: 'middle', fill: solid ? '#1E3A8A' : C.muted }));
-      eyebrow(g, w / 2, -12, sub, { anchor: 'middle', size: 12, fill: C.faint });
-      return { g, shape, tt, x, y, w, h };
+      const tx = 72;
+      const tt = lines.map((ln, i) => T(g, tx, h / 2 + 6 - (lines.length - 1) * 10.5 + i * 21, ln, { size: 16.5, weight: 600, anchor: 'middle', fill: solid ? '#3730A3' : C.muted }));
+      eyebrow(g, w / 2, -12, sub, { anchor: 'middle', size: 11.5, fill: C.faint });
+      return { g, shape, chev, tt, x, y, w, h };
     };
     (P.in || []).forEach((p) => {
       const y = (p.y !== undefined ? p.y : IH / 2) - 46;
@@ -703,8 +713,9 @@ class Scene {
     const p = this.ports.out; if (!p) return;
     const ok = state !== 'bad';
     p.shape.setAttribute('stroke-dasharray', '');
-    p.shape.setAttribute('stroke', ok ? '#6EE7B7' : '#FDA4AF');
+    p.shape.setAttribute('stroke', ok ? '#A7E3CB' : '#FBC4CF');
     p.shape.setAttribute('fill', ok ? C.greenSoft : C.redSoft);
+    p.chev.setAttribute('stroke', ok ? C.green : C.red);
     p.tt.forEach((t) => t.setAttribute('fill', ok ? '#065F46' : '#9F1239'));
     await pop(p.g);
   }
@@ -766,40 +777,40 @@ function buildWorld() {
   F.recap = el('g', {}, world);
   if (ECO.forest.bracket) {
     const k = ECO.forest.bracket;
-    el('rect', { x: k.x, y: k.y, width: k.w, height: k.h, rx: 32, fill: '#EAF1FF' }, linkG);
-    eyebrow(linkG, k.x + k.w / 2, k.y + k.h + 24, k.label, { anchor: 'middle', fill: C.blue, size: 13 });
+    el('rect', { x: k.x, y: k.y, width: k.w, height: k.h, rx: 30, fill: '#EEF0FF', stroke: '#E0E3FC', 'stroke-width': 1 }, linkG);
+    eyebrow(linkG, k.x + k.w / 2, k.y + k.h + 24, k.label, { anchor: 'middle', fill: C.blue, size: 11.5 });
   }
   for (const L of ECO.forest.links) {
-    const path = el('path', { d: roundedPath(L.pts), fill: 'none', stroke: '#B8C4D4', 'stroke-width': L.dashed ? 3 : 3.5, 'stroke-dasharray': L.dashed ? '1 10' : '', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'marker-end': 'url(#chev)' }, linkG);
+    const path = el('path', { d: roundedPath(L.pts, 24), fill: 'none', stroke: '#C5CCD7', 'stroke-width': L.dashed ? 2 : 1.75, 'stroke-dasharray': L.dashed ? '0.5 7' : '', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'marker-end': 'url(#chev)' }, linkG);
     if (L.label && !L.hideLabel) {
       const [lx, ly] = L.labelAt || mid(L.pts);
       const lines = L.label.split('\n');
-      lines.forEach((ln, i) => eyebrow(linkG, lx, ly - (lines.length - 1 - i) * 17, ln, { anchor: 'middle', fill: C.muted, size: 12.5 }));
+      lines.forEach((ln, i) => eyebrow(linkG, lx, ly - (lines.length - 1 - i) * 15, ln, { anchor: 'middle', fill: C.faint, size: 10.5 }));
     }
     F.links.push({ ...L, path });
   }
   for (const B of ECO.forest.boxes) {
     const b = { ...B, w: ECO.forest.boxW, h: ECO.forest.boxH };
     const g = el('g', { class: 'box', tabindex: 0 }, boxG);
-    const r = el('rect', { class: 'frame', x: b.x, y: b.y, width: b.w, height: b.h, rx: 22, fill: '#fff', stroke: '#DCE3EC', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke', filter: 'url(#sh)' }, g);
+    const r = el('rect', { class: 'frame', x: b.x, y: b.y, width: b.w, height: b.h, rx: 18, fill: '#fff', stroke: '#E6E8EC', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke', filter: 'url(#sh)' }, g);
     const face = el('g', {}, g);
     if (B.lanes) {
-      const dots = [C.blue, C.ink2, C.faint];
+      const dots = [C.blue, C.ink2, '#C3C8D2'];
       B.lanes.forEach((ln, i) => {
         const y = b.y + 14 + i * 27;
-        el('rect', { x: b.x + 46, y, width: b.w - 66, height: 22, rx: 7, fill: '#F8FAFC', stroke: '#E2E8F0', 'stroke-width': 1.5 }, face);
-        el('circle', { cx: b.x + 60, cy: y + 11, r: 4.5, fill: dots[i % 3] }, face);
-        T(face, b.x + 72, y + 16, ln, { size: 13.5, weight: 700, fill: C.body });
+        el('rect', { x: b.x + 46, y, width: b.w - 66, height: 22, rx: 8, fill: '#F7F7FA', stroke: '#ECEEF2', 'stroke-width': 1 }, face);
+        el('circle', { cx: b.x + 60, cy: y + 11, r: 3.5, fill: dots[i % 3] }, face);
+        T(face, b.x + 71, y + 15.5, ln, { size: 12.5, weight: 550, fill: C.body });
       });
     } else {
       for (const p of B.pict || []) drawAt(face, p[0], b.x + p[1], b.y + p[2], p[3]);
     }
-    T(face, b.x + b.w / 2, b.y + b.h - 17, B.name, { size: 20, weight: 800, anchor: 'middle', spacing: '-0.2' });
+    T(face, b.x + b.w / 2, b.y + b.h - 17, B.name, { size: 18, weight: 600, anchor: 'middle', spacing: '-0.3' });
     const num = el('g', {}, g);
-    T(num, b.x + 18, b.y + 27, String(B.n).padStart(2, '0'), { size: 13, mono: true, weight: 700, fill: C.faint });
+    T(num, b.x + 18, b.y + 26, String(B.n).padStart(2, '0'), { size: 11.5, weight: 600, fill: '#B4BAC4', spacing: '0.6' });
     const badge = el('g', { opacity: 0 }, g);
-    const bc = el('circle', { cx: b.x + b.w - 6, cy: b.y + 6, r: 15, fill: C.green, stroke: '#fff', 'stroke-width': 3 }, badge);
-    const bm = el('g', {}, badge); check(bm, b.x + b.w - 6, b.y + 7, '#fff', 3.2);
+    const bc = el('circle', { cx: b.x + b.w - 8, cy: b.y + 8, r: 12, fill: C.green, stroke: '#fff', 'stroke-width': 2.5, filter: 'url(#sh2)' }, badge);
+    const bm = el('g', {}, badge); check(bm, b.x + b.w - 8, b.y + 9, '#fff', 2.4);
     g.addEventListener('click', () => { if (viewIsForest()) jumpToBox(B.id); });
     g.addEventListener('keydown', (e) => { if (e.key === 'Enter' && viewIsForest()) jumpToBox(B.id); });
     Object.assign(b, { g, r, face, badge, bc, bm, num });
@@ -821,13 +832,13 @@ function mid(pts) {
 }
 function setBoxState(id, st) {
   const b = F.box[id];
-  if (st === 'ok') { b.badge.setAttribute('opacity', 1); b.r.setAttribute('stroke', '#6EE7B7'); b.r.setAttribute('stroke-width', 2.5); }
-  if (st === 'bad') { b.badge.setAttribute('opacity', 1); b.bc.setAttribute('fill', C.red); b.bm.innerHTML = ''; cross(b.bm, b.x + b.w - 6, b.y + 6, '#fff', 3.2); b.r.setAttribute('stroke', '#FDA4AF'); }
-  if (st === 'idle') { b.badge.setAttribute('opacity', 0); b.r.setAttribute('stroke', '#DCE3EC'); }
+  if (st === 'ok') { b.badge.setAttribute('opacity', 1); b.r.setAttribute('stroke', '#A7E3CB'); b.r.setAttribute('stroke-width', 1.5); }
+  if (st === 'bad') { b.badge.setAttribute('opacity', 1); b.bc.setAttribute('fill', C.red); b.bm.innerHTML = ''; cross(b.bm, b.x + b.w - 8, b.y + 8, '#fff', 2.4); b.r.setAttribute('stroke', '#FBC4CF'); }
+  if (st === 'idle') { b.badge.setAttribute('opacity', 0); b.r.setAttribute('stroke', '#E6E8EC'); }
 }
 async function flashBox(id, ms = 500) {
   const b = F.box[id];
-  b.r.setAttribute('fill', '#FFF6CC');
+  b.r.setAttribute('fill', '#FFF8E1');
   await wait(ms);
   b.r.setAttribute('fill', '#fff');
 }
@@ -835,12 +846,12 @@ async function flashBox(id, ms = 500) {
 /* forest token: the one moving thing on the map */
 function mkToken(label, color = C.blue) {
   const g = el('g', {}, F.fx);
-  el('circle', { r: 17, fill: color, opacity: 0.18 }, g);
-  el('circle', { r: 9, fill: color, stroke: '#fff', 'stroke-width': 3 }, g);
+  el('circle', { r: 16, fill: color, opacity: 0.14 }, g);
+  el('circle', { r: 7.5, fill: color, stroke: '#fff', 'stroke-width': 2.5 }, g);
   const lg = el('g', {}, g);
-  const t = T(lg, 0, -27, label ? label.toUpperCase() : '', { size: 13, mono: true, weight: 700, anchor: 'middle', fill: '#fff', spacing: '1' });
+  const t = T(lg, 0, -27.5, label ? label.toUpperCase() : '', { size: 11.5, weight: 650, anchor: 'middle', fill: '#fff', spacing: '1.2' });
   const w = label ? textW(t) + 22 : 0;
-  const r = el('rect', { x: -w / 2, y: -46, width: w, height: 27, rx: 13.5, fill: color, filter: 'url(#sh2)' }, lg);
+  const r = el('rect', { x: -w / 2, y: -45, width: w, height: 25, rx: 12.5, fill: color, filter: 'url(#sh2)' }, lg);
   lg.insertBefore(r, t);
   if (!label) lg.setAttribute('opacity', 0);
   return { g, at(x, y) { g.setAttribute('transform', `translate(${x},${y})`); } };
@@ -912,15 +923,15 @@ async function boxesIn() {
 async function laneFlash(S, id) {
   const L = (S.spec.lanes || []).find((l) => l.id === id); if (!L) throw new Error('no lane ' + id);
   const r = L.rect;
-  r.setAttribute('stroke', C.blueLine); r.setAttribute('fill', '#EEF4FF');
+  r.setAttribute('stroke', C.blueLine); r.setAttribute('fill', '#F1F2FF');
   await wait(450);
-  r.setAttribute('fill', '#F8FAFC'); r.setAttribute('stroke', '#BFDBFE');
+  r.setAttribute('fill', '#FAFAFC'); r.setAttribute('stroke', '#E0E3FA');
 }
 async function mark(a, kind) {
   const old = a.g.querySelector('.mark'); if (old) old.remove();
   const g = el('g', { class: 'mark', transform: `translate(${a.w + 2},${-2})` }, a.g);
-  el('circle', { r: 20, fill: kind === 'ok' ? C.green : C.red, stroke: '#fff', 'stroke-width': 3.5, filter: 'url(#sh2)' }, g);
-  if (kind === 'ok') check(g, 0, 1, '#fff', 3.6); else cross(g, 0, 0, '#fff', 3.6);
+  el('circle', { r: 16, fill: kind === 'ok' ? C.green : C.red, stroke: '#fff', 'stroke-width': 3, filter: 'url(#sh2)' }, g);
+  if (kind === 'ok') check(g, 0, 1, '#fff', 2.8); else cross(g, 0, 0, '#fff', 2.8);
   await pop(g, 300);
 }
 // Deck files may use plain hex colours; map them onto the palette.
@@ -930,9 +941,9 @@ async function movePacket(S, act) {
   const color = tone(act.color || C.blue);
   const pts = [act.from, ...(act.via || []), act.to].map((r) => S.point(r));
   const g = el('g', {}, S.layerFx);
-  const t = T(g, 0, 7, act.move, { size: 18, mono: true, weight: 700, anchor: 'middle', fill: '#fff' });
-  const w = textW(t) + 32;
-  const r = el('rect', { x: -w / 2, y: -20, width: w, height: 40, rx: 20, fill: color, filter: 'url(#sh2)' }, g);
+  const t = T(g, 0, 6, act.move, { size: 15.5, mono: looksCode(act.move), weight: 600, anchor: 'middle', fill: '#fff', spacing: looksCode(act.move) ? undefined : '-0.1' });
+  const w = textW(t) + 30;
+  const r = el('rect', { x: -w / 2, y: -18, width: w, height: 36, rx: 18, fill: color, filter: 'url(#sh2)' }, g);
   g.insertBefore(r, t);
   const at = (x, y) => g.setAttribute('transform', `translate(${x},${y})`);
   at(pts[0].x, pts[0].y);
@@ -956,9 +967,9 @@ async function movePacket(S, act) {
     if (act.stamp && act.stamp.at === i) {
       await wait(150);
       const sg = el('g', { transform: `translate(${w / 2 - 4},-30) rotate(-7)` }, g);
-      const st = T(sg, 0, 6, act.stamp.text.toUpperCase(), { size: 14, mono: true, weight: 800, fill: C.red, anchor: 'middle', spacing: '1' });
+      const st = T(sg, 0, 5, act.stamp.text.toUpperCase(), { size: 12, weight: 700, fill: C.red, anchor: 'middle', spacing: '1.4' });
       const sw = textW(st) + 18;
-      sg.insertBefore(el('rect', { x: -sw / 2, y: -14, width: sw, height: 28, rx: 6, fill: '#fff', stroke: C.red, 'stroke-width': 2.5 }), st);
+      sg.insertBefore(el('rect', { x: -sw / 2, y: -13, width: sw, height: 26, rx: 7, fill: '#fff', stroke: C.red, 'stroke-width': 1.75 }), st);
       await pop(sg, 300);
       await wait(250);
     }
@@ -972,13 +983,13 @@ async function connect(S, act) {
   const p = S.point(a), q = S.point(b);
   const color = tone(act.color || C.ink2);
   const mk = color === C.ink2 ? 'chevk' : color === C.blue ? 'chevb' : 'chevy';
-  const path = el('path', { d: `M${p.x},${p.y} L${q.x},${q.y}`, fill: 'none', stroke: color, 'stroke-width': 3.5, 'stroke-linecap': 'round', 'marker-end': `url(#${mk})` }, S.layerLinks);
+  const path = el('path', { d: `M${p.x},${p.y} L${q.x},${q.y}`, fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-linecap': 'round', 'marker-end': `url(#${mk})` }, S.layerLinks);
   const len = Math.hypot(q.x - p.x, q.y - p.y);
   path.setAttribute('stroke-dasharray', `${len} ${len}`);
   await tween(500, (k) => path.setAttribute('stroke-dashoffset', len * (1 - k)));
   path.removeAttribute('stroke-dasharray');
   if (act.label) {
-    const t = eyebrow(S.layerLinks, (p.x + q.x) / 2 + 16, (p.y + q.y) / 2 + 5, act.label, { size: 13.5, fill: color === C.ink2 ? C.muted : color });
+    const t = eyebrow(S.layerLinks, (p.x + q.x) / 2 + 16, (p.y + q.y) / 2 + 5, act.label, { size: 11.5, fill: color === C.ink2 ? C.faint : color });
     await fade(t, 1, 200);
   }
 }
@@ -988,9 +999,9 @@ async function recapLine(text, ids) {
   const g = el('g', { opacity: 0 }, F.recap);
   const m = /^(\S+)\s+(.*)$/.exec(text);
   if (m) {
-    T(g, ECO.recapLeft || 0, y, m[1], { size: 22, mono: true, weight: 700, fill: C.blue });
-    T(g, (ECO.recapLeft || 0) + 90, y, m[2], { size: 28, weight: 600, fill: C.ink2 });
-  } else T(g, ECO.recapLeft || 0, y, text, { size: 28, weight: 600 });
+    T(g, ECO.recapLeft || 0, y, m[1], { size: 20, weight: 600, fill: C.blue });
+    T(g, (ECO.recapLeft || 0) + 90, y, m[2], { size: 27, weight: 500, fill: C.text });
+  } else T(g, ECO.recapLeft || 0, y, text, { size: 27, weight: 500 });
   await fade(g, 1, 300);
   await Promise.all(ids.map((id) => flashBox(id, 600)));
 }
@@ -1064,27 +1075,28 @@ function renderMini(at) {
   const m = $('mini'); m.innerHTML = '';
   const order = ECO.forest.order, n = order.length, pad = 50, gapX = (1000 - 2 * pad) / Math.max(1, n - 1);
   const curIdx = order.indexOf(at);
-  el('line', { x1: pad, y1: 16, x2: pad + gapX * (n - 1), y2: 16, stroke: '#E2E8F0', 'stroke-width': 3, 'stroke-linecap': 'round' }, m);
-  if (curIdx > 0) el('line', { x1: pad, y1: 16, x2: pad + gapX * curIdx, y2: 16, stroke: '#94A3B8', 'stroke-width': 3, 'stroke-linecap': 'round' }, m);
+  el('line', { x1: pad, y1: 16, x2: pad + gapX * (n - 1), y2: 16, stroke: '#E5E7EB', 'stroke-width': 2, 'stroke-linecap': 'round' }, m);
+  if (curIdx > 0) el('line', { x1: pad, y1: 16, x2: pad + gapX * curIdx, y2: 16, stroke: C.blue, 'stroke-width': 2, 'stroke-linecap': 'round' }, m);
   order.forEach((id, i) => {
     const b = boxOf(id), x = pad + i * gapX;
     const g = el('g', { class: 'node', 'data-id': id }, m);
     el('rect', { x: x - 30, y: 0, width: 60, height: 56, fill: 'transparent' }, g);
     const isCur = i === curIdx, past = curIdx >= 0 && i < curIdx;
+    if (isCur) el('circle', { cx: x, cy: 16, r: 12, fill: C.blue, opacity: 0.14 }, g);
     if (b.lanes) {
-      const ring = el('rect', { x: x - 11, y: 6, width: 22, height: 20, rx: 6, fill: isCur ? C.ink : '#fff', stroke: isCur ? C.ink : past ? '#94A3B8' : '#CBD5E1', 'stroke-width': 2.5, class: 'dot' }, g);
-      for (let j = 0; j < 3; j++) el('line', { x1: x - 5, y1: 11 + j * 5, x2: x + 5, y2: 11 + j * 5, stroke: isCur ? '#fff' : '#94A3B8', 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+      el('rect', { x: x - 9, y: 8, width: 18, height: 16, rx: 5, fill: isCur ? C.blue : '#fff', stroke: isCur || past ? C.blue : '#D1D5DB', 'stroke-width': 1.75, class: 'dot' }, g);
+      for (let j = 0; j < 3; j++) el('line', { x1: x - 4, y1: 12.5 + j * 3.5, x2: x + 4, y2: 12.5 + j * 3.5, stroke: isCur ? '#fff' : past ? C.blue : '#B4BAC4', 'stroke-width': 1.3, 'stroke-linecap': 'round' }, g);
     } else {
-      el('circle', { cx: x, cy: 16, r: isCur ? 9 : 7, fill: isCur ? C.ink : past ? '#94A3B8' : '#fff', stroke: isCur ? '#CBD5E1' : past ? '#94A3B8' : '#CBD5E1', 'stroke-width': isCur ? 4 : 2.5, class: 'dot' }, g);
+      el('circle', { cx: x, cy: 16, r: isCur ? 6 : 5, fill: isCur || past ? C.blue : '#fff', stroke: isCur || past ? C.blue : '#D1D5DB', 'stroke-width': 1.75, class: 'dot' }, g);
     }
-    T(g, x, 46, b.short || b.name, { size: 13, weight: isCur ? 800 : 600, anchor: 'middle', fill: isCur ? C.ink : C.muted });
+    T(g, x, 45, b.short || b.name, { size: 12.5, weight: isCur ? 600 : 500, anchor: 'middle', fill: isCur ? C.text : C.faint });
     g.addEventListener('click', () => jumpToBox(id));
   });
 }
 async function miniFlash(id) {
   const d = $('mini').querySelector(`[data-id="${id}"] .dot`); if (!d) return;
   const f = d.getAttribute('fill');
-  for (let i = 0; i < 3; i++) { d.setAttribute('fill', C.blue); await wait(180); d.setAttribute('fill', f); await wait(140); }
+  for (let i = 0; i < 3; i++) { d.setAttribute('fill', C.yellow); await wait(180); d.setAttribute('fill', f); await wait(140); }
 }
 function buildDots() {
   const d = $('dots'); d.innerHTML = '';
@@ -1150,7 +1162,7 @@ document.addEventListener('keydown', (e) => {
 });
 buildDots();
 // Measure text only after the embedded fonts are in, so every box fits its words.
-Promise.all([document.fonts.load('700 20px Manrope'), document.fonts.load('600 18px "JetBrains Mono"')]).catch(() => {}).then(() => {
+Promise.all([document.fonts.load('600 20px Inter'), document.fonts.load('500 18px "JetBrains Mono"')]).catch(() => {}).then(() => {
   window.__deck = { go, STEPS, get cur() { return cur; }, get SCENES() { return SCENES; }, get F() { return F; } };
   go(0, true);
 });
